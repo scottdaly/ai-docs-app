@@ -1,0 +1,508 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+    
+    /* Selection Colors */
+    --selection-background: 212 96% 87%;
+    --selection-foreground: 222.2 47.4% 11.2%;
+    
+    /* Node Selection (Images) */
+    --image-border: 221.2 83.2% 53.3%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+
+    --selection-background: 0 0% 35%;
+    --selection-foreground: 0 0% 100%;
+    
+    --image-border: 217 91% 60%;
+  }
+
+  .midnight {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 80%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 20%;
+    --input: 217 33% 20%;
+    --ring: 212.7 26.8% 83.9%;
+
+    --selection-background: 222 60% 30%;
+    --selection-foreground: 210 40% 98%;
+    
+    --image-border: 217 91% 60%;
+  }
+
+  .sepia {
+    --background: 40 23% 95%;
+    --foreground: 20 14% 12%;
+    --card: 40 23% 95%;
+    --card-foreground: 20 14% 12%;
+    --popover: 40 23% 95%;
+    --popover-foreground: 20 14% 12%;
+    --primary: 24 95% 53%;
+    --primary-foreground: 60 9.1% 97.8%;
+    --secondary: 40 20% 90%;
+    --secondary-foreground: 24 9.8% 10%;
+    --muted: 40 20% 90%;
+    --muted-foreground: 25 5.3% 45%;
+    --accent: 40 25% 80%;
+    --accent-foreground: 20 14% 12%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 60 9.1% 97.8%;
+    --border: 30 10% 85%;
+    --input: 30 10% 85%;
+    --ring: 24.6 95% 53.1%;
+    --radius: 0.5rem;
+
+    --selection-background: 35 60% 85%;
+    --selection-foreground: 20 14% 12%;
+    
+    --image-border: 24 95% 53%;
+  }
+
+  .forest {
+    --background: 150 30% 12%;
+    --foreground: 150 40% 98%;
+    --card: 150 30% 12%;
+    --card-foreground: 150 40% 98%;
+    --popover: 150 30% 12%;
+    --popover-foreground: 150 40% 98%;
+    --primary: 142 76% 36%;
+    --primary-foreground: 150 40% 98%;
+    --secondary: 150 20% 18%;
+    --secondary-foreground: 150 40% 98%;
+    --muted: 150 20% 18%;
+    --muted-foreground: 150 20% 70%;
+    --accent: 150 20% 18%;
+    --accent-foreground: 150 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 150 40% 98%;
+    --border: 150 20% 22%;
+    --input: 150 20% 22%;
+    --ring: 142 76% 36%;
+
+    --selection-background: 150 40% 30%;
+    --selection-foreground: 150 40% 98%;
+    
+    --image-border: 142 76% 36%;
+  }
+
+  .cyberpunk {
+    --background: 265 50% 10%;
+    --foreground: 280 80% 95%;
+    --card: 265 50% 10%;
+    --card-foreground: 280 80% 95%;
+    --popover: 265 50% 10%;
+    --popover-foreground: 280 80% 95%;
+    --primary: 310 90% 65%; /* Hot Pink */
+    --primary-foreground: 265 50% 10%;
+    --secondary: 265 40% 20%;
+    --secondary-foreground: 280 80% 95%;
+    --muted: 265 40% 20%;
+    --muted-foreground: 265 30% 70%;
+    --accent: 180 90% 65%; /* Cyan */
+    --accent-foreground: 265 50% 10%;
+    --destructive: 0 90% 60%;
+    --destructive-foreground: 280 80% 95%;
+    --border: 265 40% 30%;
+    --input: 265 40% 30%;
+    --ring: 310 90% 65%;
+
+    --selection-background: 310 80% 40%;
+    --selection-foreground: 280 80% 95%;
+    
+    --image-border: 310 90% 65%;
+  }
+
+  .coffee {
+    --background: 30 25% 94%;
+    --foreground: 25 20% 25%;
+    --card: 30 25% 94%;
+    --card-foreground: 25 20% 25%;
+    --popover: 30 25% 94%;
+    --popover-foreground: 25 20% 25%;
+    --primary: 25 40% 40%;
+    --primary-foreground: 30 30% 96%;
+    --secondary: 30 20% 88%;
+    --secondary-foreground: 25 20% 25%;
+    --muted: 30 20% 88%;
+    --muted-foreground: 25 10% 50%;
+    --accent: 30 20% 88%;
+    --accent-foreground: 25 20% 25%;
+    --destructive: 0 70% 60%;
+    --destructive-foreground: 30 30% 96%;
+    --border: 25 15% 82%;
+    --input: 25 15% 82%;
+    --ring: 25 40% 40%;
+
+    --selection-background: 25 40% 80%;
+    --selection-foreground: 25 20% 25%;
+    
+    --image-border: 25 40% 40%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  .ProseMirror {
+    caret-color: hsl(var(--primary));
+  }
+
+  /* Default selection for non-editor content */
+  ::selection {
+    background-color: hsl(var(--selection-background));
+    color: hsl(var(--selection-foreground));
+  }
+  ::-moz-selection {
+    background-color: hsl(var(--selection-background));
+    color: hsl(var(--selection-foreground));
+  }
+}
+
+/* CUSTOM SELECTION STYLES - OUTSIDE LAYER FOR HIGHER SPECIFICITY */
+/* Balanced selection overlay that preserves text colors and highlights */
+.ProseMirror ::selection {
+  background-color: rgba(100, 149, 237, 0.20) !important; /* Blue at 20% opacity */
+  color: inherit !important;
+}
+
+.ProseMirror ::-moz-selection {
+  background-color: rgba(100, 149, 237, 0.20) !important;
+  color: inherit !important;
+}
+
+/* More specific selectors for all possible editor content */
+.ProseMirror p ::selection,
+.ProseMirror h1 ::selection,
+.ProseMirror h2 ::selection,
+.ProseMirror h3 ::selection,
+.ProseMirror span ::selection,
+.ProseMirror mark ::selection {
+  background-color: rgba(100, 149, 237, 0.20) !important;
+  color: inherit !important;
+}
+
+.ProseMirror p ::-moz-selection,
+.ProseMirror h1 ::-moz-selection,
+.ProseMirror h2 ::-moz-selection,
+.ProseMirror h3 ::-moz-selection,
+.ProseMirror span ::-moz-selection,
+.ProseMirror mark ::-moz-selection {
+  background-color: rgba(100, 149, 237, 0.20) !important;
+  color: inherit !important;
+}
+
+.app-region-drag {
+  -webkit-app-region: drag;
+}
+
+.app-region-no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* Custom Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* Transparent track to blend with background */
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 5px;
+  border: 2px solid transparent; /* Creates padding around thumb */
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+  background-clip: content-box;
+  border: 2px solid transparent;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Tiptap Gapcursor Styles */
+.ProseMirror-gapcursor {
+  display: none;
+  pointer-events: none;
+  position: absolute;
+}
+
+.ProseMirror-gapcursor:after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: -2px;
+  width: 20px;
+  border-top: 1px solid black;
+  animation: ProseMirror-cursor-blink 1.1s steps(2, start) infinite;
+}
+
+@keyframes ProseMirror-cursor-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+.ProseMirror-focused .ProseMirror-gapcursor {
+  display: block;
+}
+
+/* Dark mode support for gapcursor */
+.dark .ProseMirror-gapcursor:after,
+.midnight .ProseMirror-gapcursor:after,
+.cyberpunk .ProseMirror-gapcursor:after,
+.forest .ProseMirror-gapcursor:after {
+    border-top-color: white;
+}
+
+/* Remove default vertical margins from images */
+.prose img {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+@media print {
+  /* Hide UI elements */
+  .draggable, .border-r, .border-b, button, .fixed {
+    display: none !important;
+  }
+  
+  /* Hide Sidebar specifically */
+  .w-64 {
+    display: none !important;
+  }
+
+  /* Reset Editor layout for print */
+  .flex-1, .h-full, .h-screen, .overflow-hidden, .overflow-y-auto {
+    height: auto !important;
+    overflow: visible !important;
+    position: static !important;
+    flex: none !important;
+  }
+
+  /* Ensure content is visible and clean */
+  body, #root, .prose {
+    background: white !important;
+    color: black !important;
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .prose {
+    /* Reset typography colors for print */
+    --tw-prose-body: black !important;
+    --tw-prose-headings: black !important;
+    --tw-prose-lead: black !important;
+    --tw-prose-bold: black !important;
+    --tw-prose-links: black !important;
+    --tw-prose-code: black !important;
+    --tw-prose-quotes: black !important;
+  }
+}
+
+/* Midnight Theme Prose Overrides */
+.midnight .prose-neutral {
+  --tw-prose-body: hsl(var(--foreground)) !important;
+  --tw-prose-headings: hsl(var(--foreground)) !important;
+  --tw-prose-lead: hsl(var(--muted-foreground)) !important;
+  --tw-prose-bold: hsl(var(--foreground)) !important;
+  --tw-prose-code: hsl(var(--foreground)) !important;
+  --tw-prose-code-bg: hsl(var(--secondary)) !important;
+  --tw-prose-pre-code: hsl(var(--foreground)) !important;
+  --tw-prose-pre-bg: hsl(var(--secondary)) !important;
+  --tw-prose-blockquote: hsl(var(--foreground)) !important; /* High contrast */
+  --tw-prose-quote-borders: hsl(var(--border)) !important;
+  --tw-prose-hr: hsl(var(--border)) !important;
+  --tw-prose-links: hsl(var(--primary)) !important;
+  --tw-prose-counters: hsl(var(--muted-foreground)) !important; /* for lists */
+  --tw-prose-bullets: hsl(var(--muted-foreground)) !important; /* for lists */
+}
+
+/* Sepia Theme Prose Overrides (adjust as needed for better readability) */
+.sepia .prose-neutral {
+    --tw-prose-body: hsl(var(--foreground)) !important;
+    --tw-prose-headings: hsl(var(--foreground)) !important;
+    --tw-prose-lead: hsl(var(--muted-foreground)) !important;
+    --tw-prose-bold: hsl(var(--foreground)) !important;
+    --tw-prose-code: hsl(var(--foreground)) !important;
+    --tw-prose-code-bg: hsl(var(--secondary)) !important;
+    --tw-prose-pre-code: hsl(var(--foreground)) !important;
+    --tw-prose-pre-bg: hsl(var(--secondary)) !important;
+    --tw-prose-blockquote: hsl(var(--muted-foreground)) !important;
+    --tw-prose-quote-borders: hsl(var(--border)) !important;
+    --tw-prose-hr: hsl(var(--border)) !important;
+    --tw-prose-links: hsl(var(--primary)) !important;
+    --tw-prose-counters: hsl(var(--muted-foreground)) !important;
+    --tw-prose-bullets: hsl(var(--muted-foreground)) !important;
+}
+
+/* Forest Theme Prose Overrides */
+.forest .prose-neutral {
+    --tw-prose-body: hsl(var(--foreground)) !important;
+    --tw-prose-headings: hsl(var(--foreground)) !important;
+    --tw-prose-lead: hsl(var(--muted-foreground)) !important;
+    --tw-prose-bold: hsl(var(--foreground)) !important;
+    --tw-prose-code: hsl(var(--foreground)) !important;
+    --tw-prose-code-bg: hsl(var(--secondary)) !important;
+    --tw-prose-pre-code: hsl(var(--foreground)) !important;
+    --tw-prose-pre-bg: hsl(var(--secondary)) !important;
+    --tw-prose-blockquote: hsl(var(--foreground)) !important; /* High contrast */
+    --tw-prose-quote-borders: hsl(var(--border)) !important;
+    --tw-prose-hr: hsl(var(--border)) !important;
+    --tw-prose-links: hsl(var(--primary)) !important;
+    --tw-prose-counters: hsl(var(--muted-foreground)) !important;
+    --tw-prose-bullets: hsl(var(--muted-foreground)) !important;
+}
+
+/* Cyberpunk Theme Prose Overrides */
+.cyberpunk .prose-neutral {
+    --tw-prose-body: hsl(var(--foreground)) !important;
+    --tw-prose-headings: hsl(var(--foreground)) !important;
+    --tw-prose-lead: hsl(var(--muted-foreground)) !important;
+    --tw-prose-bold: hsl(var(--primary)) !important; /* Neon pink bold */
+    --tw-prose-code: hsl(var(--accent)) !important; /* Cyan code */
+    --tw-prose-code-bg: hsl(var(--secondary)) !important;
+    --tw-prose-pre-code: hsl(var(--foreground)) !important;
+    --tw-prose-pre-bg: hsl(var(--secondary)) !important;
+    --tw-prose-blockquote: hsl(var(--foreground)) !important; /* High contrast */
+    --tw-prose-quote-borders: hsl(var(--accent)) !important;
+    --tw-prose-hr: hsl(var(--accent)) !important;
+    --tw-prose-links: hsl(var(--accent)) !important;
+    --tw-prose-counters: hsl(var(--primary)) !important;
+    --tw-prose-bullets: hsl(var(--primary)) !important;
+}
+
+/* Direct Selector Overrides for specific elements that might resist prose vars */
+.midnight .prose blockquote, 
+.forest .prose blockquote,
+.cyberpunk .prose blockquote {
+    color: hsl(var(--foreground)) !important;
+    opacity: 0.9 !important;
+    border-left-color: hsl(var(--border)) !important;
+}
+
+/* Ensure code blocks in dark themes are readable if they default to dark text */
+.midnight .prose pre,
+.forest .prose pre,
+.cyberpunk .prose pre {
+    background-color: hsl(var(--secondary)) !important;
+    color: hsl(var(--foreground)) !important;
+}
+
+/* --- ReactCrop Overrides for "Google Docs" Style --- */
+
+/* Solid black border instead of marching ants */
+.ReactCrop__crop-selection {
+  border: 2px solid black !important;
+  border-image: none !important;
+  background-image: none !important;
+}
+
+/* Base handle style */
+.ReactCrop__drag-handle {
+  width: 12px !important;
+  height: 12px !important;
+  background-color: black !important;
+  border: 1px solid white !important; /* Contrast border */
+  border-radius: 0 !important; /* Square handles */
+  opacity: 1 !important; /* Always visible */
+}
+
+/* Positioning tweaks to center handles on the border line */
+.ReactCrop__drag-handle.ord-nw { top: -6px; left: -6px; }
+.ReactCrop__drag-handle.ord-n  { top: -6px; }
+.ReactCrop__drag-handle.ord-ne { top: -6px; right: -6px; }
+.ReactCrop__drag-handle.ord-e  { right: -6px; }
+.ReactCrop__drag-handle.ord-se { bottom: -6px; right: -6px; }
+.ReactCrop__drag-handle.ord-s  { bottom: -6px; }
+.ReactCrop__drag-handle.ord-sw { bottom: -6px; left: -6px; }
+.ReactCrop__drag-handle.ord-w  { left: -6px; }
+
+/* Edge handles as bars */
+.ReactCrop__drag-handle.ord-n,
+.ReactCrop__drag-handle.ord-s {
+  width: 24px !important;
+  height: 6px !important;
+  border-radius: 2px !important;
+  margin-left: -12px; /* Center horizontally */
+}
+
+.ReactCrop__drag-handle.ord-e,
+.ReactCrop__drag-handle.ord-w {
+  width: 6px !important;
+  height: 24px !important;
+  border-radius: 2px !important;
+  margin-top: -12px; /* Center vertically */
+}
+
+
