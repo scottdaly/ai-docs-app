@@ -2,6 +2,7 @@ node_modules/
 dist/
 dist-electron/
 build
+release
 .env
 .env.local
 .env.development.local
