@@ -119,7 +119,7 @@ export function ImageNodeView(props: NodeViewProps) {
     }
   }, [node.attrs.isCropping, selected, onCropComplete]);
 
-  const handleCropChange = (c: Crop, percentCrop: Crop) => {
+  const handleCropChange = (_c: Crop, percentCrop: Crop) => {
       const threshold = 2; // 2% snap threshold
       const snap = { ...percentCrop };
 

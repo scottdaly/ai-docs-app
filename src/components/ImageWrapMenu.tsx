@@ -1,5 +1,5 @@
 import { Editor } from '@tiptap/react';
-import { BubbleMenu } from '@tiptap/react';
+import { BubbleMenu } from '@tiptap/react/menus';
 import { WrapText, AlignJustify, Crop } from 'lucide-react';
 
 interface ImageWrapMenuProps {
@@ -37,10 +37,8 @@ export function ImageWrapMenu({ editor }: ImageWrapMenuProps) {
   return (
     <BubbleMenu
       editor={editor}
-      tippyOptions={{
-        duration: 100,
-        placement: 'auto',
-        maxWidth: 'none'
+      options={{
+        placement: 'top',
       }}
       shouldShow={({ editor }) => editor.isActive('image')}
       className={`flex gap-1 p-1 rounded-lg border bg-popover shadow-md ${isCropping ? 'hidden' : ''}`}

@@ -46,7 +46,7 @@ export function pxToHalfPoints(px: string): number {
  * tiptapAlignToDocx('center') // returns AlignmentType.CENTER
  * tiptapAlignToDocx(undefined) // returns AlignmentType.LEFT (default)
  */
-export function tiptapAlignToDocx(align?: string): AlignmentType {
+export function tiptapAlignToDocx(align?: string): typeof AlignmentType[keyof typeof AlignmentType] {
   switch (align) {
     case 'left':
       return AlignmentType.LEFT;

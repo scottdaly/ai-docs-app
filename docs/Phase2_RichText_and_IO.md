@@ -1,11 +1,15 @@
 # Phase 2: Rich Text, Typography, and I/O Implementation Plan
 
-This document outlines the architectural approach for adding advanced formatting (Fonts, Alignment, Size) and robust Import/Export capabilities (DOCX, PDF) to Project Muse.
+This document outlines the architectural approach for adding advanced formatting (Fonts, Alignment, Size) and robust Import/Export capabilities (DOCX, PDF) to Midlight.
 
-**STATUS:** ✅ **COMPLETE** (Last Updated: 2025-12-03)
+**STATUS:** ✅ **COMPLETE** (Last Updated: 2025-12-05)
 - Typography & Fonts: ✅ Complete
 - Editor Extensions: ✅ Complete (all controls implemented)
-- Import/Export: ✅ Complete (DOCX export with full formatting preservation)
+- Advanced Text Formatting: ✅ Complete (underline, color, highlight)
+- Import/Export: ✅ Complete (DOCX import with images, export with full formatting)
+- Nested Lists: ✅ Complete (recursive processing with proper indentation)
+- Horizontal Rules: ✅ Complete (toolbar button + DOCX export)
+- Async DOCX Export: ✅ Complete (worker thread + progress UI)
 - Print CSS: ✅ Complete
 
 ## 1. Architecture & Strategy
@@ -43,19 +47,31 @@ We will extend the Tiptap engine to handle new attributes.
 
 ### C. Import/Export Pipeline
 
-#### 1. DOCX Import (Read) ✅ **COMPLETE**
+#### 1. DOCX Import (Read) ✅ **COMPLETE WITH IMAGES**
 *   **Library:** `mammoth.js` v1.11.0 ✅ INSTALLED
 *   **Why:** It is lightweight, JS-only, and focuses on extracting *semantic value* (Headings, Lists) rather than pixel-perfect layout, which fits our Markdown/Tiptap philosophy perfectly.
-*   **Flow:** ✅ **IMPLEMENTED**
+*   **Flow:** ✅ **IMPLEMENTED** (Updated 2025-12-05)
     *   User clicks "Import DOCX..." in File menu
-    *   Main Process reads buffer (`main.ts:230-245`)
-    *   `mammoth.convertToHtml` converts to HTML
-    *   Custom event `editor:insert-content` dispatched
-    *   Editor inserts via `editor.commands.insertContent()` (`Editor.tsx:197-217`)
-*   **Limitation:** Text-only import (images deferred as per risk mitigation)
+    *   Main Process reads buffer and extracts original filename (`main.ts:230-269`)
+    *   `mammoth.convertToHtml` converts to HTML with `convertImage` option
+    *   Images converted to base64 data URLs via `mammoth.images.imgElement()`
+    *   If workspace is open:
+        *   HTML converted to Markdown via `htmlToMarkdown()`
+        *   New `.md` file created in workspace root with original filename
+        *   File automatically opened in editor
+        *   Sidebar refreshes to show new file
+    *   If no workspace: Falls back to inserting into current editor
+*   **Image Support:** ✅ **IMPLEMENTED** (2025-12-05)
+    *   PNG, JPEG, GIF images converted to base64 data URLs
+    *   Images become editable/resizable in the editor
+    *   Full round-trip support (import → edit → export)
 
 #### 2. DOCX Export (Write) ✅ **COMPLETE**
-*   **Library:** `docx` v9.5.1 ✅ INSTALLED + Modular Helper System ✅ CREATED
+*   **Libraries:**
+    *   `docx` v9.5.1 ✅ INSTALLED + Modular Helper System ✅ CREATED
+    *   `turndown` ✅ INSTALLED (HTML → Markdown conversion)
+    *   `marked` ✅ INSTALLED (Markdown → HTML parsing)
+    *   `react-colorful` ✅ INSTALLED (Color picker UI, 2.2kb gzipped)
 *   **Why:** Generic HTML-to-DOCX converters often produce "messy" Word docs. The `docx` library allows us to programmatically build a clean Word document (Node -> Paragraph -> Run) from our Tiptap JSON.
 *   **Architecture:** Modular helper file structure in `electron/docx-helpers/`:
     *   `types.ts` - TypeScript interfaces for Tiptap JSON structure
@@ -66,17 +82,20 @@ We will extend the Tiptap engine to handle new attributes.
 *   **Flow:** ✅ **IMPLEMENTED** (`electron/docx-transformer.ts` + helpers, `main.ts:272-286`)
     *   Tiptap JSON -> Modular Transformer -> `docx` Object Model -> Buffer -> Write File
 *   **Full Feature Support:**
-    *   ✅ Paragraphs with text styling (bold, italic, strike, code)
+    *   ✅ Paragraphs with text styling (bold, italic, strike, code, **underline**, **color**, **highlight**)
     *   ✅ Headings (H1, H2, H3) with custom font sizes and black color (overrides Word's blue)
     *   ✅ **Font family preservation** with Word-compatible fallbacks (Inter→Arial, Merriweather→Georgia, etc.)
     *   ✅ **Font size preservation** with 1:1 px→pt mapping (14px→14pt, 16px→16pt, etc.)
     *   ✅ **Text alignment preservation** (left, center, right, justify)
+    *   ✅ **Text color preservation** with RGB hex color export
+    *   ✅ **Highlight color preservation** with mapping to Word's highlight palette
+    *   ✅ **Underline formatting** with single underline export
     *   ✅ **Image embedding** with base64-to-buffer conversion, proper MIME type detection, and alignment
-    *   ✅ Bullet/ordered lists with formatting preservation (flat only)
-    *   ✅ Numbering configuration for ordered lists
-*   **Deferred Features:**
-    *   ⏸️ Nested list support (requires recursive processing)
-    *   ⏸️ Advanced text formatting (underline, color, highlighting)
+    *   ✅ Bullet/ordered lists with formatting preservation
+    *   ✅ **Nested list support** with recursive processing (up to 9 levels)
+    *   ✅ Numbering configuration for ordered lists with level-specific formats (1. → a. → i.)
+    *   ✅ Proper indentation for nested lists (720 twips per level)
+    *   ✅ **Horizontal rules** exported as paragraph with bottom border
 
 #### 3. PDF Export (Write) ✅ **COMPLETE**
 *   **Library:** Electron's native `webContents.printToPDF()` ✅ IMPLEMENTED
@@ -144,9 +163,13 @@ We will extend the Tiptap engine to handle new attributes.
         *   `extractImageType()` - Detects MIME type (png, jpg, gif, bmp)
         *   `parseDimension()` - Parses px/% dimensions with validation
         *   `createImageParagraph()` - Creates ImageRun with proper type specification
+    *   ✅ **list-processors.ts:** Recursive list processing (added 2025-12-05)
+        *   `processListItem()` - Handles individual list items with nested list support
+        *   `processBulletList()` - Processes bullet lists at any nesting level
+        *   `processOrderedList()` - Processes ordered lists with level-specific numbering
 3.  ✅ **Main Transformer:** `electron/docx-transformer.ts` orchestrates all helpers
-    *   ✅ Handles paragraphs, headings, lists, images
-    *   ✅ Includes numbering configuration for ordered lists
+    *   ✅ Handles paragraphs, headings, lists, images, horizontal rules
+    *   ✅ Includes numbering configuration for ordered lists (9 levels with indentation)
     *   ✅ Error handling with try-catch per node
 4.  ✅ **Export Trigger:**
     *   Menu action "Export to DOCX..."
@@ -179,7 +202,7 @@ We will extend the Tiptap engine to handle new attributes.
     *   **Import:** Text-only import implemented (images deferred as planned)
     *   **Export:** ✅ **COMPLETE** - Base64 image embedding with proper MIME type detection (png, jpg, gif, bmp)
     *   **Validation:** Dimension clamping (1-2000px) and error handling for corrupt images
-*   ⚠️ **Performance:** Large DOCX exports currently synchronous. No Web Worker or async processing implemented yet. Consider for future optimization if users report slowness with large documents.
+*   ✅ **Performance:** Large DOCX exports now use async worker thread with progress UI (implemented 2025-12-05)
 *   ✅ **DOCX Corruption Prevention:**
     *   Font size validation (2-400 half-points)
     *   Image dimension validation (1-2000px)
@@ -210,8 +233,9 @@ We will extend the Tiptap engine to handle new attributes.
   - Displays actual computed font sizes from DOM using `window.getComputedStyle()`
   - Proportional scaling when changing block types (maintains size relationships)
   - Default: 14px (was 16px, changed to 14px for better readability)
-- **DOCX Import**
-  - Text-only import with mammoth.js
+- **DOCX Import** ✅ **WITH IMAGES** (2025-12-05)
+  - Full import with mammoth.js including embedded images
+  - Images converted to base64 data URLs
   - Preserves headings, lists, and basic formatting
 - **DOCX Export (Full Implementation)** ✅ **COMPLETE**
   - Modular helper system (`electron/docx-helpers/`)
@@ -221,42 +245,58 @@ We will extend the Tiptap engine to handle new attributes.
   - Image embedding (base64 with proper MIME types)
   - Heading customization (black color, level-specific sizes)
   - List support with numbering configuration
+  - **Nested list support** with recursive processing and proper indentation (2025-12-05)
+  - **Horizontal rule support** exported as paragraph with bottom border (2025-12-05)
+  - **RGB color normalization** - converts `rgb(r,g,b)` to hex for DOCX compatibility (2025-12-05)
   - **Critical bug fix:** All text nodes processed (not just first)
 - **PDF Export**
   - Electron printToPDF with print CSS
   - Theme-aware output
 - **All IPC handlers and preload API**
 
+### ✅ Advanced Text Formatting (IMPLEMENTED - 2025-12-04)
+- **Underline formatting** (`Underline.ts` extension)
+- **Text color picker** with full color wheel, presets, and custom hex input
+- **Highlight color picker** with toggle button, color palette, and custom picker
+- **Recent colors feature** with localStorage persistence (up to 8 colors per picker)
+- **Custom Code extension** without input rules (prevents backtick insertion issues)
+- **Selection visibility improvements** with custom CSS for better contrast
+
 ### ⏸️ Intentionally Deferred (Per User Decision)
 - Text selection floating/bubble menu (toolbar is sufficient for current needs)
-- Async DOCX generation with Web Worker (defer until users report performance issues)
-- Nested list support in DOCX export (requires recursive processing)
-- Image import from DOCX (defer to future phase)
-- Advanced text formatting: underline, color, highlighting
 
 ### 🎯 Next Steps (Priority Order)
 
 **Phase 2 Core Features:** ✅ **COMPLETE**
 
-All essential rich text editing and DOCX export features have been successfully implemented. The following optional enhancements are available for future phases if needed:
+All essential rich text editing and DOCX export features have been successfully implemented, including advanced text formatting added on 2025-12-04.
 
-1. **Low Priority:** Nested list support in DOCX export
-   - Currently: Flat lists work perfectly
-   - Enhancement: Add recursive processing for nested bullet/numbered lists
-2. **Low Priority:** Implement async DOCX generation with progress indicator
-   - Currently: DOCX export is synchronous and works well for typical documents
-   - Enhancement: Move to Web Worker for very large documents (if users report slowness)
-3. **Future Phase:** Image import from DOCX
-   - Currently: Images work in editor and export to DOCX, but don't import from DOCX
-   - Enhancement: Extract and embed images during DOCX import
-4. **Future Phase:** Advanced text formatting
-   - Underline, text color, highlighting
-   - Would require additional Tiptap extensions and DOCX transformer updates
+**Completed Features (2025-12-04):**
+- ✅ Underline formatting with DOCX export
+- ✅ Text color picker with full color wheel, presets, and recent colors
+- ✅ Highlight color picker with palette view and custom picker
+- ✅ Recent colors tracking (localStorage, up to 8 per picker)
+- ✅ Custom markdown conversion system (replaced tiptap-markdown)
+- ✅ CSS fixes for inline code backticks and selection visibility
+
+**Completed Features (2025-12-05):**
+- ✅ Nested list support in DOCX export with recursive processing
+- ✅ Proper list indentation (720 twips = 0.5 inch per level)
+- ✅ Level-specific numbering formats (1. → a. → i. repeating pattern)
+- ✅ CSS styling for nested ordered lists in editor (decimal → lower-alpha → lower-roman)
+- ✅ RGB to hex color normalization for DOCX compatibility
+- ✅ Horizontal rule toolbar button (Minus icon)
+- ✅ Horizontal rule DOCX export (paragraph with bottom border)
+- ✅ **Image import from DOCX** - images converted to base64 data URLs via mammoth.js
+- ✅ **DOCX import creates new file** - imported content saved as new .md file in workspace
+- ✅ **Async DOCX export** - worker thread with progress UI for non-blocking exports
 
 **Notes:**
 - Text selection floating menu was evaluated and intentionally deferred as the fixed toolbar provides sufficient functionality
 - Font family/size/alignment preservation ✅ **COMPLETE**
 - Image embedding in DOCX export ✅ **COMPLETE**
+- Image import from DOCX ✅ **COMPLETE** (2025-12-05)
+- Advanced text formatting (underline/color/highlight) ✅ **COMPLETE** (2025-12-04)
 
 ---
 
@@ -331,13 +371,21 @@ Instead of a monolithic transformer, the implementation uses specialized helper 
 **File Structure:**
 ```
 electron/
-├── docx-transformer.ts          # Main orchestrator
+├── docx-transformer.ts          # Main orchestrator (fallback, sync)
+├── docx-worker.ts               # Async worker thread (added 2025-12-05)
 └── docx-helpers/
     ├── types.ts                 # TypeScript interfaces
     ├── converters.ts            # Unit conversions & mappings
     ├── text-processors.ts       # TextRun creation
     ├── paragraph-processors.ts  # Paragraph/heading creation
-    └── image-processors.ts      # Image embedding
+    ├── image-processors.ts      # Image embedding
+    └── list-processors.ts       # Recursive list processing (added 2025-12-05)
+
+src/
+├── components/
+│   └── ExportProgress.tsx       # Progress modal UI (added 2025-12-05)
+└── store/
+    └── useExportStore.ts        # Export state management (added 2025-12-05)
 ```
 
 ### Key Design Decisions
@@ -497,14 +545,835 @@ Created `DOCX_EXPORT_TEST.md` with comprehensive test cases:
 
 ### Performance Considerations
 
-**Current Approach:** Synchronous processing
-- Works well for typical documents (< 50 pages)
-- Simplifies error handling and debugging
+**Current Approach:** ✅ Async Worker Thread (implemented 2025-12-05)
+- DOCX generation runs in separate worker thread
+- Progress UI shows real-time status
+- Non-blocking - UI remains responsive
+- Handles large documents without freezing
 
-**Future Optimization (if needed):**
-- Move transformation to Web Worker
-- Add progress indicator for large documents
-- Stream processing for very large files
+See "Async DOCX Export with Worker Thread" section for implementation details.
 
-**Decision:** Defer optimization until users report actual slowness. Premature optimization adds complexity without proven benefit.
+---
+
+## 7. Advanced Text Formatting Implementation Details (2025-12-04)
+
+### Overview
+Implemented comprehensive text formatting capabilities including underline, text color, and background highlighting with full-featured color pickers and recent color tracking.
+
+### Extensions Created
+
+#### 1. Underline Extension (`src/components/extensions/Underline.ts`)
+Simple mark extension for underline formatting:
+```typescript
+export const Underline = Mark.create({
+  name: 'underline',
+  parseHTML() {
+    return [
+      { tag: 'u' },
+      { style: 'text-decoration=underline' },
+    ];
+  },
+  renderHTML() {
+    return ['u', 0];
+  },
+  addCommands() {
+    return {
+      toggleUnderline: () => ({ commands }) => {
+        return commands.toggleMark(this.name);
+      },
+    };
+  },
+  addKeyboardShortcuts() {
+    return {
+      'Mod-u': () => this.editor.commands.toggleUnderline(),
+    };
+  },
+});
+```
+
+**Features:**
+- Toggle via toolbar button
+- Keyboard shortcut: Ctrl/Cmd+U
+- Serializes to `<u>` tag in HTML
+- Exports to DOCX as single underline
+
+#### 2. TextColor Extension (`src/components/extensions/TextColor.ts`)
+Extends TextStyle to support color attribute:
+```typescript
+export const TextColor = Extension.create({
+  name: 'textColor',
+  addGlobalAttributes() {
+    return [{
+      types: ['textStyle'],
+      attributes: {
+        color: {
+          default: null,
+          parseHTML: element => element.style.color,
+          renderHTML: attributes => {
+            if (!attributes.color) return {};
+            return { style: `color: ${attributes.color}` };
+          },
+        },
+      },
+    }];
+  },
+  addCommands() {
+    return {
+      setTextColor: (color: string) => ({ chain }) => {
+        return chain().setMark('textStyle', { color }).run();
+      },
+      unsetTextColor: () => ({ chain }) => {
+        return chain()
+          .setMark('textStyle', { color: null })
+          .removeEmptyTextStyle()
+          .run();
+      },
+    };
+  },
+});
+```
+
+**Features:**
+- Stores colors as hex codes (#RRGGBB)
+- Inline style serialization: `<span style="color: #ff0000">`
+- Exports to DOCX with RGB color values
+
+#### 3. TextHighlight Extension (`src/components/extensions/TextHighlight.ts`)
+Custom mark for background color highlighting:
+```typescript
+export const TextHighlight = Mark.create({
+  name: 'highlight',
+  addOptions() {
+    return {
+      multicolor: true,
+    };
+  },
+  addAttributes() {
+    return {
+      color: {
+        default: null,
+        parseHTML: element => element.style.backgroundColor,
+        renderHTML: attributes => {
+          if (!attributes.color) return {};
+          return {
+            style: `background-color: ${attributes.color}`,
+          };
+        },
+      },
+    };
+  },
+  parseHTML() {
+    return [{ tag: 'mark' }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ['mark', HTMLAttributes, 0];
+  },
+  addCommands() {
+    return {
+      setHighlight: (color: string) => ({ commands }) => {
+        return commands.setMark(this.name, { color });
+      },
+      unsetHighlight: () => ({ commands }) => {
+        return commands.unsetMark(this.name);
+      },
+    };
+  },
+});
+```
+
+**Features:**
+- Multi-color highlighting support
+- Serializes to `<mark style="background-color: #ffff00">`
+- Exports to DOCX (mapped to nearest Word highlight color)
+
+#### 4. Custom Code Extension (`src/components/extensions/CustomCode.ts`)
+**Problem:** The default Code extension combined with tiptap-markdown was inserting literal backtick characters into the editor as text.
+
+**Solution:** Created custom Code extension without input/paste rules:
+```typescript
+export const CustomCode = Code.extend({
+  addInputRules() {
+    return [];  // Disable markdown-style code triggers
+  },
+  addPasteRules() {
+    return [];  // Disable paste conversion
+  },
+});
+```
+
+**Configuration:**
+```typescript
+CustomCode.configure({
+  HTMLAttributes: {
+    class: 'bg-muted px-1.5 py-0.5 rounded text-sm font-mono',
+  },
+})
+```
+
+### UI Components
+
+#### 1. ColorPickerDropdown (`src/components/ColorPickerDropdown.tsx`)
+Full-featured text color picker with:
+- **HexColorPicker** from react-colorful (visual color wheel)
+- **Preset colors** (16 professional Tailwind-based colors):
+  - Grays: Black, Gray 700, Gray 500, Gray 400
+  - Colors: Red, Orange, Yellow, Green, Cyan, Blue, Violet, Fuchsia, Pink
+  - Special: Amber (brown), Dark Blue, Dark Red
+- **Custom hex input** with validation (`#[0-9A-Fa-f]{6}`)
+- **Recent colors** (up to 8 custom colors, excludes presets)
+- **Current color indicator** (colored bar under "A" icon)
+- **Clear color button**
+
+**Recent Colors Implementation:**
+```typescript
+const [recentColors, setRecentColors] = useState<string[]>(() => {
+  const saved = localStorage.getItem('recentTextColors');
+  return saved ? JSON.parse(saved) : [];
+});
+
+const addToRecent = (color: string) => {
+  const normalized = color.toUpperCase();
+  // Don't add if it's already in the preset colors
+  if (PRESET_COLORS.map(c => c.toUpperCase()).includes(normalized)) {
+    return;
+  }
+  const updated = [normalized, ...recentColors.filter(c => c !== normalized)].slice(0, 8);
+  setRecentColors(updated);
+  localStorage.setItem('recentTextColors', JSON.stringify(updated));
+};
+```
+
+**Auto-save Recent Colors:**
+- When clicking outside the color picker
+- When typing a valid hex code
+- When using the color wheel
+
+#### 2. HighlightPickerDropdown (`src/components/HighlightPickerDropdown.tsx`)
+Split-button design with toggle + dropdown:
+
+**Main Button:** Toggle highlight on/off
+- Shows current highlight color as indicator bar
+- Active state when highlight applied
+
+**Dropdown Button:** Color selection
+- **Palette View** (default):
+  - 16 preset highlight colors (bright, light colors)
+  - Recent colors section (custom colors only)
+  - "Custom..." option
+  - "Remove Highlight" button (when active)
+- **Custom Picker View**:
+  - HexColorPicker with color wheel
+  - Hex input field
+  - Back button (ChevronLeft icon)
+  - Centered "Highlight Color" header
+
+**Key Features:**
+- Separate storage: `recentHighlightColors`
+- Filters out preset colors from recent
+- Updates selected color when editor highlight changes
+- Auto-saves custom color on dropdown close
+
+### Markdown Conversion System
+
+**Problem:** The tiptap-markdown extension was showing markdown syntax (backticks, etc.) as literal text in the editor instead of applying formatting.
+
+**Solution:** Replace tiptap-markdown with custom HTML ↔ Markdown conversion:
+
+#### Created `src/utils/markdown.ts`
+**Libraries:**
+- `turndown` - HTML → Markdown conversion
+- `marked` - Markdown → HTML parsing
+
+**Custom Rules:**
+```typescript
+// Preserve inline code
+turndownService.addRule('code', {
+  filter: 'code',
+  replacement: (content) => `\`${content}\``,
+});
+
+// Preserve styled spans (colors)
+turndownService.addRule('styledSpan', {
+  filter: (node) => node.nodeName === 'SPAN' && (node.style.color || node.style.backgroundColor),
+  replacement: (content, node: any) => {
+    // Returns HTML: <span style="color: #ff0000">text</span>
+  },
+});
+
+// Preserve mark elements (highlights)
+turndownService.addRule('mark', {
+  filter: 'mark',
+  replacement: (content, node: any) => {
+    const bgColor = node.style.backgroundColor;
+    return `<mark style="background-color: ${bgColor}">${content}</mark>`;
+  },
+});
+
+// Preserve underline
+turndownService.addRule('underline', {
+  filter: 'u',
+  replacement: (content) => `<u>${content}</u>`,
+});
+```
+
+**Editor Integration:**
+```typescript
+// Save: HTML → Markdown
+const html = editor.getHTML();
+const markdown = htmlToMarkdown(html);
+saveFile(markdown);
+
+// Load: Markdown → HTML
+const html = markdownToHtml(fileContent);
+editor.commands.setContent(html);
+```
+
+**Benefits:**
+- True WYSIWYG editing (no markdown syntax visible)
+- Files still save as markdown
+- All formatting preserved in markdown via HTML tags
+- No interference with code marks or other formatting
+
+### CSS Fixes
+
+#### 1. Disabled Tailwind Prose Backticks (`src/index.css`)
+**Problem:** Tailwind's `@tailwindcss/typography` plugin adds decorative backticks to `<code>` elements via `::before` and `::after` pseudo-elements.
+
+**Solution:**
+```css
+/* DISABLE PROSE BACKTICKS ON CODE ELEMENTS */
+.prose code::before,
+.prose code::after {
+  content: '' !important;
+}
+```
+
+This was the **root cause** of visible backticks - CSS was adding them, not the editor!
+
+#### 2. Custom Selection Colors (`src/index.css`)
+**Problem:** Default browser selection made highlighted text and colored text invisible when selected.
+
+**Solution:** Custom selection styling outside `@layer base` for higher specificity:
+```css
+/* CUSTOM SELECTION STYLES - OUTSIDE LAYER FOR HIGHER SPECIFICITY */
+.ProseMirror ::selection {
+  background-color: rgba(100, 149, 237, 0.20) !important; /* Cornflower blue at 20% */
+  color: inherit !important;
+}
+```
+
+**Key insights:**
+- Moved outside `@layer base` to override Tailwind defaults
+- 20% opacity allows text colors and highlights to remain visible
+- `color: inherit` preserves text color through selection
+
+### DOCX Export Updates
+
+Updated `electron/docx-helpers/` to support new formatting:
+
+#### types.ts
+```typescript
+export interface TextStyleAttrs {
+  fontSize?: string;
+  fontFamily?: string;
+  color?: string;  // Added for text color
+}
+```
+
+#### text-processors.ts
+```typescript
+export function createTextRun(node: TiptapNode, options?: { color?: string; defaultSize?: number }): TextRun {
+  const marks = node.marks || [];
+
+  const isUnderline = marks.some(m => m.type === 'underline');
+  const textStyle = extractTextStyle(marks);
+  const highlightMark = marks.find(m => m.type === 'highlight');
+
+  const textColor = textStyle.color?.replace('#', '') || options?.color;
+  const highlightColor = highlightMark?.attrs?.color;
+  const docxHighlight = highlightColor ? hexToDocxHighlight(highlightColor) : undefined;
+
+  return new TextRun({
+    text: node.text || '',
+    underline: isUnderline ? { type: 'single' } : undefined,
+    color: textColor,
+    highlight: docxHighlight,
+    // ... other formatting
+  });
+}
+```
+
+#### converters.ts
+**Highlight Color Mapping:** DOCX only supports specific highlight colors, so we map hex colors to the nearest Word color:
+```typescript
+export function hexToDocxHighlight(hex: string): string {
+  const colorMap: Record<string, string> = {
+    '#ffff00': 'yellow',
+    '#00ff00': 'green',
+    '#00ffff': 'cyan',
+    '#ff00ff': 'magenta',
+    '#0000ff': 'blue',
+    '#ff0000': 'red',
+    '#ffa500': 'darkYellow',
+    '#808080': 'darkGray',
+  };
+
+  const normalized = hex.toLowerCase();
+
+  // Exact match or find closest color using RGB distance
+  // ...
+}
+```
+
+### Testing Checklist
+
+✅ **Underline:**
+- Toggle via button
+- Keyboard shortcut (Ctrl+U)
+- Exports to DOCX
+- Persists in markdown
+
+✅ **Text Color:**
+- Color wheel picker
+- Preset colors
+- Custom hex input with validation
+- Recent colors (custom only)
+- Current color indicator
+- Clear color function
+- Exports to DOCX
+- Persists in markdown via inline styles
+
+✅ **Highlight Color:**
+- Toggle button (on/off)
+- Dropdown with palette
+- Custom picker view
+- Recent colors (custom only)
+- Color indicator
+- Remove highlight function
+- Exports to DOCX (mapped colors)
+- Persists in markdown via `<mark>` tags
+
+✅ **Inline Code:**
+- No visible backticks in editor
+- Applies code styling (monospace, background)
+- Exports to DOCX
+- Persists in markdown
+
+✅ **Selection Visibility:**
+- Highlights remain visible when selected
+- Text colors remain visible when selected
+- 20% blue overlay provides clear selection feedback
+
+### Known Limitations
+
+1. **DOCX Highlight Colors:** Limited to Word's color palette (yellow, green, cyan, magenta, blue, red, darkYellow, darkGray). Custom colors are mapped to nearest match.
+
+2. **Markdown Persistence:** Colors and highlights require HTML tags in markdown files:
+   - Text color: `<span style="color: #ff0000">text</span>`
+   - Highlight: `<mark style="background-color: #ffff00">text</mark>`
+   - Not pure markdown, but widely supported by markdown renderers
+
+3. **Recent Colors:** Stored in browser localStorage, not synced across devices
+
+### Performance Notes
+
+- Color pickers use react-colorful (2.2kb gzipped)
+- Recent colors limited to 8 per picker to minimize localStorage usage
+- No performance impact on editor rendering
+- DOCX export handles colors efficiently (no additional processing time)
+
+---
+
+## 8. Nested List & Horizontal Rule Implementation (2025-12-05)
+
+### Nested List Support
+
+#### Problem
+The original DOCX export only handled flat lists - all items were exported at `level: 0`, and nested sublists were ignored.
+
+#### Tiptap JSON Structure
+Tiptap represents nested lists by embedding `bulletList` or `orderedList` nodes inside `listItem` nodes:
+```json
+{
+  "type": "orderedList",
+  "content": [
+    {
+      "type": "listItem",
+      "content": [
+        { "type": "paragraph", "content": [{ "type": "text", "text": "Item 1" }] },
+        {
+          "type": "orderedList",
+          "content": [
+            {
+              "type": "listItem",
+              "content": [
+                { "type": "paragraph", "content": [{ "type": "text", "text": "Nested 1.1" }] }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### Solution: Recursive Processing
+Created `electron/docx-helpers/list-processors.ts` with three functions:
+
+```typescript
+// Process individual list items, recursing into nested lists
+function processListItem(listItem: TiptapNode, context: ListContext): Paragraph[] {
+  const paragraphs: Paragraph[] = [];
+
+  for (const content of listItem.content || []) {
+    if (content.type === 'paragraph') {
+      // Create paragraph at current level
+      paragraphs.push(new Paragraph({
+        bullet: { level: context.level },  // or numbering for ordered
+        children: processTextNodes(content.content || []),
+      }));
+    } else if (content.type === 'bulletList') {
+      // Recurse with incremented level
+      paragraphs.push(...processBulletList(content, context.level + 1));
+    } else if (content.type === 'orderedList') {
+      paragraphs.push(...processOrderedList(content, context.level + 1));
+    }
+  }
+
+  return paragraphs;
+}
+```
+
+#### Numbering Configuration
+Word requires explicit numbering configuration for each level:
+```typescript
+numbering: {
+  config: [{
+    reference: 'default-numbering',
+    levels: [
+      { level: 0, format: 'decimal', text: '%1.', style: { paragraph: { indent: { left: 720, hanging: 360 } } } },
+      { level: 1, format: 'lowerLetter', text: '%2.', style: { paragraph: { indent: { left: 1440, hanging: 360 } } } },
+      { level: 2, format: 'lowerRoman', text: '%3.', style: { paragraph: { indent: { left: 2160, hanging: 360 } } } },
+      // Pattern repeats for levels 3-8
+    ],
+  }],
+}
+```
+
+**Indentation Values (in twips):**
+- Level 0: 720 (0.5 inch)
+- Level 1: 1440 (1.0 inch)
+- Level 2: 2160 (1.5 inch)
+- Each level adds 720 twips (0.5 inch)
+
+**Numbering Pattern:** decimal → lowerLetter → lowerRoman (repeating)
+- Level 0: 1. 2. 3.
+- Level 1: a. b. c.
+- Level 2: i. ii. iii.
+- Level 3: 1. 2. 3. (pattern repeats)
+
+#### CSS for Editor Display
+Added CSS to style nested ordered lists in the editor:
+```css
+/* Nested Ordered List Styles - Progressive numbering (1, a, i) */
+.prose ol { list-style-type: decimal; }
+.prose ol ol { list-style-type: lower-alpha; }
+.prose ol ol ol { list-style-type: lower-roman; }
+.prose ol ol ol ol { list-style-type: decimal; }
+/* Pattern continues... */
+```
+
+### Horizontal Rule Support
+
+#### Editor Toolbar
+Added a horizontal rule button using the Minus icon from lucide-react:
+```typescript
+<button
+  onClick={() => editor.chain().focus().setHorizontalRule().run()}
+  title="Insert Horizontal Rule"
+>
+  <Minus size={16} />
+</button>
+```
+
+The `setHorizontalRule()` command is provided by Tiptap's StarterKit.
+
+#### DOCX Export
+Horizontal rules are exported as an empty paragraph with a bottom border:
+```typescript
+case 'horizontalRule':
+  children.push(new Paragraph({
+    border: {
+      bottom: {
+        color: '999999',
+        space: 1,
+        style: BorderStyle.SINGLE,
+        size: 6,  // 0.75pt line
+      },
+    },
+    spacing: {
+      before: 200,  // ~0.14 inch
+      after: 200,
+    },
+  }));
+  break;
+```
+
+### RGB Color Normalization Fix
+
+#### Problem
+Text colors from the editor were stored as `rgb(r, g, b)` format, but the DOCX library requires hex format (`RRGGBB`).
+
+#### Solution
+Added `normalizeColorToHex()` function in `text-processors.ts`:
+```typescript
+function normalizeColorToHex(color: string | undefined): string | undefined {
+  if (!color) return undefined;
+
+  // Already hex format
+  if (color.startsWith('#')) {
+    return color.replace('#', '');
+  }
+
+  // RGB format: rgb(r, g, b)
+  const rgbMatch = color.match(/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+  if (rgbMatch) {
+    const r = parseInt(rgbMatch[1], 10);
+    const g = parseInt(rgbMatch[2], 10);
+    const b = parseInt(rgbMatch[3], 10);
+    const toHex = (n: number) => Math.max(0, Math.min(255, n)).toString(16).padStart(2, '0');
+    return `${toHex(r)}${toHex(g)}${toHex(b)}`;
+  }
+
+  return undefined;
+}
+```
+
+This function is called for both text colors and highlight colors before passing to the DOCX library.
+
+### Image Import from DOCX (2025-12-05)
+
+#### Problem
+The original DOCX import using mammoth.js silently dropped all embedded images because no `convertImage` option was provided.
+
+#### Solution
+Mammoth.js provides a built-in `convertImage` option that extracts images and converts them to base64 data URLs:
+
+```typescript
+ipcMain.handle('import-docx', async () => {
+    // ... file dialog code ...
+
+    const buffer = await fs.readFile(filePaths[0]);
+
+    // Configure mammoth to convert images to base64 data URLs
+    const options = {
+        convertImage: mammoth.images.imgElement(function(image: any) {
+            return image.read("base64").then(function(imageBuffer: string) {
+                return {
+                    src: "data:" + image.contentType + ";base64," + imageBuffer
+                };
+            });
+        })
+    };
+
+    const result = await mammoth.convertToHtml({ buffer }, options);
+
+    // Return both HTML and original filename
+    const originalFilename = path.basename(filePaths[0], '.docx');
+    return { html: result.value, filename: originalFilename };
+});
+```
+
+#### How It Works
+1. When mammoth.js encounters an embedded image in the DOCX file, it calls the `convertImage` function
+2. The function reads the image data as base64 using `image.read("base64")`
+3. It returns an object with `src` set to a data URL: `data:image/png;base64,...`
+4. Mammoth includes this as an `<img src="data:...">` tag in the HTML output
+5. Tiptap's `insertContent()` parses the HTML and creates image nodes
+6. The `ResizableImage` extension (with `allowBase64: true`) handles the base64 images
+
+#### Supported Formats
+- PNG (`image/png`)
+- JPEG (`image/jpeg`)
+- GIF (`image/gif`)
+
+Note: Windows-specific formats like WMF/EMF may not be supported and will be logged as warnings.
+
+#### Full Round-Trip Support
+Images now have complete round-trip support:
+1. **Import:** DOCX → base64 data URL → Tiptap image node
+2. **Edit:** Resize, crop, align in the editor
+3. **Export:** Tiptap image node → base64 buffer → DOCX ImageRun
+
+### DOCX Import as New File (2025-12-05)
+
+#### Problem
+Originally, importing a DOCX file would insert content into the currently open file, which was confusing and could overwrite existing work.
+
+#### Solution
+Updated the import flow to create a new markdown file in the workspace:
+
+**1. IPC Handler Returns Filename (`electron/main.ts`)**
+```typescript
+// Extract filename without extension
+const originalFilename = path.basename(filePaths[0], '.docx');
+
+return {
+    html: result.value,
+    filename: originalFilename
+};
+```
+
+**2. New `createFile` Function (`src/store/useFileSystem.ts`)**
+```typescript
+createFile: async (filename, content) => {
+    const { rootDir, openFiles } = get();
+    if (!rootDir) return null;
+
+    // Ensure .md extension
+    const finalFilename = filename.endsWith('.md') ? filename : `${filename}.md`;
+    let filePath = `${rootDir}/${finalFilename}`;
+
+    // Generate unique filename if file exists
+    let counter = 1;
+    let baseName = finalFilename.replace('.md', '');
+    while (fileExists(filePath)) {
+        filePath = `${rootDir}/${baseName} (${counter}).md`;
+        counter++;
+    }
+
+    // Write file, open in editor, refresh sidebar
+    await window.electronAPI.writeFile(filePath, content);
+    set({ openFiles: [...openFiles, newFile], activeFilePath: filePath, ... });
+    await get().loadDir(rootDir);
+
+    return filePath;
+}
+```
+
+**3. App.tsx Import Handler**
+```typescript
+if (action === 'import-docx') {
+    const result = await window.electronAPI.importDocx();
+    if (result) {
+        const { html, filename } = result;
+        const { rootDir, createFile } = useFileSystem.getState();
+
+        if (!rootDir) {
+            // No workspace - insert into current editor
+            window.dispatchEvent(new CustomEvent('editor:insert-content', { detail: html }));
+            return;
+        }
+
+        // Convert HTML to Markdown and create new file
+        const markdown = htmlToMarkdown(html);
+        await createFile(filename, markdown);
+    }
+}
+```
+
+#### New Import Flow
+1. User clicks File → Import DOCX...
+2. Selects a DOCX file (e.g., `Report.docx`)
+3. If workspace is open:
+   - Content converted to Markdown
+   - New file created: `Report.md`
+   - If file exists: `Report (1).md`, `Report (2).md`, etc.
+   - File opens in editor
+   - Sidebar updates to show new file
+4. If no workspace: Falls back to inserting into current editor
+
+### Async DOCX Export with Worker Thread (2025-12-05)
+
+#### Problem
+The original DOCX export ran synchronously on the main Electron process, which could block the UI for large documents with many elements or images.
+
+#### Solution
+Implemented a comprehensive async export system with:
+1. **Worker Thread** - DOCX generation runs in a separate thread
+2. **Progress Tracking** - Real-time progress updates during export
+3. **Progress UI** - Modal dialog showing export status
+
+#### Architecture
+
+**1. Worker Thread (`electron/docx-worker.ts`)**
+- Self-contained DOCX generation logic (all helpers inlined)
+- Sends progress messages to parent via `parentPort.postMessage()`
+- Reports progress every 10 nodes for responsive UI
+- Phases: "Processing document" → "Building document" → "Generating file"
+
+```typescript
+// Progress reporting
+function sendProgress(current: number, total: number, phase: string) {
+  parentPort?.postMessage({ type: 'progress', current, total, phase });
+}
+
+// Main loop with progress
+for (let i = 0; i < nodes.length; i++) {
+  // Process node...
+  if (i % 10 === 0 || i === nodes.length - 1) {
+    sendProgress(i + 1, total, 'Processing document');
+  }
+}
+```
+
+**2. Main Process Handler (`electron/main.ts`)**
+- Spawns worker with document content as `workerData`
+- Forwards progress messages to renderer via IPC
+- Handles completion and errors
+
+```typescript
+ipcMain.handle('export-docx', async (_, content) => {
+  const worker = new Worker(workerPath, { workerData: content });
+
+  worker.on('message', async (message) => {
+    if (message.type === 'progress') {
+      win?.webContents.send('docx-export-progress', message);
+    } else if (message.type === 'complete') {
+      await fs.writeFile(filePath, Buffer.from(message.buffer));
+      resolve({ success: true });
+    }
+  });
+});
+```
+
+**3. IPC Progress Channel (`electron/preload.ts`)**
+```typescript
+onDocxExportProgress: (callback) => {
+  const subscription = (_, progress) => callback(progress);
+  ipcRenderer.on('docx-export-progress', subscription);
+  return () => ipcRenderer.off('docx-export-progress', subscription);
+}
+```
+
+**4. Progress UI Component (`src/components/ExportProgress.tsx`)**
+- Modal overlay with progress bar
+- Shows current phase and element count
+- Auto-closes on success (1.5s delay)
+- Displays errors with close button
+- States: Loading → Progress → Complete/Error
+
+**5. Export Store (`src/store/useExportStore.ts`)**
+- Simple Zustand store tracking `isExporting` state
+- Triggers modal visibility
+
+#### File Changes
+
+| File | Purpose |
+|------|---------|
+| `electron/docx-worker.ts` | **NEW** - Worker thread with DOCX generation |
+| `electron/main.ts` | Updated export handler to use worker |
+| `electron/preload.ts` | Added `onDocxExportProgress` listener |
+| `src/components/ExportProgress.tsx` | **NEW** - Progress modal UI |
+| `src/store/useExportStore.ts` | **NEW** - Export state management |
+| `src/App.tsx` | Integrated progress modal |
+| `src/vite-env.d.ts` | Added TypeScript types for electron API |
+| `vite.config.ts` | Added worker to build entries |
+
+#### Benefits
+1. **Non-blocking** - UI remains responsive during export
+2. **Feedback** - Users see progress for large documents
+3. **Error handling** - Graceful error display with retry option
+4. **Scalability** - Can handle very large documents without freezing
 

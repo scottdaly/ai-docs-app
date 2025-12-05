@@ -143,7 +143,7 @@ export function createImageParagraph(node: TiptapNode): Paragraph {
     }
 
     // Determine file extension from MIME type
-    let fileExtension = 'png'; // Default
+    let fileExtension: "png" | "jpg" | "gif" | "bmp" = 'png'; // Default
     if (imageType === 'image/jpeg' || imageType === 'image/jpg') {
       fileExtension = 'jpg';
     } else if (imageType === 'image/png') {
@@ -158,7 +158,7 @@ export function createImageParagraph(node: TiptapNode): Paragraph {
     // Note: DOCX uses EMUs (English Metric Units) but the library handles conversion
     const imageRun = new ImageRun({
       data: imageBuffer,
-      type: fileExtension, // Specify image type for proper embedding
+      type: fileExtension,
       transformation: {
         width: widthPx,
         height: heightPx || widthPx, // Maintain aspect ratio if height not specified

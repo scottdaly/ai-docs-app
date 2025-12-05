@@ -9,7 +9,8 @@ import {
   AlignCenter,
   AlignRight,
   AlignJustify,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Minus
 } from 'lucide-react';
 import { BlockTypeDropdown } from './BlockTypeDropdown';
 import { FontFamilyDropdown } from './FontFamilyDropdown';
@@ -196,13 +197,20 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
 
       <div className="w-px h-4 bg-border mx-2" />
 
-      {/* Media */}
+      {/* Media & Insert */}
       <button
         onClick={addImage}
         className="p-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors text-muted-foreground"
         title="Insert Image"
       >
         <ImageIcon size={16} />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().setHorizontalRule().run()}
+        className="p-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors text-muted-foreground"
+        title="Insert Horizontal Rule"
+      >
+        <Minus size={16} />
       </button>
       <input
         type="file"

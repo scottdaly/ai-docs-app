@@ -61,7 +61,7 @@ export function createHeading(node: TiptapNode): Paragraph {
 
   // Map Tiptap level (1, 2, 3) to DOCX HeadingLevel and default sizes
   // These match the editor's default heading sizes from BlockTypeDropdown.tsx
-  let headingLevel: HeadingLevel;
+  let headingLevel: typeof HeadingLevel[keyof typeof HeadingLevel];
   let defaultSize: number; // in half-points
 
   switch (level) {

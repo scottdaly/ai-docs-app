@@ -20,7 +20,7 @@ export function TitleBar() {
   return (
     <div className="h-10 bg-background border-b flex items-center px-4 select-none draggable app-region-drag justify-center">
       <div className="text-xs text-muted-foreground font-medium">
-        Project Muse
+        Midlight
       </div>
     </div>
   );

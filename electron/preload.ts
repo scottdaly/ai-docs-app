@@ -22,6 +22,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
       const subscription = (_: any, theme: string) => callback(theme);
       ipcRenderer.on('update-theme', subscription);
       return () => ipcRenderer.off('update-theme', subscription);
+  },
+  onDocxExportProgress: (callback: (progress: { current?: number; total?: number; phase?: string; complete?: boolean; error?: string }) => void) => {
+      const subscription = (_: any, progress: any) => callback(progress);
+      ipcRenderer.on('docx-export-progress', subscription);
+      return () => ipcRenderer.off('docx-export-progress', subscription);
   }
 })
 

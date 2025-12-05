@@ -15,7 +15,7 @@ export default defineConfig(() => {
     react(),
     electron({
       main: {
-        entry: 'electron/main.ts',
+        entry: ['electron/main.ts', 'electron/docx-worker.ts'],
       },
       preload: {
         input: 'electron/preload.ts',

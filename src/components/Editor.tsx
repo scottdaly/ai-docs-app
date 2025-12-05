@@ -1,6 +1,5 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { Markdown } from 'tiptap-markdown';
 import TextAlign from '@tiptap/extension-text-align';
 import FontFamily from '@tiptap/extension-font-family';
 import { TextStyle } from '@tiptap/extension-text-style';
@@ -14,6 +13,7 @@ import { useEffect, useRef } from 'react';
 import { useFileSystem } from '../store/useFileSystem';
 import { EditorToolbar } from './EditorToolbar';
 import { ImageWrapMenu } from './ImageWrapMenu';
+import { htmlToMarkdown, markdownToHtml } from '../utils/markdown';
 
 export function Editor() {
   const { activeFilePath, fileContent, saveFile, setIsDirty } = useFileSystem();
@@ -50,15 +50,6 @@ export function Editor() {
           heading: {
               levels: [1, 2, 3],
           },
-      }),
-      Markdown.configure({
-        html: true,
-        tightLists: true,
-        bulletListMarker: '-',
-        linkify: false,
-        breaks: false,
-        transformCopiedText: false,
-        transformPastedText: false,
       }),
       TextAlign.configure({
         types: ['heading', 'paragraph'],
@@ -143,9 +134,10 @@ export function Editor() {
     
     
           saveTimeoutRef.current = setTimeout(() => {
-    
-            const markdown = editor.storage.markdown.getMarkdown();
-    
+
+            const html = editor.getHTML();
+            const markdown = htmlToMarkdown(html);
+
             saveFile(markdown);
     
           }, 1000);
@@ -173,18 +165,19 @@ export function Editor() {
     
     
             // We compare the editor's current markdown state vs the store's fileContent
-    
-    
-    
-            const currentContent = editor.storage.markdown.getMarkdown();
-    
-    
-    
-            if (currentContent !== fileContent) {
-    
-    
-    
-              editor.commands.setContent(fileContent);
+
+
+            const currentHtml = editor.getHTML();
+            const currentMarkdown = htmlToMarkdown(currentHtml);
+
+
+
+            if (currentMarkdown !== fileContent) {
+
+
+
+              const html = markdownToHtml(fileContent);
+              editor.commands.setContent(html);
     
     
     

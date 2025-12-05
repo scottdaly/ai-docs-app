@@ -8,6 +8,37 @@ import { TiptapNode, TiptapMark, TextStyleAttrs } from './types';
 import { pxToHalfPoints, extractFontName } from './converters';
 
 /**
+ * Converts any color format (hex, rgb, rgba) to 6-digit hex without # prefix
+ * Returns undefined if color is invalid or empty
+ */
+function normalizeColorToHex(color: string | undefined): string | undefined {
+  if (!color || color === '') {
+    return undefined;
+  }
+
+  // Already hex format
+  if (color.startsWith('#')) {
+    return color.replace('#', '');
+  }
+
+  // RGB format: rgb(r, g, b) or rgba(r, g, b, a)
+  const rgbMatch = color.match(/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+  if (rgbMatch) {
+    const r = parseInt(rgbMatch[1], 10);
+    const g = parseInt(rgbMatch[2], 10);
+    const b = parseInt(rgbMatch[3], 10);
+
+    // Convert to hex
+    const toHex = (n: number) => Math.max(0, Math.min(255, n)).toString(16).padStart(2, '0');
+    return `${toHex(r)}${toHex(g)}${toHex(b)}`;
+  }
+
+  // Unknown format, return undefined
+  console.warn(`[Text Processor] Unknown color format: ${color}`);
+  return undefined;
+}
+
+/**
  * Extracts textStyle mark attributes (fontSize, fontFamily) from marks array
  *
  * @param marks - Array of marks from Tiptap text node
@@ -87,15 +118,16 @@ export function createTextRun(node: TiptapNode, options?: { color?: string; defa
 
   // Handle colors
   // Priority: options.color (for headings) > textStyle.color (user-selected)
+  // Normalize to hex format (DOCX requires 6-digit hex without #)
   let textColor = options?.color;
   if (!textColor && textStyle.color) {
-    // Remove # prefix for Word
-    textColor = textStyle.color.replace('#', '');
+    textColor = normalizeColorToHex(textStyle.color);
   }
 
-  // Handle highlight color
+  // Handle highlight color - also needs normalization
   const highlightColor = highlightMark?.attrs?.color;
-  const docxHighlight = highlightColor ? hexToDocxHighlight(highlightColor) : undefined;
+  const normalizedHighlight = normalizeColorToHex(highlightColor);
+  const docxHighlight = normalizedHighlight ? hexToDocxHighlight('#' + normalizedHighlight) : undefined;
 
   return new TextRun({
     text: node.text || '',
@@ -106,7 +138,7 @@ export function createTextRun(node: TiptapNode, options?: { color?: string; defa
     font: font,
     size: fontSize,
     color: textColor,
-    highlight: docxHighlight,
+    highlight: docxHighlight as "none" | "black" | "blue" | "cyan" | "green" | "magenta" | "red" | "white" | "yellow" | "darkBlue" | "darkCyan" | "darkGray" | "darkGreen" | "darkMagenta" | "darkRed" | "darkYellow" | "lightGray" | undefined,
   });
 }
 

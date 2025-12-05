@@ -9,20 +9,21 @@ interface FileSystemState {
   activeFilePath: string | null;
   fileContent: string;
   isDirty: boolean;
-  
+
   setRootDir: (path: string) => void;
   setFiles: (files: FileNode[]) => void;
   setFileContent: (content: string) => void;
   setIsDirty: (dirty: boolean) => void;
-  
+
   loadDir: (path: string) => Promise<void>;
   loadSubDirectory: (path: string) => Promise<void>;
-  
+
   openFile: (file: FileNode) => Promise<void>;
   closeFile: (path: string) => void;
   selectFile: (path: string) => Promise<void>;
   saveFile: (content: string) => Promise<void>;
-  
+  createFile: (filename: string, content: string) => Promise<string | null>;
+
   restoreSession: () => Promise<void>;
 }
 
@@ -142,7 +143,7 @@ export const useFileSystem = create<FileSystemState>()(
       saveFile: async (content) => {
           const { activeFilePath } = get();
           if (!activeFilePath) return;
-          
+
           try {
               await window.electronAPI.writeFile(activeFilePath, content);
               set({ fileContent: content, isDirty: false });
@@ -150,7 +151,65 @@ export const useFileSystem = create<FileSystemState>()(
               console.error("Failed to save file", error);
           }
       },
-      
+
+      createFile: async (filename, content) => {
+          const { rootDir, openFiles } = get();
+          if (!rootDir) {
+              console.error("No workspace open");
+              return null;
+          }
+
+          // Ensure filename ends with .md
+          const finalFilename = filename.endsWith('.md') ? filename : `${filename}.md`;
+
+          // Build the full path (in root directory)
+          const separator = rootDir.includes('\\') ? '\\' : '/';
+          let filePath = `${rootDir}${separator}${finalFilename}`;
+
+          // Check if file already exists and generate unique name if needed
+          try {
+              let counter = 1;
+              let baseName = finalFilename.replace('.md', '');
+              while (true) {
+                  try {
+                      await window.electronAPI.readFile(filePath);
+                      // File exists, try next number
+                      filePath = `${rootDir}${separator}${baseName} (${counter}).md`;
+                      counter++;
+                  } catch {
+                      // File doesn't exist, we can use this path
+                      break;
+                  }
+              }
+
+              // Write the file
+              await window.electronAPI.writeFile(filePath, content);
+
+              // Create the file node
+              const newFile: FileNode = {
+                  name: filePath.split(separator).pop() || finalFilename,
+                  path: filePath,
+                  type: 'file'
+              };
+
+              // Add to open files and set as active
+              set({
+                  openFiles: [...openFiles, newFile],
+                  activeFilePath: filePath,
+                  fileContent: content,
+                  isDirty: false
+              });
+
+              // Refresh the file list
+              await get().loadDir(rootDir);
+
+              return filePath;
+          } catch (error) {
+              console.error("Failed to create file", error);
+              return null;
+          }
+      },
+
       restoreSession: async () => {
           const { rootDir, activeFilePath } = get();
           
@@ -175,7 +234,7 @@ export const useFileSystem = create<FileSystemState>()(
       }
     }),
     {
-      name: 'project-muse-storage',
+      name: 'midlight-storage',
       partialize: (state) => ({
         rootDir: state.rootDir,
         openFiles: state.openFiles,

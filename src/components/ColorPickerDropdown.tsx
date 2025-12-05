@@ -1,5 +1,4 @@
 import { Editor } from '@tiptap/react';
-import { Type } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { HexColorPicker } from 'react-colorful';
 

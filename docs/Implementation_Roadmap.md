@@ -1,10 +1,10 @@
-Here is a comprehensive Implementation Roadmap for **Project Muse**.
+Here is a comprehensive Implementation Roadmap for **Midlight**.
 
 This roadmap is designed to move from a "Hello World" Electron app to a production-ready MVP that fulfills the specific promises of the PRD: a local-first, AI-native editor with "Cursor-like" capabilities.
 
 ---
 
-# Project Muse: Implementation Roadmap
+# Midlight: Implementation Roadmap
 
 ## 0. Technical Architecture & Stack Selection
 
@@ -58,19 +58,19 @@ Before writing code, the foundation must be established to support high performa
 - \[x\] Create a Theme Provider using CSS variables.
 - \[x\] Implement Dark/Light mode toggle.
 - \[ \] **Robust Theme System:** Implement multiple theme choices (e.g., Light, Dark, Midnight, Sepia) with a dedicated Theme Picker UI.
-- \[ \] Create a "User Config" file (`.muse/config.json`) to persist theme preferences.
+- \[ \] Create a "User Config" file (`.midlight/config.json`) to persist theme preferences.
 
 ---
 
 ## Phase 2: The AI Core (The "Cursor" Translation)
 
-**Goal:** Integrate the LLM deep into the editor. This moves the app from "Obsidian clone" to "Project Muse."
+**Goal:** Integrate the LLM deep into the editor. This moves the app from "Obsidian clone" to "Midlight."
 
 ### 2.1 AI Infrastructure
 
 - \[ \] **API Handler:** Set up secure API calls to OpenAI/Anthropic.
 - \[ \] **Token Management:** Implement basic token counting to manage context windows.
-- \[ \] **Settings UI:** Allow users to input API keys (for testing) or authenticate via the Muse backend (for production/subscriptions).
+- \[ \] **Settings UI:** Allow users to input API keys (for testing) or authenticate via the Midlight backend (for production/subscriptions).
 
 ### 2.2 The "Context Engine" (Indexing)
 

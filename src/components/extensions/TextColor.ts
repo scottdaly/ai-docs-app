@@ -6,6 +6,15 @@
 
 import { Extension } from '@tiptap/core';
 
+declare module '@tiptap/core' {
+  interface Commands<ReturnType> {
+    textColor: {
+      setTextColor: (color: string) => ReturnType;
+      unsetTextColor: () => ReturnType;
+    };
+  }
+}
+
 export const TextColor = Extension.create({
   name: 'textColor',
 
@@ -22,8 +31,8 @@ export const TextColor = Extension.create({
         attributes: {
           color: {
             default: null,
-            parseHTML: element => element.style.color || null,
-            renderHTML: attributes => {
+            parseHTML: (element: HTMLElement) => element.style.color || null,
+            renderHTML: (attributes: Record<string, string>) => {
               if (!attributes.color) {
                 return {};
               }

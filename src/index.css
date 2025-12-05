@@ -220,6 +220,12 @@
   }
 }
 
+/* DISABLE PROSE BACKTICKS ON CODE ELEMENTS */
+.prose code::before,
+.prose code::after {
+  content: '' !important;
+}
+
 /* CUSTOM SELECTION STYLES - OUTSIDE LAYER FOR HIGHER SPECIFICITY */
 /* Balanced selection overlay that preserves text colors and highlights */
 .ProseMirror ::selection {
@@ -457,6 +463,26 @@
 .cyberpunk .prose pre {
     background-color: hsl(var(--secondary)) !important;
     color: hsl(var(--foreground)) !important;
+}
+
+/* Nested Ordered List Styles - Progressive numbering (1, a, i) */
+.prose ol {
+  list-style-type: decimal;
+}
+.prose ol ol {
+  list-style-type: lower-alpha;
+}
+.prose ol ol ol {
+  list-style-type: lower-roman;
+}
+.prose ol ol ol ol {
+  list-style-type: decimal;
+}
+.prose ol ol ol ol ol {
+  list-style-type: lower-alpha;
+}
+.prose ol ol ol ol ol ol {
+  list-style-type: lower-roman;
 }
 
 /* --- ReactCrop Overrides for "Google Docs" Style --- */

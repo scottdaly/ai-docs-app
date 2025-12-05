@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain, dialog, Menu, MenuItemConstructorOptions, 
 import path from 'node:path'
 import fs from 'node:fs/promises'
 import mammoth from 'mammoth'
-import { createDocx } from './docx-transformer'
+import { Worker } from 'worker_threads'
 
 // The built directory structure
 //
@@ -14,8 +14,17 @@ import { createDocx } from './docx-transformer'
 // │ ├─── main.js
 // │ └─── preload.js
 //
-process.env.DIST = path.join(__dirname, '../dist')
-process.env.VITE_PUBLIC = app.isPackaged ? process.env.DIST : path.join(__dirname, '../public')
+// When packaged, both dist and dist-electron are in the asar
+// In development, dist folder is at ../dist relative to dist-electron
+const DIST_PATH = app.isPackaged
+  ? path.join(app.getAppPath(), 'dist')
+  : path.join(__dirname, '../dist')
+
+process.env.DIST = DIST_PATH
+process.env.VITE_PUBLIC = app.isPackaged ? DIST_PATH : path.join(__dirname, '../public')
+
+// Set app name for menu bar
+app.setName('Midlight')
 
 
 let win: BrowserWindow | null
@@ -42,7 +51,6 @@ function createWindow() {
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL)
   } else {
-    // win.loadFile('dist/index.html')
     win.loadFile(path.join(process.env.DIST || '', 'index.html'))
   }
   
@@ -56,9 +64,9 @@ function createMenu(window: BrowserWindow) {
         // { role: 'appMenu' }
         ...(isMac
           ? [{
-              label: app.name,
+              label: 'Midlight',
               submenu: [
-                { role: 'about' },
+                { role: 'about', label: 'About Midlight' },
                 { type: 'separator' },
                 { label: 'Settings...', accelerator: 'CmdOrCtrl+,', click: () => window.webContents.send('menu-action', 'open-settings') },
                 { type: 'separator' },
@@ -236,8 +244,32 @@ ipcMain.handle('import-docx', async () => {
 
     try {
         const buffer = await fs.readFile(filePaths[0]);
-        const result = await mammoth.convertToHtml({ buffer });
-        return result.value;
+
+        // Configure mammoth to convert images to base64 data URLs
+        const options = {
+            convertImage: mammoth.images.imgElement(function(image: any) {
+                return image.read("base64").then(function(imageBuffer: string) {
+                    return {
+                        src: "data:" + image.contentType + ";base64," + imageBuffer
+                    };
+                });
+            })
+        };
+
+        const result = await mammoth.convertToHtml({ buffer }, options);
+
+        // Log any conversion messages (warnings about unsupported features)
+        if (result.messages.length > 0) {
+            console.log('DOCX import messages:', result.messages);
+        }
+
+        // Extract filename without extension from the original path
+        const originalFilename = path.basename(filePaths[0], '.docx');
+
+        return {
+            html: result.value,
+            filename: originalFilename
+        };
     } catch (error) {
         console.error('Failed to import DOCX:', error);
         throw error;
@@ -273,16 +305,47 @@ ipcMain.handle('export-docx', async (_, content: any) => {
     const { canceled, filePath } = await dialog.showSaveDialog(win!, {
         filters: [{ name: 'Word Document', extensions: ['docx'] }]
     });
-    if (canceled || !filePath) return;
+    if (canceled || !filePath) return { success: false, canceled: true };
 
-    try {
-        const buffer = await createDocx(content);
-        await fs.writeFile(filePath, buffer);
-        return true;
-    } catch (error) {
-        console.error('Failed to export DOCX:', error);
-        throw error;
-    }
+    return new Promise((resolve, reject) => {
+        // Create worker for DOCX generation
+        const workerPath = path.join(__dirname, 'docx-worker.js');
+        const worker = new Worker(workerPath, { workerData: content });
+
+        worker.on('message', async (message: any) => {
+            if (message.type === 'progress') {
+                // Send progress to renderer
+                win?.webContents.send('docx-export-progress', {
+                    current: message.current,
+                    total: message.total,
+                    phase: message.phase,
+                });
+            } else if (message.type === 'complete') {
+                try {
+                    await fs.writeFile(filePath, Buffer.from(message.buffer));
+                    win?.webContents.send('docx-export-progress', { complete: true });
+                    resolve({ success: true, filePath });
+                } catch (error) {
+                    console.error('Failed to write DOCX file:', error);
+                    win?.webContents.send('docx-export-progress', { error: String(error) });
+                    reject(error);
+                } finally {
+                    worker.terminate();
+                }
+            } else if (message.type === 'error') {
+                console.error('DOCX worker error:', message.error);
+                win?.webContents.send('docx-export-progress', { error: message.error });
+                worker.terminate();
+                reject(new Error(message.error));
+            }
+        });
+
+        worker.on('error', (error) => {
+            console.error('Worker error:', error);
+            win?.webContents.send('docx-export-progress', { error: String(error) });
+            reject(error);
+        });
+    });
 });
 
 
