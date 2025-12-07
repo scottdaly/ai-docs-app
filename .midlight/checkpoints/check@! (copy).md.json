@@ -1,0 +1,20 @@
+{
+  "fileKey": "check@! (copy).md",
+  "headId": "cp-5qtsup",
+  "checkpoints": [
+    {
+      "id": "cp-5qtsup",
+      "contentHash": "c415a2911467b85ed060bf2dda0f7973000fc624038ebdba88c6fbd2dee9456a",
+      "sidecarHash": "d57584865ae4b419a556b95a0bc16437294e325c4e500beaed0ede3e56a052d6",
+      "timestamp": "2025-12-06T21:15:57.129Z",
+      "parentId": null,
+      "type": "auto",
+      "stats": {
+        "wordCount": 10,
+        "charCount": 92,
+        "changeSize": 92
+      },
+      "trigger": "interval"
+    }
+  ]
+}

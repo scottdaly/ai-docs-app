@@ -1,0 +1,683 @@
+{
+  "version": 1,
+  "meta": {
+    "created": "2025-12-06T02:43:51.189Z",
+    "modified": "2025-12-06T02:43:51.189Z",
+    "wordCount": 1714,
+    "readingTime": 9,
+    "title": "File Saving & Version Control: Current Architecture Analysis"
+  },
+  "document": {},
+  "blocks": {},
+  "spans": {
+    "p-vw7a5a": [
+      {
+        "start": 0,
+        "end": 14,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-jbv0mx": [
+      {
+        "start": 0,
+        "end": 20,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-5k0wuo": [
+      {
+        "start": 29,
+        "end": 67,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-spu0f8": [
+      {
+        "start": 0,
+        "end": 19,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-pj9yol": [
+      {
+        "start": 0,
+        "end": 14,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      },
+      {
+        "start": 15,
+        "end": 37,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      }
+    ],
+    "p-zfjpda": [
+      {
+        "start": 0,
+        "end": 18,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-da0ukj": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      },
+      {
+        "start": 6,
+        "end": 33,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      }
+    ],
+    "p-vy727m": [
+      {
+        "start": 0,
+        "end": 15,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-j0brzz": [
+      {
+        "start": 66,
+        "end": 79,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 124,
+        "end": 138,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 179,
+        "end": 196,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 232,
+        "end": 257,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 295,
+        "end": 311,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      }
+    ],
+    "p-pzaylr": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      },
+      {
+        "start": 6,
+        "end": 23,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      }
+    ],
+    "p-0e2ufb": [
+      {
+        "start": 78,
+        "end": 87,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 132,
+        "end": 142,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 188,
+        "end": 196,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 246,
+        "end": 259,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 303,
+        "end": 314,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 338,
+        "end": 346,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-dpq62l": [
+      {
+        "start": 0,
+        "end": 15,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      },
+      {
+        "start": 16,
+        "end": 36,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      }
+    ],
+    "p-c85ozk": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      },
+      {
+        "start": 6,
+        "end": 32,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      }
+    ],
+    "p-lhhs9y": [
+      {
+        "start": 0,
+        "end": 13,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-9umtrj": [
+      {
+        "start": 0,
+        "end": 16,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-phb5z6": [
+      {
+        "start": 0,
+        "end": 8,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-o617hd": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      },
+      {
+        "start": 6,
+        "end": 33,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      }
+    ],
+    "p-fmhrpu": [
+      {
+        "start": 0,
+        "end": 16,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      },
+      {
+        "start": 59,
+        "end": 66,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 100,
+        "end": 109,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 140,
+        "end": 154,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      }
+    ],
+    "p-g195nw": [
+      {
+        "start": 0,
+        "end": 14,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-p2b215": [
+      {
+        "start": 0,
+        "end": 14,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      },
+      {
+        "start": 15,
+        "end": 42,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      }
+    ],
+    "p-mimgmo": [
+      {
+        "start": 0,
+        "end": 18,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-v40bzl": [
+      {
+        "start": 0,
+        "end": 14,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      },
+      {
+        "start": 26,
+        "end": 36,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-vkpjd8": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-wzzcfa": [
+      {
+        "start": 0,
+        "end": 14,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-usz57l": [
+      {
+        "start": 0,
+        "end": 7,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-nmtedo": [
+      {
+        "start": 0,
+        "end": 14,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-tgguxh": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-a05ug8": [
+      {
+        "start": 0,
+        "end": 14,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-s3sjay": [
+      {
+        "start": 0,
+        "end": 14,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-72fm2d": [
+      {
+        "start": 0,
+        "end": 9,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-9tcmy0": [
+      {
+        "start": 0,
+        "end": 26,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-u3u26z": [
+      {
+        "start": 0,
+        "end": 31,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-cmewke": [
+      {
+        "start": 0,
+        "end": 25,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-befwee": [
+      {
+        "start": 0,
+        "end": 12,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      },
+      {
+        "start": 17,
+        "end": 25,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      }
+    ],
+    "p-imj55k": [
+      {
+        "start": 0,
+        "end": 12,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      },
+      {
+        "start": 17,
+        "end": 21,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 25,
+        "end": 31,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      }
+    ],
+    "p-osvox0": [
+      {
+        "start": 96,
+        "end": 121,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 149,
+        "end": 175,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 204,
+        "end": 220,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 252,
+        "end": 271,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 304,
+        "end": 325,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 360,
+        "end": 386,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      }
+    ],
+    "p-exf1y7": [
+      {
+        "start": 0,
+        "end": 28,
+        "marks": [
+          {
+            "type": "italic"
+          }
+        ]
+      },
+      {
+        "start": 29,
+        "end": 89,
+        "marks": [
+          {
+            "type": "italic"
+          }
+        ]
+      }
+    ]
+  },
+  "images": {}
+}

@@ -1,0 +1,20 @@
+{
+  "fileKey": "release/latest-mac.yml",
+  "headId": "cp-sxo2m4",
+  "checkpoints": [
+    {
+      "id": "cp-sxo2m4",
+      "contentHash": "7829c54c93560319047cb0135a8eb8194f276a18165841ee5a0f82667d65e558",
+      "sidecarHash": "de332f21ce5ee5e88ba2c50d52cff0b3bb554a5d94d338413e5aff3bc3537440",
+      "timestamp": "2025-12-06T22:15:29.355Z",
+      "parentId": null,
+      "type": "auto",
+      "stats": {
+        "wordCount": 26,
+        "charCount": 531,
+        "changeSize": 531
+      },
+      "trigger": "interval"
+    }
+  ]
+}

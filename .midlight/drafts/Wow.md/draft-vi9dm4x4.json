@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "draft": {
+    "id": "draft-vi9dm4x4",
+    "name": "Test",
+    "fileKey": "Wow.md",
+    "sourceCheckpointId": "cp-lxyxvq",
+    "headId": "dcp-8b2fwr",
+    "checkpoints": [
+      {
+        "id": "dcp-n8v1jk",
+        "contentHash": "d7d0b48efb64c75e221720eea93ccc63e034e3f7b3fc3f7fb99cc32b81687f36",
+        "sidecarHash": "f816f6399bbc066880a55f6887fc9f472fd1b979dc56a40c0102fdfa2bbcb719",
+        "timestamp": "2025-12-07T01:03:34.484Z",
+        "parentId": null,
+        "type": "auto",
+        "label": "Draft created",
+        "stats": {
+          "wordCount": 7,
+          "charCount": 39,
+          "changeSize": 0
+        },
+        "trigger": "draft_create"
+      },
+      {
+        "id": "dcp-8b2fwr",
+        "contentHash": "3fd469f4bf037e5632147ecc59fcb39e348ba7b5e6cda37a08c34e5b75813f91",
+        "sidecarHash": "5d72c1f0feeb7cab70aaf2eff8c5201c9a55b7e0ab3e731e9a48fddaae92db09",
+        "timestamp": "2025-12-07T01:03:35.523Z",
+        "parentId": "dcp-n8v1jk",
+        "type": "auto",
+        "stats": {
+          "wordCount": 10,
+          "charCount": 62,
+          "changeSize": 23
+        },
+        "trigger": "auto"
+      }
+    ],
+    "created": "2025-12-07T01:03:34.484Z",
+    "modified": "2025-12-07T01:03:35.523Z",
+    "status": "active"
+  }
+}

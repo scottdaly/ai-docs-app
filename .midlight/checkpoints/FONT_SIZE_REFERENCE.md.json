@@ -1,0 +1,706 @@
+{
+  "fileKey": "FONT_SIZE_REFERENCE.md",
+  "headId": "cp-nq8xa8",
+  "checkpoints": [
+    {
+      "id": "cp-r26jak",
+      "contentHash": "de7c0b66e1cbef9226ae08c3bb9245aa96eeaeb0bdde3a63ec955e3bba7879a9",
+      "sidecarHash": "4f175d2c9c0e58f4c9006b3f9a78eba02e95c092adbed40f9b1cee1daa555388",
+      "timestamp": "2025-12-06T17:07:34.079Z",
+      "parentId": "cp-oyrye7",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-jeyxn2",
+      "contentHash": "cbaa8e33d2365b243459c9121e2f70a5189761bb9899d7f212227ff1309916b1",
+      "sidecarHash": "16c7fccf15a0bfc18d317f464c9fc199194d24998087257e7f0a24b2c95658ca",
+      "timestamp": "2025-12-06T17:07:51.661Z",
+      "parentId": "cp-r26jak",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-yamjnv",
+      "contentHash": "8a91bb515a674795123bf0141233248ea8f1c45d099e8b6b8ecb3ac058563557",
+      "sidecarHash": "f1d96005d382f2ef0966e334bd516c01bc62b2949c465d16a793edcf56cdcccd",
+      "timestamp": "2025-12-06T17:07:56.246Z",
+      "parentId": "cp-jeyxn2",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-xv6ms0",
+      "contentHash": "76eb4d2c9d45f0c0b51c123504169f3f0af7fd817c327b9f4c820f58f45cb48a",
+      "sidecarHash": "324de06a71b189e8ec94db4d764e7d0246c883fe44dbd46f6120115711d2af15",
+      "timestamp": "2025-12-06T17:08:01.475Z",
+      "parentId": "cp-yamjnv",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-3czc5k",
+      "contentHash": "46986e0c1cb7c9e78d1f723338372d9e3a2e153961a2cf4be8bbcc5e72a946e0",
+      "sidecarHash": "9edd547eb64577a9b81f09d6ef22705370ef007589134d867762e32fbceac3f2",
+      "timestamp": "2025-12-06T17:08:08.104Z",
+      "parentId": "cp-xv6ms0",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-u70pn8",
+      "contentHash": "cb6a28e9b1cd44fa55081b52bb40b96a410fa09dd244a91ae15eae9ec5f5f866",
+      "sidecarHash": "42bd14bc1c5b7e0fdfcb78f39f2a797cd36d3a501a90c4e45aeab7f45c3fd3df",
+      "timestamp": "2025-12-06T17:08:13.098Z",
+      "parentId": "cp-3czc5k",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-14v72u",
+      "contentHash": "b27595923cb03d4f2538608ab3fffda1b8ea47cfba1ddc0356f01aee7a6266d7",
+      "sidecarHash": "418f94122992f954225e4fdb922a7075f5da22a87b37ef63b40bb9da5732a13e",
+      "timestamp": "2025-12-06T17:08:41.971Z",
+      "parentId": "cp-u70pn8",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-kai028",
+      "contentHash": "8de9e11bf377e30d208df3f3a509c38fc1eb5bcb8ff788698bf37b33edbebd91",
+      "sidecarHash": "880a190568049af6d8eec2404660b4143f379b2c2cd317811af24e0e941a62ec",
+      "timestamp": "2025-12-06T17:08:57.047Z",
+      "parentId": "cp-14v72u",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-wr7e44",
+      "contentHash": "2c47fbeec8971041b2d44fb3af99e8ae9ff74e029e75dfe4e062c019ae2dc0a5",
+      "sidecarHash": "66cddb27f9c8c1f14eb78cff0900c855b3b50051a9fac223d6b815ea468b7e08",
+      "timestamp": "2025-12-06T17:09:20.287Z",
+      "parentId": "cp-kai028",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-d2w6ck",
+      "contentHash": "dc485f923e16fa28d590909983843de78c78dc021781422b9e8ac7506be0a446",
+      "sidecarHash": "defe8309e269c3f08905108da2884f843e3fcfc75686bb74387f222a92695a3c",
+      "timestamp": "2025-12-06T17:27:36.209Z",
+      "parentId": "cp-wr7e44",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-0zfzfy",
+      "contentHash": "0b2b5d5a5cd5a6bbe9695b6e36dec2a6a72688a0c8ad8b8948e8a7afa80d41b8",
+      "sidecarHash": "11587a6e4be2065eb88a5115391614d1a27397d3dee5ec6c1b303329cce656fb",
+      "timestamp": "2025-12-06T21:33:33.078Z",
+      "parentId": "cp-d2w6ck",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-k6sg3a",
+      "contentHash": "2329297b7384a824c85c4bb007d4ba5b00d683831a38ace329d7210ae2519233",
+      "sidecarHash": "f14871f78d558f2235b25774babd6aee1673dea787051bb05c0c4a997c586257",
+      "timestamp": "2025-12-06T22:15:18.843Z",
+      "parentId": "cp-0zfzfy",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-qm8mvb",
+      "contentHash": "a187b7f5e2c81f38fed2542d39df864175490548a02e46834f9fc5e8035db0cf",
+      "sidecarHash": "937d72cc5b7aa0b8e484e80fe8236f251324542c46f94ef8dec125e7d2f8830c",
+      "timestamp": "2025-12-06T23:05:36.296Z",
+      "parentId": "cp-k6sg3a",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-0zpk03",
+      "contentHash": "06e988330134449d846cc44aeab80caed235a90ec4f8eb090246dec01f5e4531",
+      "sidecarHash": "32821ffd0ac779a4ab244917040ecbe5d5b742ce4d7c62ca86f2f74d439c759d",
+      "timestamp": "2025-12-06T23:11:03.674Z",
+      "parentId": "cp-qm8mvb",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-rpmzcb",
+      "contentHash": "c5de25881672bbed8bd578b4234a65657c0e38a75d8b978e8e1eb5fe2f5bff9c",
+      "sidecarHash": "e2c4d1f62cbd7ebed2f41784f7d9f1bfc9ddb830bd6fd4262105d6be46603015",
+      "timestamp": "2025-12-06T23:11:08.690Z",
+      "parentId": "cp-0zpk03",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-wq8jpn",
+      "contentHash": "d90808932ea81decb993e87b946f57d696c07093ccf57ddd61e776f5dfe5ccba",
+      "sidecarHash": "697f799089cf2610ba2c9625096673f08b7c5ec8eeba6fbaa61cae880e206f33",
+      "timestamp": "2025-12-06T23:11:30.160Z",
+      "parentId": "cp-rpmzcb",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-wrlbiq",
+      "contentHash": "34cdfc3bbccebe689bb5bb6e2705294810553c07c949f3fa961cd1fba40be2f4",
+      "sidecarHash": "1d25f1f0117e73980a69b1994632e42ca478e278cc34ff4cd6178f7db1919d58",
+      "timestamp": "2025-12-06T23:11:44.912Z",
+      "parentId": "cp-wq8jpn",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-jcsnxn",
+      "contentHash": "92280d121b3b9460b75fce6fbf87e79a0b39859361e3c9d71e197b74f6c8660e",
+      "sidecarHash": "f83065104fa5e9d9cc4c606cab199dc2fd2ec38bcb56962417b4dfb453d2dfa8",
+      "timestamp": "2025-12-06T23:12:53.660Z",
+      "parentId": "cp-wrlbiq",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-l79yoc",
+      "contentHash": "e5bdd78996360a7bd689be5d7f55500a2aea203b581b43398a002877743cc7e0",
+      "sidecarHash": "a8bcd39948eb575aa142f804e697a9bab714b546f29804ae1ef783c069fbdbf5",
+      "timestamp": "2025-12-06T23:12:57.958Z",
+      "parentId": "cp-jcsnxn",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-v91j9c",
+      "contentHash": "3c29a33b4d730be9f8c833a5609e3022a7bcbda9181dd09c20cb5d0832992015",
+      "sidecarHash": "596afa76ca27e11f70cdef2537eb807f4b68d25caf2ee0f2a164ff782eab012a",
+      "timestamp": "2025-12-06T23:29:49.189Z",
+      "parentId": "cp-l79yoc",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-cx3vzp",
+      "contentHash": "af8c32c76c4281b0b9d5fb9b61e2e6410fbb0aa6e31576ed8065c0a11841fb15",
+      "sidecarHash": "775b89c74830195bcfb1beec248e011a96e1ea6e442b3665fd0aa8a1c4e5db62",
+      "timestamp": "2025-12-06T23:29:59.396Z",
+      "parentId": "cp-v91j9c",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-83bmgk",
+      "contentHash": "e8e0df54641f3a6a2ae13f6e1f1de8bd1bb8c6ee165d36d1aaa5fbaa12250cd5",
+      "sidecarHash": "45a0d1873cc6c151f3736effc9491846df8c17b1ea494875fedae0b5fd17b679",
+      "timestamp": "2025-12-06T23:30:06.859Z",
+      "parentId": "cp-cx3vzp",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-3qz373",
+      "contentHash": "324639a5232e0e647b82141f59c8e38d8ba7f3c49e6c5f4f4f14612e10ebd5ca",
+      "sidecarHash": "ebff1ac47c7ebc51751ed9543509edda1caf70dbfc1b941be8e96fca0e0ba730",
+      "timestamp": "2025-12-06T23:30:22.882Z",
+      "parentId": "cp-83bmgk",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-08q1hm",
+      "contentHash": "8d0e584775dea766ccb8e692051528b80db2d937a7ff3e7a771fa0e9ec56d58e",
+      "sidecarHash": "334b9f3b45c0dd39a22d517b19c0e163ba7a9921e5ba28f656f727538bc403bd",
+      "timestamp": "2025-12-06T23:30:37.636Z",
+      "parentId": "cp-3qz373",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-81z4v1",
+      "contentHash": "e4b0912160290d9677dd2b13063e42fba659281b40d01a60809eaf806d7f5e45",
+      "sidecarHash": "3c69b2cb17251ea1a2d8e30706bf85c9a2c633a13ab677177f631d388129907b",
+      "timestamp": "2025-12-06T23:30:44.507Z",
+      "parentId": "cp-08q1hm",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-5duxtn",
+      "contentHash": "1dd278994a71a6e4bdcd45e6c5cfbfa94e71ebf1b1dd223a318aeba741ba1f14",
+      "sidecarHash": "e4882692b8c2d8bd8616c868e4f04614584b9bd66b478a227e5b888096a6fd39",
+      "timestamp": "2025-12-06T23:30:49.953Z",
+      "parentId": "cp-81z4v1",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-d4upbv",
+      "contentHash": "c2a4f95d19b21e1143d2bb9295bfe7109187fa0abc04285ab9651d8840aecfff",
+      "sidecarHash": "16caae0f75d936ebe3fdaba9df59aa7b15b4630427ee80d940fbade2fd8cf43c",
+      "timestamp": "2025-12-06T23:30:59.448Z",
+      "parentId": "cp-5duxtn",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-9olef3",
+      "contentHash": "a08ad67e16fa3a0ba2ec202bdcdd3514aea23e0a2bf9bd7581cd13e2602a21db",
+      "sidecarHash": "5e05cb21e0f9816e2d777baaedd9acc560698fdffca4cb70341f8bee4007e35d",
+      "timestamp": "2025-12-06T23:31:22.841Z",
+      "parentId": "cp-d4upbv",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-qa72i5",
+      "contentHash": "8f555446124fe6b6bfae7db79ce5904b16826cfc9af9b797003ecbaff3e481fe",
+      "sidecarHash": "88c874f797212485328994500b1989ef9b1447db734c3f1da617330a26536204",
+      "timestamp": "2025-12-06T23:31:49.237Z",
+      "parentId": "cp-9olef3",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-10il1d",
+      "contentHash": "453ab1e6541f51ac95063d02cf3024854f0575592d0cfa35409fcda12bcf0ae5",
+      "sidecarHash": "8fc452967c08249aa3612aa45ddfa739e8a9635dd4a5001164ef627e403aaf8c",
+      "timestamp": "2025-12-06T23:31:58.349Z",
+      "parentId": "cp-qa72i5",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-2z1f9r",
+      "contentHash": "e5d5c48d3bb1ccde308c188f86a84b58b48a6c0ae832d7e5b8a5cc46eb2d24a4",
+      "sidecarHash": "3a72465e34f4c960bc579b50b7bb8b83a8e9535edd876b41bebce8b8eec0f740",
+      "timestamp": "2025-12-06T23:32:10.048Z",
+      "parentId": "cp-10il1d",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-6wfebe",
+      "contentHash": "cafc87afb82371d17a9ea1a7de37489ac9f9aa1502461f3380d11623e630eb2d",
+      "sidecarHash": "663fd09ebe5c5d166d9be82e9bd2482b2ae901f8c3e2893247c3559eebcc8f0e",
+      "timestamp": "2025-12-06T23:32:14.939Z",
+      "parentId": "cp-2z1f9r",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-5f07uy",
+      "contentHash": "44ac42608d5647510c223c0bf9df53558ff866e8676b58aff51cc3f2ff806ec5",
+      "sidecarHash": "564734527b23271bf6c1801e85257ed1639706b922778781de894f743fc74368",
+      "timestamp": "2025-12-06T23:32:24.337Z",
+      "parentId": "cp-6wfebe",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-ygddl7",
+      "contentHash": "16253d5dd307ed7c7eec5556b899bcc062b73d430261523bb96da26901bcfe8e",
+      "sidecarHash": "a878988d14e64eb8210fdbf229f24922eb43bacb9e4611b824dc5916f198c1b4",
+      "timestamp": "2025-12-06T23:32:29.505Z",
+      "parentId": "cp-5f07uy",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-e0oyob",
+      "contentHash": "cebe9494c067fe88bf4e39afddf58649b1888734903e58d6d0695223c865d463",
+      "sidecarHash": "a3f17e2d17a4c061236d2f852c23913e844aac15f2b32c74cb84aac61e43e2e4",
+      "timestamp": "2025-12-06T23:32:48.490Z",
+      "parentId": "cp-ygddl7",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-j0v2pc",
+      "contentHash": "912a50ef81d4e5bacb4fe7e011b89d57e41a773e3567eb611c11de765a883ca2",
+      "sidecarHash": "508801aaf0a0c475ed1af8f82692093a3209cc6ccdf00e306767cbda6a0bd1a0",
+      "timestamp": "2025-12-06T23:32:53.614Z",
+      "parentId": "cp-e0oyob",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-0893f9",
+      "contentHash": "cae2e7c67e88abcbebfd7f1a5e288320683665101ac56eab817e6c6ceafe8a03",
+      "sidecarHash": "44694daefb00051875e213372f8ea7ffc363d875b27211e9a78853434dc08593",
+      "timestamp": "2025-12-06T23:33:03.751Z",
+      "parentId": "cp-j0v2pc",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-8740cj",
+      "contentHash": "ab9f8c5b1ef740eaa58e5a0f33fcccf6efb360b32ef8d835ca8032917199d439",
+      "sidecarHash": "f0078dba27a351380e2f9b45e43cacb1b97d121d168451e5892b9aae62feefd5",
+      "timestamp": "2025-12-06T23:33:13.391Z",
+      "parentId": "cp-0893f9",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-l355bd",
+      "contentHash": "4813db8246f6ecacea76a409306d9840edac39c3093ca989091c53907ef4b6b0",
+      "sidecarHash": "4aa4cd9b7eebe6208b1563b41a5fa7bcace65f2d8cedca94450738643ad99bdb",
+      "timestamp": "2025-12-06T23:33:34.231Z",
+      "parentId": "cp-8740cj",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-uz9zc4",
+      "contentHash": "a7e8a6b1bdfcc029ad7329a2ee7bbd834d6e0da257a9fcea36dfa0c7c01bc889",
+      "sidecarHash": "e3d58afad79da872f91ebc72dfec8c4e828e3d81985d2e2d68446561df62efd9",
+      "timestamp": "2025-12-06T23:33:38.245Z",
+      "parentId": "cp-l355bd",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-dw07r1",
+      "contentHash": "5115a23d11726480064bcec1c3e31e7648e55a9e1c49113e083786834275fb26",
+      "sidecarHash": "6e1f6c47fa12aa67c5cc8dcf2ee232716060fcd51558e5bdc34e692c7d8f0012",
+      "timestamp": "2025-12-06T23:33:51.271Z",
+      "parentId": "cp-uz9zc4",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-5k6i8o",
+      "contentHash": "7f7ae850706231d29c291fd740e31c03333130c75bc41e81b7b43c69dcce4235",
+      "sidecarHash": "65aef56f2f20aa3b2bac3cd7de6c0fa78e34bb366ba9ae8099759856e819216c",
+      "timestamp": "2025-12-07T00:07:39.842Z",
+      "parentId": "cp-dw07r1",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-9euslg",
+      "contentHash": "1ef1ff70033d281ca6b8b5279498566340bcc0473f82792d90b0ef3fa1d0d22d",
+      "sidecarHash": "18b92bc55cad55bc14f1ce73c5d6529a67e277d81a22d18345d92f635f9bb29f",
+      "timestamp": "2025-12-07T00:08:02.306Z",
+      "parentId": "cp-5k6i8o",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-fr4arm",
+      "contentHash": "1bdff0fe16c1b9cd585fe41d47de47e0a7032c39069f538d8b6e390c7a7f45be",
+      "sidecarHash": "950551e1f1d6338b9bedf76802bdc19577a8afd2c9967eba785f8bcd7975607b",
+      "timestamp": "2025-12-07T00:08:12.628Z",
+      "parentId": "cp-9euslg",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-g6zezw",
+      "contentHash": "84c14fbf521bb2f6b8155536589321de025f97e511ff7cd09a66008973c33c9c",
+      "sidecarHash": "4d5208707f39ab85962aca8405ebb509d50c672efcff79854a8377b5f4add7e6",
+      "timestamp": "2025-12-07T00:08:28.822Z",
+      "parentId": "cp-fr4arm",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-glrgxu",
+      "contentHash": "f0e57263d294bfcf9754ac1dd964efeddf9ea039c8f6d53676ac842240fbe086",
+      "sidecarHash": "3961302c69f9b9f0c4852a8aaed258853aa942c52fc80674ce13fef8173d709c",
+      "timestamp": "2025-12-07T00:08:40.769Z",
+      "parentId": "cp-g6zezw",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-3t11z2",
+      "contentHash": "a6509bcc2f08965aa831258edfc68577477899730ecfe3b7e6f975291a1f5c18",
+      "sidecarHash": "86ae1ec66f267071107621073eaf237dcf142def6824e57472f6a9a6359afec3",
+      "timestamp": "2025-12-07T01:02:56.369Z",
+      "parentId": "cp-glrgxu",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-qdraoh",
+      "contentHash": "55a50170bf415208f5c0cd928ea3e0fc362401bbad3e34986c607ad3c94081c1",
+      "sidecarHash": "aacd31acddebc7bf651e9d3a8f8dedfeeee3cc2a56e8ad7df4208ecb6f9a54e2",
+      "timestamp": "2025-12-07T01:12:33.925Z",
+      "parentId": "cp-3t11z2",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-typ7hi",
+      "contentHash": "5aab07f4060404edef5c1dbc941e4b6693a005d2d2d54006a09430760818e746",
+      "sidecarHash": "b9e11bdf4495bd969b3fdd686fa02254ad471e3c90869c38183b8884167a771c",
+      "timestamp": "2025-12-07T02:46:39.902Z",
+      "parentId": "cp-qdraoh",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-nq8xa8",
+      "contentHash": "a3a1f48554af955fa00279af9047afc547cbf1ced4c1530782dbd0c860594308",
+      "sidecarHash": "b2138041b89370f0c0ed57296b9de45b242ce6c74e991576ae45a45cdf7325b9",
+      "timestamp": "2025-12-07T03:24:20.391Z",
+      "parentId": "cp-typ7hi",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    }
+  ]
+}

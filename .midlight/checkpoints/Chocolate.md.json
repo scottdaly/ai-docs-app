@@ -1,0 +1,48 @@
+{
+  "fileKey": "Chocolate.md",
+  "headId": "cp-yyc786",
+  "checkpoints": [
+    {
+      "id": "cp-ghnk1o",
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sidecarHash": "37e7be0797f811ae44a9e13ec837cc09aa74d163d744bcf98163b01633ca446e",
+      "timestamp": "2025-12-06T19:39:48.359Z",
+      "parentId": null,
+      "type": "auto",
+      "stats": {
+        "wordCount": 0,
+        "charCount": 0,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-jjarfb",
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sidecarHash": "80350cdd6f66e317a6f4db6ff98b2cb494e80cfb5273f1e7dba378c53fdef989",
+      "timestamp": "2025-12-06T20:44:17.230Z",
+      "parentId": "cp-ghnk1o",
+      "type": "auto",
+      "stats": {
+        "wordCount": 0,
+        "charCount": 0,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-yyc786",
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sidecarHash": "f236d688f2bb1bf24e78963f538896ea301b9b2dc76e03c7a8d493b15e22f59b",
+      "timestamp": "2025-12-06T21:15:22.539Z",
+      "parentId": "cp-jjarfb",
+      "type": "auto",
+      "stats": {
+        "wordCount": 0,
+        "charCount": 0,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    }
+  ]
+}

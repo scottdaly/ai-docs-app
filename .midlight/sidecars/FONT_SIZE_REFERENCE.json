@@ -1,0 +1,302 @@
+{
+  "version": 1,
+  "meta": {
+    "created": "2025-12-06T02:26:31.031Z",
+    "modified": "2025-12-07T03:24:20.380Z",
+    "wordCount": 371,
+    "readingTime": 2,
+    "title": "Font Size Reference: Editor vs Word"
+  },
+  "document": {},
+  "blocks": {
+    "img-exluwf": {
+      "width": "100%",
+      "height": "auto"
+    }
+  },
+  "spans": {
+    "p-1s9sab": [
+      {
+        "start": 0,
+        "end": 23,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      },
+      {
+        "start": 23,
+        "end": 43,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-u8ptfm": [
+      {
+        "start": 0,
+        "end": 13,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 13,
+        "end": 20,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 20,
+        "end": 29,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      }
+    ],
+    "p-6fvufp": [
+      {
+        "start": 0,
+        "end": 1,
+        "marks": [
+          {
+            "type": "italic"
+          }
+        ]
+      },
+      {
+        "start": 1,
+        "end": 2,
+        "marks": [
+          {
+            "type": "italic"
+          }
+        ]
+      },
+      {
+        "start": 2,
+        "end": 3,
+        "marks": [
+          {
+            "type": "italic"
+          }
+        ]
+      }
+    ],
+    "p-kgw8bi": [
+      {
+        "start": 0,
+        "end": 88,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      },
+      {
+        "start": 88,
+        "end": 115,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      },
+      {
+        "start": 115,
+        "end": 249,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-jb4o52": [
+      {
+        "start": 0,
+        "end": 1,
+        "marks": [
+          {
+            "type": "italic"
+          }
+        ]
+      },
+      {
+        "start": 1,
+        "end": 2,
+        "marks": [
+          {
+            "type": "italic"
+          }
+        ]
+      },
+      {
+        "start": 2,
+        "end": 3,
+        "marks": [
+          {
+            "type": "italic"
+          }
+        ]
+      }
+    ],
+    "p-h03aj6": [
+      {
+        "start": 0,
+        "end": 10,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-gpo03h": [
+      {
+        "start": 0,
+        "end": 9,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-xpaq4v": [
+      {
+        "start": 0,
+        "end": 1,
+        "marks": [
+          {
+            "type": "italic"
+          }
+        ]
+      },
+      {
+        "start": 1,
+        "end": 2,
+        "marks": [
+          {
+            "type": "italic"
+          }
+        ]
+      },
+      {
+        "start": 2,
+        "end": 3,
+        "marks": [
+          {
+            "type": "italic"
+          }
+        ]
+      }
+    ],
+    "p-yvr5ba": [
+      {
+        "start": 0,
+        "end": 1,
+        "marks": [
+          {
+            "type": "italic"
+          }
+        ]
+      },
+      {
+        "start": 1,
+        "end": 2,
+        "marks": [
+          {
+            "type": "italic"
+          }
+        ]
+      },
+      {
+        "start": 2,
+        "end": 3,
+        "marks": [
+          {
+            "type": "italic"
+          }
+        ]
+      }
+    ],
+    "p-t1bu7q": [
+      {
+        "start": 0,
+        "end": 13,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      },
+      {
+        "start": 13,
+        "end": 76,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-m5ajvk": [
+      {
+        "start": 0,
+        "end": 19,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-211voo": [
+      {
+        "start": 0,
+        "end": 1,
+        "marks": [
+          {
+            "type": "italic"
+          }
+        ]
+      },
+      {
+        "start": 1,
+        "end": 2,
+        "marks": [
+          {
+            "type": "italic"
+          }
+        ]
+      },
+      {
+        "start": 2,
+        "end": 3,
+        "marks": [
+          {
+            "type": "italic"
+          }
+        ]
+      }
+    ]
+  },
+  "images": {
+    "@img:285d35769ebecab7": {
+      "file": "285d35769ebecab7.png",
+      "size": 1868151,
+      "mimeType": "image/png"
+    }
+  }
+}

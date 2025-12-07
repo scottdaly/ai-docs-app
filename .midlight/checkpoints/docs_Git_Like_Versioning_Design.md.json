@@ -1,0 +1,20 @@
+{
+  "fileKey": "docs/Git_Like_Versioning_Design.md",
+  "headId": "cp-xewzfh",
+  "checkpoints": [
+    {
+      "id": "cp-xewzfh",
+      "contentHash": "6bd80192d9282473960415dd78f8517e19730129f94be5279c1eb19409dcfaf6",
+      "sidecarHash": "b875557aac644c530c68671209f2bb5e739baef95c12ea1a7008a4cb23221951",
+      "timestamp": "2025-12-06T02:43:52.398Z",
+      "parentId": null,
+      "type": "auto",
+      "stats": {
+        "wordCount": 4309,
+        "charCount": 34923,
+        "changeSize": 34923
+      },
+      "trigger": "interval"
+    }
+  ]
+}

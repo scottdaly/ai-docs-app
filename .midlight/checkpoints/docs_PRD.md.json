@@ -1,0 +1,34 @@
+{
+  "fileKey": "docs/PRD.md",
+  "headId": "cp-g3lsbr",
+  "checkpoints": [
+    {
+      "id": "cp-d6nu20",
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sidecarHash": "632fe79ca990a3b8a1fe7584f0214119c6026a581e4f8346d6ea649c7d388bf2",
+      "timestamp": "2025-12-06T02:44:34.388Z",
+      "parentId": null,
+      "type": "auto",
+      "stats": {
+        "wordCount": 0,
+        "charCount": 0,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-g3lsbr",
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sidecarHash": "d88a20d2cbcc0f487d61b07d7ecc9e64ce79b761e8ab3a4c42438971d294ad70",
+      "timestamp": "2025-12-06T02:48:54.085Z",
+      "parentId": "cp-d6nu20",
+      "type": "auto",
+      "stats": {
+        "wordCount": 0,
+        "charCount": 0,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    }
+  ]
+}

@@ -28,9 +28,24 @@
     /* Selection Colors */
     --selection-background: 212 96% 87%;
     --selection-foreground: 222.2 47.4% 11.2%;
-    
+
+    /* Browser Selection (Sidebar) */
+    --browser-selection: 212 80% 92%;
+
     /* Node Selection (Images) */
     --image-border: 221.2 83.2% 53.3%;
+
+    /* File Icon Colors */
+    --file-icon-bg: 0 0% 85%;
+    --file-icon-bg-dark: 0 0% 78%;
+    --file-icon-fold: 0 0% 66%;
+    --file-icon-fold-dark: 0 0% 45%;
+
+    /* Folder Icon Colors - Light blue tint */
+    --folder-icon-back: 197 55% 84%;
+    --folder-icon-back-dark: 205 35% 62%;
+    --folder-icon-front: 190 85% 82%;
+    --folder-icon-front-dark: 208 52% 71%;
   }
 
   .dark {
@@ -56,8 +71,23 @@
 
     --selection-background: 0 0% 35%;
     --selection-foreground: 0 0% 100%;
-    
+
+    /* Browser Selection (Sidebar) */
+    --browser-selection: 215 50% 35%;
+
     --image-border: 217 91% 60%;
+
+    /* File Icon Colors - Dark */
+    --file-icon-bg: 240 5% 40%;
+    --file-icon-bg-dark: 240 5% 32%;
+    --file-icon-fold: 240 5% 50%;
+    --file-icon-fold-dark: 240 5% 28%;
+
+    /* Folder Icon Colors - Dark - Blue tint */
+    --folder-icon-back: 205 50% 45%;
+    --folder-icon-back-dark: 215 40% 32%;
+    --folder-icon-front: 200 55% 52%;
+    --folder-icon-front-dark: 210 45% 40%;
   }
 
   .midnight {
@@ -83,8 +113,23 @@
 
     --selection-background: 222 60% 30%;
     --selection-foreground: 210 40% 98%;
-    
+
+    /* Browser Selection (Sidebar) */
+    --browser-selection: 215 55% 32%;
+
     --image-border: 217 91% 60%;
+
+    /* File Icon Colors - Midnight */
+    --file-icon-bg: 217 30% 42%;
+    --file-icon-bg-dark: 217 30% 34%;
+    --file-icon-fold: 217 25% 52%;
+    --file-icon-fold-dark: 217 25% 28%;
+
+    /* Folder Icon Colors - Midnight - Brighter blue */
+    --folder-icon-back: 205 55% 48%;
+    --folder-icon-back-dark: 215 48% 35%;
+    --folder-icon-front: 200 60% 55%;
+    --folder-icon-front-dark: 210 50% 42%;
   }
 
   .sepia {
@@ -111,8 +156,23 @@
 
     --selection-background: 35 60% 85%;
     --selection-foreground: 20 14% 12%;
-    
+
+    /* Browser Selection (Sidebar) */
+    --browser-selection: 35 50% 85%;
+
     --image-border: 24 95% 53%;
+
+    /* File Icon Colors - Sepia */
+    --file-icon-bg: 35 20% 82%;
+    --file-icon-bg-dark: 35 20% 74%;
+    --file-icon-fold: 35 18% 62%;
+    --file-icon-fold-dark: 35 15% 42%;
+
+    /* Folder Icon Colors - Sepia - Warm amber tint */
+    --folder-icon-back: 38 55% 75%;
+    --folder-icon-back-dark: 32 48% 58%;
+    --folder-icon-front: 42 65% 78%;
+    --folder-icon-front-dark: 35 52% 65%;
   }
 
   .forest {
@@ -138,8 +198,23 @@
 
     --selection-background: 150 40% 30%;
     --selection-foreground: 150 40% 98%;
-    
+
+    /* Browser Selection (Sidebar) */
+    --browser-selection: 150 40% 28%;
+
     --image-border: 142 76% 36%;
+
+    /* File Icon Colors - Forest */
+    --file-icon-bg: 150 20% 38%;
+    --file-icon-bg-dark: 150 20% 30%;
+    --file-icon-fold: 150 18% 48%;
+    --file-icon-fold-dark: 150 15% 24%;
+
+    /* Folder Icon Colors - Forest - Green tint */
+    --folder-icon-back: 145 50% 42%;
+    --folder-icon-back-dark: 155 45% 30%;
+    --folder-icon-front: 140 55% 50%;
+    --folder-icon-front-dark: 150 48% 38%;
   }
 
   .cyberpunk {
@@ -165,8 +240,23 @@
 
     --selection-background: 310 80% 40%;
     --selection-foreground: 280 80% 95%;
-    
+
+    /* Browser Selection (Sidebar) */
+    --browser-selection: 290 50% 30%;
+
     --image-border: 310 90% 65%;
+
+    /* File Icon Colors - Cyberpunk */
+    --file-icon-bg: 265 35% 38%;
+    --file-icon-bg-dark: 265 35% 28%;
+    --file-icon-fold: 280 40% 48%;
+    --file-icon-fold-dark: 265 30% 22%;
+
+    /* Folder Icon Colors - Cyberpunk - Cyan/pink neon */
+    --folder-icon-back: 185 75% 50%;
+    --folder-icon-back-dark: 290 55% 42%;
+    --folder-icon-front: 180 85% 58%;
+    --folder-icon-front-dark: 300 60% 50%;
   }
 
   .coffee {
@@ -192,8 +282,23 @@
 
     --selection-background: 25 40% 80%;
     --selection-foreground: 25 20% 25%;
-    
+
+    /* Browser Selection (Sidebar) */
+    --browser-selection: 30 35% 82%;
+
     --image-border: 25 40% 40%;
+
+    /* File Icon Colors - Coffee */
+    --file-icon-bg: 30 18% 82%;
+    --file-icon-bg-dark: 30 18% 74%;
+    --file-icon-fold: 28 15% 62%;
+    --file-icon-fold-dark: 28 12% 42%;
+
+    /* Folder Icon Colors - Coffee - Warm brown tint */
+    --folder-icon-back: 30 52% 65%;
+    --folder-icon-back-dark: 26 45% 50%;
+    --folder-icon-front: 34 58% 72%;
+    --folder-icon-front-dark: 28 48% 58%;
   }
 }
 

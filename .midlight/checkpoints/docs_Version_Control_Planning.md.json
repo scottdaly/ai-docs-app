@@ -1,0 +1,20 @@
+{
+  "fileKey": "docs/Version_Control_Planning.md",
+  "headId": "cp-sb81ta",
+  "checkpoints": [
+    {
+      "id": "cp-sb81ta",
+      "contentHash": "7b89d31ecd9ce379ca08ebf815c60d81ad999c02c1f7a2318b3d2ed236ba81d4",
+      "sidecarHash": "35adbedc4313147741fa4827515a93c71fb22d26cfa26d38a9002af7504fe15f",
+      "timestamp": "2025-12-06T02:48:08.530Z",
+      "parentId": null,
+      "type": "auto",
+      "stats": {
+        "wordCount": 4049,
+        "charCount": 31194,
+        "changeSize": 31194
+      },
+      "trigger": "interval"
+    }
+  ]
+}

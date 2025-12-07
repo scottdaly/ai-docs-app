@@ -1,11 +1,13 @@
 import { create } from 'zustand';
 
+type SettingsTab = 'general' | 'editor' | 'versioning' | 'appearance' | 'ai';
+
 interface SettingsState {
   isOpen: boolean;
-  activeTab: 'general' | 'appearance' | 'ai';
+  activeTab: SettingsTab;
   setIsOpen: (isOpen: boolean) => void;
-  setActiveTab: (tab: 'general' | 'appearance' | 'ai') => void;
-  openSettings: (tab?: 'general' | 'appearance' | 'ai') => void;
+  setActiveTab: (tab: SettingsTab) => void;
+  openSettings: (tab?: SettingsTab) => void;
 }
 
 export const useSettingsStore = create<SettingsState>((set) => ({

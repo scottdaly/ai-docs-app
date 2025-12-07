@@ -1,0 +1,146 @@
+{
+  "fileKey": "DOCX_EXPORT_TEST.md",
+  "headId": "cp-5fjh8p",
+  "checkpoints": [
+    {
+      "id": "cp-qpmxie",
+      "contentHash": "36ce84bda451933b270d79f822de22e70a5dc333bce7f230dc6c350c6d08aff9",
+      "sidecarHash": "5608ef84ff48e8dd006990e21fc6ac200c5a399101ad2154d630ab44b6c61be6",
+      "timestamp": "2025-12-06T02:34:05.551Z",
+      "parentId": null,
+      "type": "auto",
+      "stats": {
+        "wordCount": 1852,
+        "charCount": 12806,
+        "changeSize": 12806
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-98oytm",
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sidecarHash": "19c23fd252e18c7318fa95a3de0c703a818b5212dd1a6fe1d0eae7621297d021",
+      "timestamp": "2025-12-06T02:43:32.862Z",
+      "parentId": "cp-qpmxie",
+      "type": "auto",
+      "stats": {
+        "wordCount": 0,
+        "charCount": 0,
+        "changeSize": 12806
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-9qvcwd",
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sidecarHash": "40d53c1950ce47584296d5be920c1d198e5417bd21720a154a69218822504526",
+      "timestamp": "2025-12-06T02:48:07.188Z",
+      "parentId": "cp-98oytm",
+      "type": "auto",
+      "stats": {
+        "wordCount": 0,
+        "charCount": 0,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-q70an7",
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sidecarHash": "53cf74e04f98c8dec17c30e1f7836c279aebb54ecaafd8745ff6bdad77d136c4",
+      "timestamp": "2025-12-06T02:48:45.576Z",
+      "parentId": "cp-9qvcwd",
+      "type": "auto",
+      "stats": {
+        "wordCount": 0,
+        "charCount": 0,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-wu93pd",
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sidecarHash": "ab15917e15fa51666cf6f09e4d502630d9ab0101fced94ce305fb734fabc5489",
+      "timestamp": "2025-12-06T21:15:45.597Z",
+      "parentId": "cp-q70an7",
+      "type": "auto",
+      "stats": {
+        "wordCount": 0,
+        "charCount": 0,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-h8oi0u",
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sidecarHash": "920b290468ed90207f09597aaced1f82b924c515ec1f2b1e3147bbae0315de25",
+      "timestamp": "2025-12-06T21:52:38.468Z",
+      "parentId": "cp-wu93pd",
+      "type": "auto",
+      "stats": {
+        "wordCount": 0,
+        "charCount": 0,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-7zby4u",
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sidecarHash": "13717244e8b18f5be6457e18618d4e2cd37b5924f192e42233fa6c71ee74e7a0",
+      "timestamp": "2025-12-06T22:15:31.394Z",
+      "parentId": "cp-h8oi0u",
+      "type": "auto",
+      "stats": {
+        "wordCount": 0,
+        "charCount": 0,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-s62pz7",
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sidecarHash": "beb0c96fc636ba323cb493ee331590e07912cb1654c5b142f9a929ee2834d299",
+      "timestamp": "2025-12-06T23:05:34.900Z",
+      "parentId": "cp-7zby4u",
+      "type": "auto",
+      "stats": {
+        "wordCount": 0,
+        "charCount": 0,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-mtlpme",
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sidecarHash": "1fad6d502aac718f317a7e82cf32239052c615002ddd91cf4cdb7bc5e6872dc4",
+      "timestamp": "2025-12-07T01:12:32.533Z",
+      "parentId": "cp-s62pz7",
+      "type": "auto",
+      "stats": {
+        "wordCount": 0,
+        "charCount": 0,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-5fjh8p",
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sidecarHash": "a2e1597ea75a69fb3c0046326e5c0f887fad918e95a8377979d8c7fe480defa8",
+      "timestamp": "2025-12-07T02:51:02.079Z",
+      "parentId": "cp-mtlpme",
+      "type": "auto",
+      "stats": {
+        "wordCount": 0,
+        "charCount": 0,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    }
+  ]
+}

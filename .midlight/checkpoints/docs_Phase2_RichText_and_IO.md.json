@@ -1,0 +1,34 @@
+{
+  "fileKey": "docs/Phase2_RichText_and_IO.md",
+  "headId": "cp-wuanxt",
+  "checkpoints": [
+    {
+      "id": "cp-g1rkm3",
+      "contentHash": "e490b45a34253c6e04eb154f01e4af572c1819f0a42e32bfc081c443f5647aba",
+      "sidecarHash": "262a1136f8ddd688c79f48d903837e915e8d6240955343838582dc0437c56433",
+      "timestamp": "2025-12-06T02:51:45.275Z",
+      "parentId": null,
+      "type": "auto",
+      "stats": {
+        "wordCount": 7449,
+        "charCount": 57849,
+        "changeSize": 57849
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-wuanxt",
+      "contentHash": "3cd04f5b505ee005b95442950e23c91932eb2917650bb17972344d33af92e7fb",
+      "sidecarHash": "0283adb41248a509ad18aefba8157a3b3e3e158ee0ca49ff1969910760ea9864",
+      "timestamp": "2025-12-06T02:54:03.386Z",
+      "parentId": "cp-g1rkm3",
+      "type": "auto",
+      "stats": {
+        "wordCount": 7449,
+        "charCount": 60503,
+        "changeSize": 2654
+      },
+      "trigger": "interval"
+    }
+  ]
+}

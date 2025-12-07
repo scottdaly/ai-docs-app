@@ -1,0 +1,48 @@
+{
+  "fileKey": "index.html",
+  "headId": "cp-oqyci4",
+  "checkpoints": [
+    {
+      "id": "cp-hrbw5q",
+      "contentHash": "45e6ecf750fa6b8394ff249d54ffff05ee50a69506aac7bdba8b72389f820751",
+      "sidecarHash": "37ea6eea7aa6634d3404c49e33d68b3c3b6ec44f3865b3243cf564f7bf04181b",
+      "timestamp": "2025-12-06T23:05:32.305Z",
+      "parentId": null,
+      "type": "auto",
+      "stats": {
+        "wordCount": 26,
+        "charCount": 318,
+        "changeSize": 318
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-if7myf",
+      "contentHash": "3ce59e00c7f207e38a013b44fcad08f761e7f41bc9182ae4fe3c5437a8c574c6",
+      "sidecarHash": "d7680714e1593c416b379dd9cafb2de459157819b7c74bb4c519ba08d2ac9c29",
+      "timestamp": "2025-12-07T03:05:41.632Z",
+      "parentId": "cp-hrbw5q",
+      "type": "auto",
+      "stats": {
+        "wordCount": 29,
+        "charCount": 341,
+        "changeSize": 23
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-oqyci4",
+      "contentHash": "0788f422fe02593bdf239252f37c74cc1bd33f835b20a9a8354c56ad89bb3790",
+      "sidecarHash": "0ab6e4425dff86ca5d40fb4f3847e9490ce351469f9fd1e8ecdbbcbc5072572c",
+      "timestamp": "2025-12-07T03:24:17.928Z",
+      "parentId": "cp-if7myf",
+      "type": "auto",
+      "stats": {
+        "wordCount": 122,
+        "charCount": 1054,
+        "changeSize": 713
+      },
+      "trigger": "interval"
+    }
+  ]
+}

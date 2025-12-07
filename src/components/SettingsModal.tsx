@@ -1,10 +1,25 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, Palette, Settings as SettingsIcon, Bot, Check } from 'lucide-react';
+import { X, Palette, Settings as SettingsIcon, Bot, Check, Type, History } from 'lucide-react';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useTheme, Theme } from '../store/useTheme';
+import { useFileSystem } from '../store/useFileSystem';
+import { useEffect } from 'react';
+import {
+  useWorkspaceConfig,
+  FONT_OPTIONS,
+  FONT_SIZE_OPTIONS,
+  LINE_HEIGHT_OPTIONS,
+  AUTO_SAVE_OPTIONS,
+  CHECKPOINT_INTERVAL_OPTIONS,
+  MIN_CHANGE_OPTIONS,
+  MAX_CHECKPOINTS_OPTIONS,
+  RETENTION_OPTIONS,
+} from '../hooks/useWorkspaceConfig';
 
 const TABS = [
   { id: 'general', label: 'General', icon: SettingsIcon },
+  { id: 'editor', label: 'Editor', icon: Type },
+  { id: 'versioning', label: 'Versioning', icon: History },
   { id: 'appearance', label: 'Appearance', icon: Palette },
   { id: 'ai', label: 'AI Models', icon: Bot },
 ] as const;
@@ -125,9 +140,76 @@ function ThemePreview({ colors, isSystem }: { colors: typeof THEMES[0]['colors']
     );
 }
 
+// Reusable form components
+function SettingRow({ label, description, children }: { label: string; description?: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between py-3">
+      <div className="space-y-0.5">
+        <label className="text-sm font-medium">{label}</label>
+        {description && <p className="text-xs text-muted-foreground">{description}</p>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function Select({ value, onChange, options }: { value: string | number; onChange: (value: string) => void; options: { value: string | number; label: string }[] }) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="h-9 px-3 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+    >
+      {options.map((opt) => (
+        <option key={opt.value} value={opt.value}>{opt.label}</option>
+      ))}
+    </select>
+  );
+}
+
+function Toggle({ checked, onChange }: { checked: boolean; onChange: (checked: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+        checked ? 'bg-primary' : 'bg-muted'
+      }`}
+    >
+      <span
+        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+          checked ? 'translate-x-6' : 'translate-x-1'
+        }`}
+      />
+    </button>
+  );
+}
+
+function SettingSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1">
+      <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-4">{title}</h3>
+      <div className="divide-y">{children}</div>
+    </div>
+  );
+}
+
 export function SettingsModal() {
   const { isOpen, setIsOpen, activeTab, setActiveTab } = useSettingsStore();
   const { theme, setTheme } = useTheme();
+  const { rootDir } = useFileSystem();
+  const { config, loadConfig, updateDefaults, updateEditor, updateVersioning } = useWorkspaceConfig();
+
+  // Load config when modal opens and workspace exists
+  useEffect(() => {
+    if (isOpen && rootDir) {
+      loadConfig(rootDir);
+    }
+  }, [isOpen, rootDir, loadConfig]);
+
+  const hasWorkspace = !!rootDir;
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
@@ -212,14 +294,152 @@ export function SettingsModal() {
                 )}
 
                 {activeTab === 'general' && (
-                    <div className="flex flex-col items-center justify-center h-full text-center space-y-4 text-muted-foreground border-2 border-dashed rounded-xl">
-                        <SettingsIcon size={48} className="opacity-20" />
-                        <p>General settings coming soon.</p>
+                    <div className="space-y-8">
+                      {!hasWorkspace ? (
+                        <div className="flex flex-col items-center justify-center h-64 text-center space-y-4 text-muted-foreground border-2 border-dashed rounded-xl">
+                          <SettingsIcon size={48} className="opacity-20" />
+                          <p>Open a workspace to configure document defaults.</p>
+                        </div>
+                      ) : (
+                        <>
+                          <SettingSection title="Document Defaults">
+                            <SettingRow label="Default Font" description="Font family for new documents">
+                              <Select
+                                value={config.defaults.font || 'Merriweather'}
+                                onChange={(v) => updateDefaults({ font: v })}
+                                options={FONT_OPTIONS}
+                              />
+                            </SettingRow>
+                            <SettingRow label="Font Size" description="Base font size for new documents">
+                              <Select
+                                value={config.defaults.fontSize || '16px'}
+                                onChange={(v) => updateDefaults({ fontSize: v })}
+                                options={FONT_SIZE_OPTIONS}
+                              />
+                            </SettingRow>
+                            <SettingRow label="Line Height" description="Line spacing for new documents">
+                              <Select
+                                value={config.defaults.lineHeight || 1.6}
+                                onChange={(v) => updateDefaults({ lineHeight: parseFloat(v) })}
+                                options={LINE_HEIGHT_OPTIONS}
+                              />
+                            </SettingRow>
+                          </SettingSection>
+
+                          <SettingSection title="Saving">
+                            <SettingRow label="Auto-save Delay" description="Wait time before auto-saving changes">
+                              <Select
+                                value={config.editor.autoSaveIntervalMs}
+                                onChange={(v) => updateEditor({ autoSaveIntervalMs: parseInt(v) })}
+                                options={AUTO_SAVE_OPTIONS}
+                              />
+                            </SettingRow>
+                          </SettingSection>
+
+                          <p className="text-xs text-muted-foreground pt-4">
+                            These settings apply to new documents in this workspace.
+                          </p>
+                        </>
+                      )}
+                    </div>
+                )}
+
+                {activeTab === 'editor' && (
+                    <div className="space-y-8">
+                      {!hasWorkspace ? (
+                        <div className="flex flex-col items-center justify-center h-64 text-center space-y-4 text-muted-foreground border-2 border-dashed rounded-xl">
+                          <Type size={48} className="opacity-20" />
+                          <p>Open a workspace to configure editor settings.</p>
+                        </div>
+                      ) : (
+                        <>
+                          <SettingSection title="Display">
+                            <SettingRow label="Show Word Count" description="Display word count in the status bar">
+                              <Toggle
+                                checked={config.editor.showWordCount}
+                                onChange={(v) => updateEditor({ showWordCount: v })}
+                              />
+                            </SettingRow>
+                            <SettingRow label="Show Character Count" description="Display character count in the status bar">
+                              <Toggle
+                                checked={config.editor.showCharCount}
+                                onChange={(v) => updateEditor({ showCharCount: v })}
+                              />
+                            </SettingRow>
+                          </SettingSection>
+
+                          <SettingSection title="Input">
+                            <SettingRow label="Spellcheck" description="Enable browser spellcheck in the editor">
+                              <Toggle
+                                checked={config.editor.spellcheck}
+                                onChange={(v) => updateEditor({ spellcheck: v })}
+                              />
+                            </SettingRow>
+                          </SettingSection>
+                        </>
+                      )}
+                    </div>
+                )}
+
+                {activeTab === 'versioning' && (
+                    <div className="space-y-8">
+                      {!hasWorkspace ? (
+                        <div className="flex flex-col items-center justify-center h-64 text-center space-y-4 text-muted-foreground border-2 border-dashed rounded-xl">
+                          <History size={48} className="opacity-20" />
+                          <p>Open a workspace to configure versioning settings.</p>
+                        </div>
+                      ) : (
+                        <>
+                          <SettingSection title="Automatic Checkpoints">
+                            <SettingRow label="Enable Auto Checkpoints" description="Automatically create version checkpoints">
+                              <Toggle
+                                checked={config.versioning.enabled}
+                                onChange={(v) => updateVersioning({ enabled: v })}
+                              />
+                            </SettingRow>
+                            <SettingRow label="Checkpoint Interval" description="Minimum time between automatic checkpoints">
+                              <Select
+                                value={config.versioning.checkpointIntervalMs}
+                                onChange={(v) => updateVersioning({ checkpointIntervalMs: parseInt(v) })}
+                                options={CHECKPOINT_INTERVAL_OPTIONS}
+                              />
+                            </SettingRow>
+                            <SettingRow label="Minimum Changes" description="Minimum character changes to trigger a checkpoint">
+                              <Select
+                                value={config.versioning.minChangeChars}
+                                onChange={(v) => updateVersioning({ minChangeChars: parseInt(v) })}
+                                options={MIN_CHANGE_OPTIONS}
+                              />
+                            </SettingRow>
+                          </SettingSection>
+
+                          <SettingSection title="Storage Limits">
+                            <SettingRow label="Max Checkpoints" description="Maximum checkpoints to keep per file">
+                              <Select
+                                value={config.versioning.maxCheckpointsPerFile}
+                                onChange={(v) => updateVersioning({ maxCheckpointsPerFile: parseInt(v) })}
+                                options={MAX_CHECKPOINTS_OPTIONS}
+                              />
+                            </SettingRow>
+                            <SettingRow label="Retention Period" description="How long to keep automatic checkpoints">
+                              <Select
+                                value={config.versioning.retentionDays}
+                                onChange={(v) => updateVersioning({ retentionDays: parseInt(v) })}
+                                options={RETENTION_OPTIONS}
+                              />
+                            </SettingRow>
+                          </SettingSection>
+
+                          <p className="text-xs text-muted-foreground pt-4">
+                            Bookmarked checkpoints are not affected by retention limits.
+                          </p>
+                        </>
+                      )}
                     </div>
                 )}
 
                 {activeTab === 'ai' && (
-                    <div className="flex flex-col items-center justify-center h-full text-center space-y-4 text-muted-foreground border-2 border-dashed rounded-xl">
+                    <div className="flex flex-col items-center justify-center h-64 text-center space-y-4 text-muted-foreground border-2 border-dashed rounded-xl">
                         <Bot size={48} className="opacity-20" />
                         <p>AI Model configuration coming in Phase 2.</p>
                     </div>

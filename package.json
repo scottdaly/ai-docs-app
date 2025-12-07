@@ -15,14 +15,19 @@
       "output": "release"
     },
     "mac": {
-      "target": ["dmg", "zip"],
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "icon": "build/icon.icns",
       "category": "public.app-category.productivity",
       "hardenedRuntime": true,
       "gatekeeperAssess": false
     },
     "win": {
-      "target": ["nsis"],
+      "target": [
+        "nsis"
+      ],
       "icon": "build/icon.ico"
     },
     "nsis": {
@@ -32,7 +37,10 @@
       "createStartMenuShortcut": true
     },
     "linux": {
-      "target": ["AppImage", "deb"],
+      "target": [
+        "AppImage",
+        "deb"
+      ],
       "icon": "build/icon.png",
       "category": "Office"
     }
@@ -41,7 +49,10 @@
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "keywords": [
     "electron",
@@ -63,6 +74,8 @@
     "@fontsource/open-sans": "^5.2.7",
     "@fontsource/playfair-display": "^5.2.8",
     "@fontsource/roboto": "^5.2.9",
+    "@radix-ui/react-alert-dialog": "^1.1.15",
+    "@radix-ui/react-context-menu": "^2.2.16",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-dropdown-menu": "^2.0.6",
     "@radix-ui/react-slot": "^1.0.2",
@@ -76,8 +89,10 @@
     "@tiptap/extension-underline": "^3.11.1",
     "@tiptap/react": "^3.11.1",
     "@tiptap/starter-kit": "^3.11.1",
+    "chokidar": "^5.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "diff": "^8.0.2",
     "docx": "^9.5.1",
     "lucide-react": "^0.292.0",
     "mammoth": "^1.11.0",
@@ -93,6 +108,7 @@
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
+    "@types/diff": "^7.0.2",
     "@types/node": "^20.10.0",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
@@ -100,6 +116,7 @@
     "@typescript-eslint/eslint-plugin": "^6.10.0",
     "@typescript-eslint/parser": "^6.10.0",
     "@vitejs/plugin-react": "^4.2.0",
+    "@vitest/coverage-v8": "^4.0.15",
     "autoprefixer": "^10.4.16",
     "electron": "^28.0.0",
     "electron-builder": "^24.9.1",
@@ -111,6 +128,7 @@
     "typescript": "^5.2.2",
     "vite": "^5.0.0",
     "vite-plugin-electron": "^0.29.0",
-    "vite-plugin-electron-renderer": "^0.14.6"
+    "vite-plugin-electron-renderer": "^0.14.6",
+    "vitest": "^4.0.15"
   }
 }

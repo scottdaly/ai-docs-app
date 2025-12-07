@@ -1,0 +1,90 @@
+{
+  "fileKey": "ideas.docx",
+  "headId": "cp-kk9alw",
+  "checkpoints": [
+    {
+      "id": "cp-gk5tuj",
+      "contentHash": "ca461e455cf8a90a5553c823ca8e3a6798f4ca9fb94e0ee3359054c317070b96",
+      "sidecarHash": "9b9dea629875edbc05584b6e9bdf647420208056a027816727afb3d393187577",
+      "timestamp": "2025-12-07T01:06:11.858Z",
+      "parentId": null,
+      "type": "auto",
+      "stats": {
+        "wordCount": 28018,
+        "charCount": 1199871,
+        "changeSize": 1199871
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-n2du5h",
+      "contentHash": "b663e57566080e80c2c7cdec1a121bc6ce482ab5bf61dac61670f3f671519fd8",
+      "sidecarHash": "0cf347553ed863551dbbed44dd9cce538ac285ade0605e3858d9966aa5de1e24",
+      "timestamp": "2025-12-07T01:06:29.987Z",
+      "parentId": "cp-gk5tuj",
+      "type": "auto",
+      "stats": {
+        "wordCount": 28021,
+        "charCount": 1199894,
+        "changeSize": 23
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-7zengn",
+      "contentHash": "5b54fd48be38f01f9776b75c5af95a72269edab6aad9776b3c0c502bc5f969ec",
+      "sidecarHash": "f5e29d1062d867ab7fb8d46ebbbc33e5438f77f4612c0f1a60d32d1adb5bcadd",
+      "timestamp": "2025-12-07T01:06:45.402Z",
+      "parentId": "cp-n2du5h",
+      "type": "auto",
+      "stats": {
+        "wordCount": 28024,
+        "charCount": 1199917,
+        "changeSize": 23
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-4uy4be",
+      "contentHash": "82081e0505c278f2db328c211786a24338faf52a97685d5c986d404fa05c9e8e",
+      "sidecarHash": "24dc42cafb32959de7e3a1f2db17d068167f383b44fbbaaaa24da75be7bcea19",
+      "timestamp": "2025-12-07T03:07:01.469Z",
+      "parentId": "cp-7zengn",
+      "type": "auto",
+      "stats": {
+        "wordCount": 28027,
+        "charCount": 1199940,
+        "changeSize": 23
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-fj7ykq",
+      "contentHash": "7006c0101a081bb890550607db75a91a0596adf75ba8b2da9267791366b45f89",
+      "sidecarHash": "91f995beaa296388068aeb473f5ff8dae19453b920677ec1b726d22b1a668f56",
+      "timestamp": "2025-12-07T03:21:30.675Z",
+      "parentId": "cp-4uy4be",
+      "type": "auto",
+      "stats": {
+        "wordCount": 28036,
+        "charCount": 1200009,
+        "changeSize": 69
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-kk9alw",
+      "contentHash": "4521c010cf1eb1d7b6ca8666ebdbc5dd68b45ab0ec0be47ba8a8b294679541f8",
+      "sidecarHash": "3c5fcb1b98fce094274a7a3fea3c1d55dba8a6747614b20043c93235fcb64054",
+      "timestamp": "2025-12-07T03:23:35.660Z",
+      "parentId": "cp-fj7ykq",
+      "type": "auto",
+      "stats": {
+        "wordCount": 28039,
+        "charCount": 1200032,
+        "changeSize": 23
+      },
+      "trigger": "interval"
+    }
+  ]
+}

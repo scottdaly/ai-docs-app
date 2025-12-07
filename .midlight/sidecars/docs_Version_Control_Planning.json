@@ -1,0 +1,739 @@
+{
+  "version": 1,
+  "meta": {
+    "created": "2025-12-06T02:48:08.524Z",
+    "modified": "2025-12-06T02:48:08.524Z",
+    "wordCount": 3374,
+    "readingTime": 17,
+    "title": "Version Control & File Saving: Implementation Planning"
+  },
+  "document": {},
+  "blocks": {},
+  "spans": {
+    "p-ktf3op": [
+      {
+        "start": 0,
+        "end": 13,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-bs71r9": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-0n9jlb": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-g0046u": [
+      {
+        "start": 0,
+        "end": 20,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-cx7iag": [
+      {
+        "start": 0,
+        "end": 9,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-qofp30": [
+      {
+        "start": 0,
+        "end": 7,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-1pxckw": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-anduy9": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-4wfgrr": [
+      {
+        "start": 0,
+        "end": 21,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-7wephw": [
+      {
+        "start": 0,
+        "end": 9,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-787wmj": [
+      {
+        "start": 0,
+        "end": 22,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-61g6k9": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-ws5dq5": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-9e9952": [
+      {
+        "start": 0,
+        "end": 9,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-mxgh99": [
+      {
+        "start": 0,
+        "end": 13,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-9d2cjk": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-nxqn2j": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-7w8emv": [
+      {
+        "start": 0,
+        "end": 17,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-2w7wug": [
+      {
+        "start": 0,
+        "end": 9,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-w5u88f": [
+      {
+        "start": 0,
+        "end": 24,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-74u4uf": [
+      {
+        "start": 0,
+        "end": 43,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-c3mp72": [
+      {
+        "start": 0,
+        "end": 41,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-c1r9yd": [
+      {
+        "start": 0,
+        "end": 30,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-apldbb": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-x5dnsn": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-16amk2": [
+      {
+        "start": 0,
+        "end": 10,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-o78gcg": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-8ddcy6": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-5ylxpb": [
+      {
+        "start": 0,
+        "end": 15,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-ckub5d": [
+      {
+        "start": 0,
+        "end": 30,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-rdp13h": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-vsg4o3": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-je6o24": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-qspke9": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-4kzcqt": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-1oo59a": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-tgtkwf": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-mg97i5": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-rp6vwq": [
+      {
+        "start": 0,
+        "end": 29,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-pivaf4": [
+      {
+        "start": 0,
+        "end": 27,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-zpehne": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-4rqnwv": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-nxt771": [
+      {
+        "start": 0,
+        "end": 8,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-htzchh": [
+      {
+        "start": 0,
+        "end": 12,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-yfbg17": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-oqqv0o": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-g4g0f2": [
+      {
+        "start": 0,
+        "end": 15,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-r9vqrf": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-ycmbk9": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-j3nz3o": [
+      {
+        "start": 0,
+        "end": 11,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-8d13e1": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-ebl9dn": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-asn8sc": [
+      {
+        "start": 0,
+        "end": 15,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-dee73h": [
+      {
+        "start": 0,
+        "end": 12,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-txfbl8": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-30cj58": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-xm3v4d": [
+      {
+        "start": 0,
+        "end": 22,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-j6z8vn": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-de594m": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-dtirwd": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-5c6hzt": [
+      {
+        "start": 8,
+        "end": 34,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      }
+    ],
+    "p-75bfap": [
+      {
+        "start": 9,
+        "end": 35,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      }
+    ],
+    "p-emv2tw": [
+      {
+        "start": 0,
+        "end": 16,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-v0t8sj": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-m5qqj3": [
+      {
+        "start": 0,
+        "end": 28,
+        "marks": [
+          {
+            "type": "italic"
+          }
+        ]
+      },
+      {
+        "start": 29,
+        "end": 90,
+        "marks": [
+          {
+            "type": "italic"
+          }
+        ]
+      }
+    ]
+  },
+  "images": {}
+}

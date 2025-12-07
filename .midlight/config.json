@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "workspace": {
+    "created": "2025-12-06T00:56:37.513Z"
+  },
+  "defaults": {
+    "font": "Merriweather",
+    "fontSize": "16px"
+  },
+  "versioning": {
+    "enabled": true,
+    "checkpointIntervalMs": 300000,
+    "minChangeChars": 50,
+    "maxCheckpointsPerFile": 50,
+    "retentionDays": 7
+  },
+  "recovery": {
+    "enabled": true,
+    "walIntervalMs": 500
+  },
+  "sync": {
+    "enabled": false,
+    "lastSync": null
+  }
+}

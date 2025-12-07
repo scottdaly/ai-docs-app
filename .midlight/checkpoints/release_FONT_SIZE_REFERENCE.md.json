@@ -1,0 +1,20 @@
+{
+  "fileKey": "release/FONT_SIZE_REFERENCE.md",
+  "headId": "cp-wajtri",
+  "checkpoints": [
+    {
+      "id": "cp-wajtri",
+      "contentHash": "9a72c70368732d99b0aa2c95e698277ce49f8150e1b24bc0a7b4d57841181961",
+      "sidecarHash": "2be85f67361616806d96a688fad045c7cf09b0811015fc2ea8bd732634d74da1",
+      "timestamp": "2025-12-06T21:52:49.523Z",
+      "parentId": null,
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3690,
+        "changeSize": 3690
+      },
+      "trigger": "interval"
+    }
+  ]
+}

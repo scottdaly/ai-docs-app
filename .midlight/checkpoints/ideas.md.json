@@ -1,0 +1,48 @@
+{
+  "fileKey": "ideas.md",
+  "headId": "cp-0zib95",
+  "checkpoints": [
+    {
+      "id": "cp-51esww",
+      "contentHash": "227f4383eb26b4ebd7d3c4e2e41f31da6c5f5b45fc7483a0f864570e27d9d4c7",
+      "sidecarHash": "28da902dd9c6602506bf43517b0402d6b0612099757440c126187b714558d875",
+      "timestamp": "2025-12-06T02:43:21.200Z",
+      "parentId": null,
+      "type": "auto",
+      "stats": {
+        "wordCount": 10,
+        "charCount": 92,
+        "changeSize": 92
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-xwii1y",
+      "contentHash": "cd5b9872d2082962ee2d33f9151ee2491275680ae21108df6267685a8fae44e8",
+      "sidecarHash": "2c4b048ab9346f68b2038160f781e50a828eeb62fe3abdd6eb5f56f916f4eff5",
+      "timestamp": "2025-12-06T21:09:48.309Z",
+      "parentId": "cp-51esww",
+      "type": "auto",
+      "stats": {
+        "wordCount": 10,
+        "charCount": 92,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-0zib95",
+      "contentHash": "cb02b8fd65c95edece29243e8d7b3d5b0f77ffa352417b18337d2872f9294eff",
+      "sidecarHash": "3573f3bd0a679b169514b01da639049af0ede76b11210767ce4ab52cfd096e50",
+      "timestamp": "2025-12-06T21:12:11.633Z",
+      "parentId": "cp-xwii1y",
+      "type": "auto",
+      "stats": {
+        "wordCount": 10,
+        "charCount": 92,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    }
+  ]
+}

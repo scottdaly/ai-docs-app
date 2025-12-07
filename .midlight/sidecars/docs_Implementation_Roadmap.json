@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "meta": {
+    "created": "2025-12-06T02:48:51.132Z",
+    "modified": "2025-12-06T02:48:51.133Z",
+    "wordCount": 1372,
+    "readingTime": 7,
+    "title": "Midlight: Implementation Roadmap"
+  },
+  "document": {},
+  "blocks": {},
+  "spans": {
+    "p-9y7h6z": [
+      {
+        "start": 51,
+        "end": 59,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-n4e37y": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-6289d6": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "h-q25o10": [
+      {
+        "start": 20,
+        "end": 25,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      }
+    ],
+    "p-6jkxky": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-jwqg8j": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-hen3xq": [
+      {
+        "start": 0,
+        "end": 5,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ],
+    "p-4sx5vr": [
+      {
+        "start": 23,
+        "end": 40,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      },
+      {
+        "start": 109,
+        "end": 114,
+        "marks": [
+          {
+            "type": "italic"
+          }
+        ]
+      },
+      {
+        "start": 162,
+        "end": 173,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      },
+      {
+        "start": 296,
+        "end": 310,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      },
+      {
+        "start": 371,
+        "end": 389,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 425,
+        "end": 438,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      }
+    ]
+  },
+  "images": {}
+}

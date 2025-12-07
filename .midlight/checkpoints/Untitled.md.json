@@ -1,0 +1,20 @@
+{
+  "fileKey": "Untitled.md",
+  "headId": "cp-r9wgqv",
+  "checkpoints": [
+    {
+      "id": "cp-r9wgqv",
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sidecarHash": "b9f46ccbc3754db1ef04792f8d772b8be5136a347a3f05feadd3b2813b7abdea",
+      "timestamp": "2025-12-06T19:41:29.986Z",
+      "parentId": null,
+      "type": "auto",
+      "stats": {
+        "wordCount": 0,
+        "charCount": 0,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    }
+  ]
+}

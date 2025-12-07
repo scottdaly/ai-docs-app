@@ -1,0 +1,20 @@
+{
+  "fileKey": "docs/Implementation_Plan_Storage_and_Versioning.md",
+  "headId": "cp-02umpg",
+  "checkpoints": [
+    {
+      "id": "cp-02umpg",
+      "contentHash": "c17314277fae176c2692b45cd5a7d3bd208b83c2d9d1a575f645a63a68dcdc0e",
+      "sidecarHash": "9ffc236c26d9c769543c15b3cfb515dcbe2de1455d7e91c1cb7878dcb57aa019",
+      "timestamp": "2025-12-06T02:54:08.168Z",
+      "parentId": null,
+      "type": "auto",
+      "stats": {
+        "wordCount": 3090,
+        "charCount": 26735,
+        "changeSize": 26735
+      },
+      "trigger": "interval"
+    }
+  ]
+}

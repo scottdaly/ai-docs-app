@@ -1,0 +1,48 @@
+{
+  "fileKey": "check@!.md",
+  "headId": "cp-gt1ach",
+  "checkpoints": [
+    {
+      "id": "cp-hi4b8b",
+      "contentHash": "e4d724acad4ceff243928448cc9775627f41bff1f42348244f6c12c4655d7e86",
+      "sidecarHash": "2123a7ce8e6dbbf9e57f837a31b7f37a82e44ddb63a5620d1f9220dfbd1278b9",
+      "timestamp": "2025-12-06T21:15:40.214Z",
+      "parentId": null,
+      "type": "auto",
+      "stats": {
+        "wordCount": 10,
+        "charCount": 92,
+        "changeSize": 92
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-4vi3dk",
+      "contentHash": "93a934fdf7117550ea8f11e16b8b7aa328fe6815a4cf2b58f988029d908e5828",
+      "sidecarHash": "69fe93b85f66dd0a9840994d8be1e9d9ed234d371125f7399fef556d64dec1d9",
+      "timestamp": "2025-12-06T22:24:45.828Z",
+      "parentId": "cp-hi4b8b",
+      "type": "auto",
+      "stats": {
+        "wordCount": 10,
+        "charCount": 92,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-gt1ach",
+      "contentHash": "2a5feb558ba8f54ed1cb8c9212a455d406c9bcb85215a68f9ba74988026346cb",
+      "sidecarHash": "281a03aaeec346490f616b9f602f01481df6a2dfd426229518a1067dba3dbe09",
+      "timestamp": "2025-12-07T03:24:13.578Z",
+      "parentId": "cp-4vi3dk",
+      "type": "auto",
+      "stats": {
+        "wordCount": 10,
+        "charCount": 92,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    }
+  ]
+}

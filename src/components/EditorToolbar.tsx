@@ -10,14 +10,21 @@ import {
   AlignRight,
   AlignJustify,
   Image as ImageIcon,
-  Minus
+  Minus,
+  History,
+  Bookmark,
+  GitBranch,
 } from 'lucide-react';
 import { BlockTypeDropdown } from './BlockTypeDropdown';
 import { FontFamilyDropdown } from './FontFamilyDropdown';
 import { FontSizeDropdown } from './FontSizeDropdown';
 import { ColorPickerDropdown } from './ColorPickerDropdown';
 import { HighlightPickerDropdown } from './HighlightPickerDropdown';
-import { useRef } from 'react';
+import { useHistoryStore } from '../store/useHistoryStore';
+import { useDraftStore } from '../store/useDraftStore';
+import { useFileSystem } from '../store/useFileSystem';
+import { useRef, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
 interface EditorToolbarProps {
   editor: Editor | null;
@@ -25,10 +32,33 @@ interface EditorToolbarProps {
 
 export function EditorToolbar({ editor }: EditorToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { isOpen: isHistoryOpen, togglePanel: toggleHistory, createBookmark } = useHistoryStore();
+  const { isOpen: isDraftsOpen, togglePanel: toggleDrafts, activeDraft } = useDraftStore();
+  const { rootDir, activeFilePath } = useFileSystem();
+  const [isCreatingBookmark, setIsCreatingBookmark] = useState(false);
+  const [isSavingBookmark, setIsSavingBookmark] = useState(false);
+  const [bookmarkName, setBookmarkName] = useState('');
 
   if (!editor) {
     return null;
   }
+
+  const handleCreateBookmark = async () => {
+    if (!rootDir || !activeFilePath || !bookmarkName.trim() || isSavingBookmark) return;
+
+    setIsSavingBookmark(true);
+    try {
+      const json = editor.getJSON();
+      const success = await createBookmark(rootDir, activeFilePath, json, bookmarkName.trim());
+
+      if (success) {
+        setBookmarkName('');
+        setIsCreatingBookmark(false);
+      }
+    } finally {
+      setIsSavingBookmark(false);
+    }
+  };
 
   const toggle = (callback: () => void) => {
       callback();
@@ -219,6 +249,87 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         className="hidden"
         accept="image/*"
       />
+
+      {/* Spacer to push history controls to the right */}
+      <div className="flex-1" />
+
+      {/* Bookmark creation */}
+      {isCreatingBookmark ? (
+        <div className="flex items-center gap-1">
+          <input
+            type="text"
+            value={bookmarkName}
+            onChange={(e) => setBookmarkName(e.target.value.slice(0, 50))}
+            placeholder="Bookmark name..."
+            className="text-xs px-2 py-1 border rounded bg-background w-32"
+            maxLength={50}
+            autoFocus
+            disabled={isSavingBookmark}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleCreateBookmark();
+              if (e.key === 'Escape') {
+                setIsCreatingBookmark(false);
+                setBookmarkName('');
+              }
+            }}
+          />
+          <button
+            onClick={handleCreateBookmark}
+            disabled={!bookmarkName.trim() || isSavingBookmark}
+            className="text-xs px-2 py-1 bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50 flex items-center gap-1"
+          >
+            {isSavingBookmark ? (
+              <>
+                <Loader2 size={12} className="animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Save'
+            )}
+          </button>
+          <button
+            onClick={() => {
+              setIsCreatingBookmark(false);
+              setBookmarkName('');
+            }}
+            className="text-xs px-2 py-1 border rounded hover:bg-muted"
+          >
+            Cancel
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => setIsCreatingBookmark(true)}
+          className="p-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors text-muted-foreground"
+          title="Create Bookmark"
+        >
+          <Bookmark size={16} />
+        </button>
+      )}
+
+      <div className="w-px h-4 bg-border mx-1" />
+
+      {/* History toggle */}
+      <button
+        onClick={toggleHistory}
+        className={`p-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors ${
+          isHistoryOpen ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
+        }`}
+        title="Version History"
+      >
+        <History size={16} />
+      </button>
+
+      {/* Drafts toggle */}
+      <button
+        onClick={toggleDrafts}
+        className={`p-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors ${
+          isDraftsOpen || activeDraft ? 'bg-purple-500/20 text-purple-600' : 'text-muted-foreground'
+        }`}
+        title={activeDraft ? `Editing draft: ${activeDraft.name}` : 'Drafts'}
+      >
+        <GitBranch size={16} />
+      </button>
     </div>
   );
 }

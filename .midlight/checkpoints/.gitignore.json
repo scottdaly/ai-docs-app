@@ -1,0 +1,34 @@
+{
+  "fileKey": ".gitignore",
+  "headId": "cp-voajd4",
+  "checkpoints": [
+    {
+      "id": "cp-ygmfkd",
+      "contentHash": "394c208cf6d62d4daa5c0917dda96e71f77aaba1fdf50aa9d32a1efcd43c9963",
+      "sidecarHash": "54330b45c2622dbaaf96cc9f5bdac78eaecaa492252c8bf48666c4316239e9e0",
+      "timestamp": "2025-12-06T17:27:39.358Z",
+      "parentId": null,
+      "type": "auto",
+      "stats": {
+        "wordCount": 16,
+        "charCount": 191,
+        "changeSize": 191
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-voajd4",
+      "contentHash": "3cdcb7f199ecdbb69bfc492a6adf33055a9e80fc28542bdaeff08eef5530c393",
+      "sidecarHash": "2046b72f95a92500351d24c80ce9407b2be8b05bec003b85a425ab563577109c",
+      "timestamp": "2025-12-07T03:24:15.559Z",
+      "parentId": "cp-ygmfkd",
+      "type": "auto",
+      "stats": {
+        "wordCount": 22,
+        "charCount": 237,
+        "changeSize": 46
+      },
+      "trigger": "interval"
+    }
+  ]
+}

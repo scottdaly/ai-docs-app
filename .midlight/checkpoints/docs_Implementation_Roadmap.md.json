@@ -1,0 +1,20 @@
+{
+  "fileKey": "docs/Implementation_Roadmap.md",
+  "headId": "cp-gcaq0x",
+  "checkpoints": [
+    {
+      "id": "cp-gcaq0x",
+      "contentHash": "f19f56a282347b062bd6ac50b7a0f0145c797760ba95403c1c6c60082ec95347",
+      "sidecarHash": "b6084dcdb64cbf76af63df81df006a9e9dde7058d252820e144c485772a853de",
+      "timestamp": "2025-12-06T02:48:51.138Z",
+      "parentId": null,
+      "type": "auto",
+      "stats": {
+        "wordCount": 1543,
+        "charCount": 10230,
+        "changeSize": 10230
+      },
+      "trigger": "interval"
+    }
+  ]
+}
