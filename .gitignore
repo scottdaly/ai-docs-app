@@ -4,7 +4,6 @@
 node_modules/
 dist/
 dist-electron/
-build
 release
 .env
 .env.local
