@@ -50,27 +50,32 @@ export function TitleBar() {
   }, [theme]);
 
   return (
-    <div
-      className={cn(
-        "h-10 bg-background border-b flex items-center select-none draggable app-region-drag",
-        // macOS: leave space for traffic lights on the left
-        isMac && "pl-20",
-        // Windows: leave space for overlay controls on the right
-        isWindows && "pr-36",
-      )}
-    >
-      {/* Menu button for Windows/Linux */}
-      {!isMac && (
-        <div className="app-region-no-drag">
-          <WindowsMenu />
-        </div>
-      )}
+    <div className="relative">
+      {/* Full-width border that extends under Windows overlay */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-border" />
 
-      {/* Centered title */}
-      <div className="flex-1 flex justify-center">
-        <span className="text-xs text-muted-foreground font-medium">
-          Midlight
-        </span>
+      <div
+        className={cn(
+          "h-10 bg-background flex items-center select-none draggable app-region-drag",
+          // macOS: leave space for traffic lights on the left
+          isMac && "pl-20",
+          // Windows: leave space for overlay controls on the right
+          isWindows && "pr-36",
+        )}
+      >
+        {/* Menu button for Windows/Linux */}
+        {!isMac && (
+          <div className="app-region-no-drag">
+            <WindowsMenu />
+          </div>
+        )}
+
+        {/* Centered title */}
+        <div className="flex-1 flex justify-center">
+          <span className="text-xs text-muted-foreground font-medium">
+            Midlight
+          </span>
+        </div>
       </div>
     </div>
   );
