@@ -296,6 +296,12 @@ interface ImportResultResponse extends WorkspaceResult {
 }
 
 interface IElectronAPI {
+  // Platform info
+  platform: 'darwin' | 'win32' | 'linux';
+
+  // Update Windows titlebar overlay colors (for theme changes)
+  updateTitleBarOverlay: (colors: { color: string; symbolColor: string }) => Promise<void>;
+
   selectDirectory: () => Promise<string | null>;
   selectFile: () => Promise<string | null>;
   readDir: (path: string) => Promise<{ name: string; path: string; type: 'file' | 'directory' }[]>;

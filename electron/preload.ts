@@ -2,6 +2,13 @@ import { contextBridge, ipcRenderer } from 'electron'
 
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('electronAPI', {
+  // Platform info for renderer
+  platform: process.platform as 'darwin' | 'win32' | 'linux',
+
+  // Update Windows titlebar overlay colors (for theme changes)
+  updateTitleBarOverlay: (colors: { color: string; symbolColor: string }) =>
+    ipcRenderer.invoke('update-titlebar-overlay', colors),
+
   selectDirectory: () => ipcRenderer.invoke('select-directory'),
   selectFile: () => ipcRenderer.invoke('select-file'),
   readDir: (path: string) => ipcRenderer.invoke('read-dir', path),

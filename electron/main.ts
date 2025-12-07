@@ -49,6 +49,10 @@ let win: BrowserWindow | null
 // 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 
+// Platform detection
+const isMac = process.platform === 'darwin';
+const isWindows = process.platform === 'win32';
+
 function createWindow() {
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC || '', 'electron-vite.svg'),
@@ -57,8 +61,21 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
     },
-    titleBarStyle: 'hidden', // MacOS style
-    trafficLightPosition: { x: 15, y: 15 }, // Adjust for MacOS
+    // macOS: hidden titlebar with traffic lights
+    ...(isMac && {
+      titleBarStyle: 'hidden',
+      trafficLightPosition: { x: 15, y: 15 },
+    }),
+    // Windows: hidden titlebar with native overlay controls
+    ...(isWindows && {
+      titleBarStyle: 'hidden',
+      titleBarOverlay: {
+        color: '#ffffff',
+        symbolColor: '#000000',
+        height: 40,
+      },
+    }),
+    // Linux: uses default frame (no special config needed)
   })
 
   // Test active push message to Renderer-process.
@@ -76,7 +93,7 @@ function createWindow() {
 }
 
 function createMenu(window: BrowserWindow) {
-    const isMac = process.platform === 'darwin';
+    // isMac is defined at module level
 
     const template: MenuItemConstructorOptions[] = [
         // { role: 'appMenu' }
@@ -227,6 +244,17 @@ function createMenu(window: BrowserWindow) {
 }
 
 // --- IPC Handlers ---
+
+// Update Windows titlebar overlay colors (for theme changes)
+ipcMain.handle('update-titlebar-overlay', (_event, colors: { color: string; symbolColor: string }) => {
+  if (isWindows && win) {
+    win.setTitleBarOverlay({
+      color: colors.color,
+      symbolColor: colors.symbolColor,
+      height: 40,
+    });
+  }
+});
 
 ipcMain.handle('select-directory', async () => {
   const { canceled, filePaths } = await dialog.showOpenDialog(win!, {

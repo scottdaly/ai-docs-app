@@ -35,83 +35,104 @@ function App() {
   const [detectedFolderName, setDetectedFolderName] = useState('');
   const [detectedType, setDetectedType] = useState<DetectedSourceType>('generic');
 
+  // Shared handler for menu actions (used by both native menu and WindowsMenu)
+  const handleMenuAction = async (action: string) => {
+    if (action === 'open-workspace') {
+      const path = await window.electronAPI.selectDirectory();
+      if (path) {
+        // Use detection flow to auto-detect workspace type
+        const folderName = path.split(/[/\\]/).pop() || path;
+        setDetectedFolderPath(path);
+        setDetectedFolderName(folderName);
+
+        const result = await window.electronAPI.importDetectSourceType(path);
+        if (result.success && result.sourceType) {
+          setDetectedType(result.sourceType as DetectedSourceType);
+        } else {
+          setDetectedType('generic');
+        }
+
+        setDetectionDialogOpen(true);
+      }
+    }
+    if (action === 'open-settings') {
+      openSettings();
+    }
+    if (action === 'import-docx') {
+      const result = await window.electronAPI.importDocx();
+      if (result) {
+        const { html, filename } = result;
+
+        // Get current state from store (avoid stale closure)
+        const { rootDir: currentRootDir, createFile } = useFileSystem.getState();
+
+        // Check if workspace is open
+        if (!currentRootDir) {
+          // No workspace - fall back to inserting into current editor
+          window.dispatchEvent(new CustomEvent('editor:insert-content', { detail: html }));
+          return;
+        }
+
+        // Convert HTML to Tiptap JSON
+        const json = htmlToTiptapJson(html);
+
+        // Create new file in workspace with the imported content
+        const filePath = await createFile(filename, json);
+
+        if (filePath) {
+          console.log(`Imported DOCX as: ${filePath}`);
+        }
+      }
+    }
+    if (action === 'export-pdf') {
+      await window.electronAPI.exportPdf();
+    }
+    if (action === 'export-docx') {
+      setIsExporting(true);
+      window.dispatchEvent(new CustomEvent('editor:export-request'));
+    }
+    if (action === 'import-obsidian') {
+      handleImportFromMenu('obsidian');
+    }
+    if (action === 'import-notion') {
+      handleImportFromMenu('notion');
+    }
+  };
+
   useEffect(() => {
     restoreSession();
 
-    // Listen for menu actions
+    // Listen for menu actions from native menu (via IPC)
     const cleanupMenu = window.electronAPI.onMenuAction(async (action) => {
-        if (action === 'open-workspace') {
-            const path = await window.electronAPI.selectDirectory();
-            if (path) {
-                // Use detection flow to auto-detect workspace type
-                const folderName = path.split(/[/\\]/).pop() || path;
-                setDetectedFolderPath(path);
-                setDetectedFolderName(folderName);
-
-                const result = await window.electronAPI.importDetectSourceType(path);
-                if (result.success && result.sourceType) {
-                    setDetectedType(result.sourceType as DetectedSourceType);
-                } else {
-                    setDetectedType('generic');
-                }
-
-                setDetectionDialogOpen(true);
-            }
-        }
-        if (action === 'open-settings') {
-            openSettings();
-        }
-        if (action === 'import-docx') {
-            const result = await window.electronAPI.importDocx();
-            if (result) {
-                const { html, filename } = result;
-
-                // Get current state from store (avoid stale closure)
-                const { rootDir, createFile } = useFileSystem.getState();
-
-                // Check if workspace is open
-                if (!rootDir) {
-                    // No workspace - fall back to inserting into current editor
-                    window.dispatchEvent(new CustomEvent('editor:insert-content', { detail: html }));
-                    return;
-                }
-
-                // Convert HTML to Tiptap JSON
-                const json = htmlToTiptapJson(html);
-
-                // Create new file in workspace with the imported content
-                const filePath = await createFile(filename, json);
-
-                if (filePath) {
-                    console.log(`Imported DOCX as: ${filePath}`);
-                }
-            }
-        }
-        if (action === 'export-pdf') {
-            await window.electronAPI.exportPdf();
-        }
-        if (action === 'export-docx') {
-            setIsExporting(true);
-            window.dispatchEvent(new CustomEvent('editor:export-request'));
-        }
-        if (action === 'import-obsidian') {
-            handleImportFromMenu('obsidian');
-        }
-        if (action === 'import-notion') {
-            handleImportFromMenu('notion');
-        }
+      await handleMenuAction(action);
     });
+
+    // Listen for menu actions from WindowsMenu (via custom event)
+    const handleWindowsMenuAction = (event: Event) => {
+      const customEvent = event as CustomEvent<string>;
+      handleMenuAction(customEvent.detail);
+    };
+    window.addEventListener('windows-menu-action', handleWindowsMenuAction);
 
     // Listen for theme updates
     const cleanupTheme = window.electronAPI.onUpdateTheme((theme) => {
-        setTheme(theme as Theme);
+      setTheme(theme as Theme);
     });
 
     return () => {
-        cleanupMenu();
-        cleanupTheme();
+      cleanupMenu();
+      cleanupTheme();
+      window.removeEventListener('windows-menu-action', handleWindowsMenuAction);
     };
   }, []);
+
+  // Import from menu (obsidian/notion)
+  const handleImportFromMenu = (type: 'obsidian' | 'notion') => {
+    setImportSourceType(type);
+    setImportQuickMode(false);
+    setImportSourcePath(null);
+    setImportWizardOpen(true);
+  };
 
   // Handle folder drop - detect type and show import dialog
   const handleFolderDrop = async (path: string) => {
@@ -167,14 +188,6 @@ function App() {
     setDetectionDialogOpen(false);
     await loadDir(detectedFolderPath);
     addRecentWorkspace(detectedFolderPath);
-  };
-
-  // Import from menu (obsidian/notion)
-  const handleImportFromMenu = (type: 'obsidian' | 'notion') => {
-    setImportSourceType(type);
-    setImportQuickMode(false);
-    setImportSourcePath(null);
-    setImportWizardOpen(true);
   };
 
   return (
