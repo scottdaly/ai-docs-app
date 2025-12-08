@@ -6,6 +6,12 @@
   "build": {
     "appId": "com.midlight.app",
     "productName": "Midlight",
+    "publish": {
+      "provider": "github",
+      "owner": "scottdaly",
+      "repo": "ai-doc-app",
+      "releaseType": "release"
+    },
     "files": [
       "dist/index.html",
       "dist/assets/**/*",
@@ -94,6 +100,7 @@
     "clsx": "^2.0.0",
     "diff": "^8.0.2",
     "docx": "^9.5.1",
+    "electron-updater": "^6.6.2",
     "lucide-react": "^0.292.0",
     "mammoth": "^1.11.0",
     "marked": "^17.0.1",
