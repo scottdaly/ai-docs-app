@@ -7,10 +7,8 @@
     "appId": "com.midlight.app",
     "productName": "Midlight",
     "publish": {
-      "provider": "github",
-      "owner": "scottdaly",
-      "repo": "ai-docs-app",
-      "releaseType": "release"
+      "provider": "generic",
+      "url": "https://midlight.ai/releases/"
     },
     "files": [
       "dist/index.html",

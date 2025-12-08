@@ -54,13 +54,10 @@ jobs:
             release/latest*.yml
           if-no-files-found: ignore
 
-  release:
+  deploy:
     needs: build
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
-
-    permissions:
-      contents: write
 
     steps:
       - name: Download all artifacts
@@ -71,14 +68,19 @@ jobs:
       - name: List artifacts
         run: find artifacts -type f
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            artifacts/**/*.dmg
-            artifacts/**/*.zip
-            artifacts/**/*.exe
-            artifacts/**/*.blockmap
-            artifacts/**/latest*.yml
-          draft: true
-          generate_release_notes: true
+      - name: Flatten artifacts
+        run: |
+          mkdir -p deploy
+          find artifacts -type f \( -name "*.dmg" -o -name "*.zip" -o -name "*.exe" -o -name "*.blockmap" -o -name "latest*.yml" \) -exec cp {} deploy/ \;
+          ls -la deploy/
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Upload to server
+        run: |
+          scp -i ~/.ssh/deploy_key deploy/* ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/var/www/midlight-releases/
