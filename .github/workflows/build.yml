@@ -50,9 +50,8 @@ jobs:
             release/*.dmg
             release/*.zip
             release/*.exe
-            release/*.msi
-            release/*.yml
             release/*.blockmap
+            release/latest*.yml
           if-no-files-found: ignore
 
   release:
@@ -79,8 +78,7 @@ jobs:
             artifacts/**/*.dmg
             artifacts/**/*.zip
             artifacts/**/*.exe
-            artifacts/**/*.msi
-            artifacts/**/*.yml
             artifacts/**/*.blockmap
+            artifacts/**/latest*.yml
           draft: true
           generate_release_notes: true
