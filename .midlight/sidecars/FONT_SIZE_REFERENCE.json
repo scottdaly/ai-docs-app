@@ -2,40 +2,82 @@
   "version": 1,
   "meta": {
     "created": "2025-12-06T02:26:31.031Z",
-    "modified": "2025-12-07T03:24:20.380Z",
+    "modified": "2025-12-08T02:06:58.275Z",
     "wordCount": 371,
     "readingTime": 2,
     "title": "Font Size Reference: Editor vs Word"
   },
   "document": {},
   "blocks": {
-    "img-exluwf": {
+    "img-vtj48f": {
       "width": "100%",
       "height": "auto"
     }
   },
   "spans": {
-    "p-1s9sab": [
+    "p-f51ffe": [
       {
         "start": 0,
         "end": 23,
         "marks": [
           {
             "type": "bold"
+          },
+          {
+            "type": "italic"
           }
         ]
       },
       {
         "start": 23,
-        "end": 43,
+        "end": 24,
         "marks": [
           {
             "type": "bold"
+          },
+          {
+            "type": "italic"
+          }
+        ]
+      },
+      {
+        "start": 24,
+        "end": 25,
+        "marks": [
+          {
+            "type": "bold"
+          },
+          {
+            "type": "italic"
+          }
+        ]
+      },
+      {
+        "start": 25,
+        "end": 46,
+        "marks": [
+          {
+            "type": "bold"
+          },
+          {
+            "type": "italic"
+          }
+        ]
+      },
+      {
+        "start": 46,
+        "end": 47,
+        "marks": [
+          {
+            "type": "bold"
+          },
+          {
+            "type": "italic"
           }
         ]
       }
     ],
-    "p-u8ptfm": [
+    "p-ndic3y": [
       {
         "start": 0,
         "end": 13,
@@ -64,7 +106,7 @@
         ]
       }
     ],
-    "p-6fvufp": [
+    "p-z2v0jl": [
       {
         "start": 0,
         "end": 1,
@@ -93,36 +135,45 @@
         ]
       }
     ],
-    "p-kgw8bi": [
+    "p-00xj41": [
       {
         "start": 0,
-        "end": 88,
+        "end": 119,
         "marks": [
           {
             "type": "bold"
+          },
+          {
+            "type": "italic"
           }
         ]
       },
       {
-        "start": 88,
-        "end": 115,
+        "start": 119,
+        "end": 254,
         "marks": [
           {
             "type": "bold"
+          },
+          {
+            "type": "italic"
           }
         ]
       },
       {
-        "start": 115,
-        "end": 249,
+        "start": 254,
+        "end": 255,
         "marks": [
           {
             "type": "bold"
+          },
+          {
+            "type": "italic"
           }
         ]
       }
     ],
-    "p-jb4o52": [
+    "p-m5tnxj": [
       {
         "start": 0,
         "end": 1,
@@ -151,7 +202,7 @@
         ]
       }
     ],
-    "p-h03aj6": [
+    "p-gfbyfy": [
       {
         "start": 0,
         "end": 10,
@@ -162,7 +213,7 @@
         ]
       }
     ],
-    "p-gpo03h": [
+    "p-dbfc5t": [
       {
         "start": 0,
         "end": 9,
@@ -173,7 +224,7 @@
         ]
       }
     ],
-    "p-xpaq4v": [
+    "p-3xhhr2": [
       {
         "start": 0,
         "end": 1,
@@ -202,7 +253,7 @@
         ]
       }
     ],
-    "p-yvr5ba": [
+    "p-qsxdg6": [
       {
         "start": 0,
         "end": 1,
@@ -231,27 +282,69 @@
         ]
       }
     ],
-    "p-t1bu7q": [
+    "p-8ku2ue": [
       {
         "start": 0,
         "end": 13,
         "marks": [
           {
             "type": "bold"
+          },
+          {
+            "type": "italic"
           }
         ]
       },
       {
         "start": 13,
-        "end": 76,
+        "end": 14,
         "marks": [
           {
             "type": "bold"
+          },
+          {
+            "type": "italic"
+          }
+        ]
+      },
+      {
+        "start": 14,
+        "end": 15,
+        "marks": [
+          {
+            "type": "bold"
+          },
+          {
+            "type": "italic"
+          }
+        ]
+      },
+      {
+        "start": 15,
+        "end": 79,
+        "marks": [
+          {
+            "type": "bold"
+          },
+          {
+            "type": "italic"
+          }
+        ]
+      },
+      {
+        "start": 79,
+        "end": 80,
+        "marks": [
+          {
+            "type": "bold"
+          },
+          {
+            "type": "italic"
           }
         ]
       }
     ],
-    "p-m5ajvk": [
+    "p-f7ah5y": [
       {
         "start": 0,
         "end": 19,
@@ -262,7 +355,7 @@
         ]
       }
     ],
-    "p-211voo": [
+    "p-9skim2": [
       {
         "start": 0,
         "end": 1,

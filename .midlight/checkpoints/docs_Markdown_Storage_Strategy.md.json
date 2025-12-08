@@ -1,6 +1,6 @@
 {
   "fileKey": "docs/Markdown_Storage_Strategy.md",
-  "headId": "cp-t56rat",
+  "headId": "cp-zqvju3",
   "checkpoints": [
     {
       "id": "cp-t56rat",
@@ -13,6 +13,20 @@
         "wordCount": 4233,
         "charCount": 29864,
         "changeSize": 29864
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-zqvju3",
+      "contentHash": "507b4f3a31b59970fe6e0c301fddab2a0ae663247b5ee5a5910f6d61b46103c3",
+      "sidecarHash": "460db3399adf877e6046022b6db1961872bf087cf9b1c9fc8ee9280efacc0a3e",
+      "timestamp": "2025-12-08T00:58:12.520Z",
+      "parentId": "cp-t56rat",
+      "type": "auto",
+      "stats": {
+        "wordCount": 4233,
+        "charCount": 30160,
+        "changeSize": 296
       },
       "trigger": "interval"
     }

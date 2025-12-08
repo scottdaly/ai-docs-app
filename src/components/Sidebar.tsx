@@ -668,92 +668,94 @@ export function Sidebar() {
   };
 
   return (
-    <div className="w-64 border-r bg-muted/10 flex flex-col h-full">
-      <div className="p-3 border-b flex items-center gap-2">
-         <button
-           onClick={handleOpenFolder}
-           className="text-xs font-medium hover:bg-accent px-2 py-1 rounded flex-1 text-left truncate flex items-center gap-2"
-           title={rootDir || "Select a folder"}
-         >
-           <FolderIcon size={16} className="shrink-0" />
-           <span className="truncate">{rootDir ? rootDir.split('/').pop() : 'Open Workspace...'}</span>
-         </button>
-         {rootDir && (
+    <div className="w-64 h-full py-2 pl-2 flex-shrink-0">
+      <div className="flex flex-col h-full bg-background rounded-xl shadow-sm overflow-hidden">
+        <div className="p-3 flex items-center gap-2">
            <button
-             onClick={() => {
-               setCreateInFolder(null);
-               setIsCreating(true);
-             }}
-             className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-             title="New Document"
+             onClick={handleOpenFolder}
+             className="text-xs font-medium hover:bg-accent px-2 py-1 rounded flex-1 text-left truncate flex items-center gap-2"
+             title={rootDir || "Select a folder"}
            >
-             <Plus size={14} />
+             <FolderIcon size={16} className="shrink-0" />
+             <span className="truncate">{rootDir ? rootDir.split('/').pop() : 'Open Workspace...'}</span>
            </button>
-         )}
-      </div>
-
-      {/* New file input */}
-      {isCreating && (
-        <div className="px-3 py-2 border-b">
-          {createInFolder && (
-            <div className="text-xs text-muted-foreground mb-1 truncate">
-              In: {createInFolder.split(/[/\\]/).pop()}
-            </div>
-          )}
-          <input
-            ref={inputRef}
-            type="text"
-            value={newFileName}
-            onChange={(e) => setNewFileName(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onBlur={handleCreateDocument}
-            placeholder="Document name..."
-            className="w-full text-sm px-2 py-1 border rounded bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-          />
+           {rootDir && (
+             <button
+               onClick={() => {
+                 setCreateInFolder(null);
+                 setIsCreating(true);
+               }}
+               className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+               title="New Document"
+             >
+               <Plus size={14} />
+             </button>
+           )}
         </div>
-      )}
 
-      <div
-        ref={fileTreeRef}
-        className="flex-1 overflow-auto py-2 focus:outline-none"
-        onClick={handleBackgroundClick}
-        onKeyDown={handleFileTreeKeyDown}
-        tabIndex={0}
-      >
-        {files.map((file) => (
-          <FileTreeItem
-            key={file.path}
-            node={file}
-            onCreateInFolder={handleCreateInFolder}
-            selectedPaths={selectedPaths}
-            onSelect={handleSelect}
-            onExpandedChange={handleExpandedChange}
-            expandedPaths={expandedPaths}
-            onClearSelection={handleBackgroundClick}
-            onImportableClick={handleImportableClick}
-          />
-        ))}
-        {files.length === 0 && rootDir && !isCreating && (
-            <div className="text-center text-muted-foreground text-xs mt-4">
-              Empty folder
-              <br />
-              <button
-                onClick={() => setIsCreating(true)}
-                className="mt-2 text-primary hover:underline"
-              >
-                Create a document
-              </button>
-            </div>
+        {/* New file input */}
+        {isCreating && (
+          <div className="px-3 py-2 border-b">
+            {createInFolder && (
+              <div className="text-xs text-muted-foreground mb-1 truncate">
+                In: {createInFolder.split(/[/\\]/).pop()}
+              </div>
+            )}
+            <input
+              ref={inputRef}
+              type="text"
+              value={newFileName}
+              onChange={(e) => setNewFileName(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onBlur={handleCreateDocument}
+              placeholder="Document name..."
+              className="w-full text-sm px-2 py-1 border rounded bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
         )}
-      </div>
-      <div className="p-2 border-t">
-        <button
-            onClick={() => openSettings()}
-            className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 px-2 py-1.5 rounded w-full transition-colors"
+
+        <div
+          ref={fileTreeRef}
+          className="flex-1 overflow-auto py-2 focus:outline-none"
+          onClick={handleBackgroundClick}
+          onKeyDown={handleFileTreeKeyDown}
+          tabIndex={0}
         >
-            <Settings size={14} />
-            <span>Settings</span>
-        </button>
+          {files.map((file) => (
+            <FileTreeItem
+              key={file.path}
+              node={file}
+              onCreateInFolder={handleCreateInFolder}
+              selectedPaths={selectedPaths}
+              onSelect={handleSelect}
+              onExpandedChange={handleExpandedChange}
+              expandedPaths={expandedPaths}
+              onClearSelection={handleBackgroundClick}
+              onImportableClick={handleImportableClick}
+            />
+          ))}
+          {files.length === 0 && rootDir && !isCreating && (
+              <div className="text-center text-muted-foreground text-xs mt-4">
+                Empty folder
+                <br />
+                <button
+                  onClick={() => setIsCreating(true)}
+                  className="mt-2 text-primary hover:underline"
+                >
+                  Create a document
+                </button>
+              </div>
+          )}
+        </div>
+        <div className="p-2 border-t">
+          <button
+              onClick={() => openSettings()}
+              className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 px-2 py-1.5 rounded w-full transition-colors"
+          >
+              <Settings size={14} />
+              <span>Settings</span>
+          </button>
+        </div>
       </div>
 
       {/* Undo confirmation dialog */}

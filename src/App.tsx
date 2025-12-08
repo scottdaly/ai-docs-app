@@ -8,12 +8,15 @@ import { ImportWizard } from './components/ImportWizard'
 import { WelcomeScreen } from './components/WelcomeScreen'
 import { DropZone } from './components/DropZone'
 import { ImportDetectionDialog, DetectedSourceType } from './components/ImportDetectionDialog'
+import { RightSidebar, RightSidebarMode } from './components/RightSidebar'
+import { UpdateNotification } from './components/UpdateNotification'
+import { EditorHandle } from './components/Editor'
 import { useFileSystem } from './store/useFileSystem'
 import { useRecentWorkspaces } from './store/useRecentWorkspaces'
 import { useTheme, Theme } from './store/useTheme'
 import { useSettingsStore } from './store/useSettingsStore'
 import { useExportStore } from './store/useExportStore'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { htmlToTiptapJson } from './utils/htmlToTiptap'
 
 function App() {
@@ -34,6 +37,12 @@ function App() {
   const [detectedFolderPath, setDetectedFolderPath] = useState('');
   const [detectedFolderName, setDetectedFolderName] = useState('');
   const [detectedType, setDetectedType] = useState<DetectedSourceType>('generic');
+
+  // Right sidebar state (ai, history, drafts, or null)
+  const [rightPanelMode, setRightPanelMode] = useState<RightSidebarMode>(null);
+
+  // Editor ref for accessing editor methods from RightSidebar
+  const editorRef = useRef<EditorHandle>(null);
 
   // Shared handler for menu actions (used by both native menu and WindowsMenu)
   const handleMenuAction = async (action: string) => {
@@ -196,12 +205,27 @@ function App() {
         <TitleBar />
         {rootDir ? (
           // Workspace is open - show normal layout
-          <div className="flex-1 flex overflow-hidden">
+          <div className="flex-1 flex overflow-hidden bg-secondary gap-2">
             <Sidebar />
-            <div className="flex-1 flex flex-col min-w-0">
-              <TabBar />
-              <Editor />
+            <div className="flex-1 flex flex-col min-w-0 py-2 pr-2 h-full">
+              <div className="flex-1 flex flex-col min-w-0 bg-background rounded-xl shadow-sm overflow-hidden">
+                <TabBar />
+                <Editor
+                  ref={editorRef}
+                  rightPanelMode={rightPanelMode}
+                  onSetRightPanelMode={setRightPanelMode}
+                />
+              </div>
             </div>
+            {/* Right Sidebar - AI, History, or Drafts - outside editor panel */}
+            <RightSidebar
+              mode={rightPanelMode}
+              onClose={() => setRightPanelMode(null)}
+              onRestoreContent={(content) => editorRef.current?.restoreContent(content)}
+              onSwitchToDraft={(content) => editorRef.current?.switchToDraft(content)}
+              onSwitchToMain={() => editorRef.current?.switchToMain()}
+              getCurrentContent={() => editorRef.current?.getCurrentContent()}
+            />
           </div>
         ) : (
           // No workspace - show welcome screen
@@ -240,6 +264,7 @@ function App() {
           quickImport={importQuickMode}
           initialSourcePath={importSourcePath}
         />
+        <UpdateNotification />
       </div>
     </DropZone>
   )

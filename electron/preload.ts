@@ -215,6 +215,55 @@ contextBridge.exposeInMainWorld('electronAPI', {
       const subscription = (_: any, event: { type: 'change' | 'add' | 'unlink'; fileKey: string; absolutePath: string; timestamp: string }) => callback(event);
       ipcRenderer.on('file-changed-externally', subscription);
       return () => ipcRenderer.off('file-changed-externally', subscription);
+  },
+
+  // --- Auto-Update APIs ---
+
+  // Check for updates manually
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+
+  // Download the available update
+  downloadUpdate: () => ipcRenderer.invoke('download-update'),
+
+  // Quit and install the downloaded update
+  quitAndInstall: () => ipcRenderer.invoke('quit-and-install'),
+
+  // Get current app version
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+
+  // Listen for update available
+  onUpdateAvailable: (callback: (data: { version: string; releaseDate?: string; releaseNotes?: string }) => void) => {
+      const subscription = (_: any, data: { version: string; releaseDate?: string; releaseNotes?: string }) => callback(data);
+      ipcRenderer.on('update-available', subscription);
+      return () => ipcRenderer.off('update-available', subscription);
+  },
+
+  // Listen for update not available
+  onUpdateNotAvailable: (callback: (data: { version: string }) => void) => {
+      const subscription = (_: any, data: { version: string }) => callback(data);
+      ipcRenderer.on('update-not-available', subscription);
+      return () => ipcRenderer.off('update-not-available', subscription);
+  },
+
+  // Listen for download progress
+  onUpdateDownloadProgress: (callback: (data: { percent: number; bytesPerSecond: number; total: number; transferred: number }) => void) => {
+      const subscription = (_: any, data: { percent: number; bytesPerSecond: number; total: number; transferred: number }) => callback(data);
+      ipcRenderer.on('update-download-progress', subscription);
+      return () => ipcRenderer.off('update-download-progress', subscription);
+  },
+
+  // Listen for update downloaded
+  onUpdateDownloaded: (callback: (data: { version: string; releaseNotes?: string }) => void) => {
+      const subscription = (_: any, data: { version: string; releaseNotes?: string }) => callback(data);
+      ipcRenderer.on('update-downloaded', subscription);
+      return () => ipcRenderer.off('update-downloaded', subscription);
+  },
+
+  // Listen for update error
+  onUpdateError: (callback: (data: { message: string }) => void) => {
+      const subscription = (_: any, data: { message: string }) => callback(data);
+      ipcRenderer.on('update-error', subscription);
+      return () => ipcRenderer.off('update-error', subscription);
   }
 })
 

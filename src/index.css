@@ -49,19 +49,19 @@
   }
 
   .dark {
-    --background: 240 10% 3.9%;
+    --background: 240 3.7% 15.9%;
     --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
+    --card: 240 3.7% 15.9%;
     --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
+    --popover: 240 3.7% 15.9%;
     --popover-foreground: 0 0% 98%;
     --primary: 0 0% 98%;
     --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
+    --secondary: 240 10% 3.9%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
+    --muted: 240 10% 3.9%;
     --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
+    --accent: 240 10% 3.9%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
@@ -77,11 +77,11 @@
 
     --image-border: 217 91% 60%;
 
-    /* File Icon Colors - Dark */
-    --file-icon-bg: 240 5% 40%;
-    --file-icon-bg-dark: 240 5% 32%;
-    --file-icon-fold: 240 5% 50%;
-    --file-icon-fold-dark: 240 5% 28%;
+    /* File Icon Colors - Dark (Adjusted for lighter background) */
+    --file-icon-bg: 240 5% 60%;
+    --file-icon-bg-dark: 240 5% 50%;
+    --file-icon-fold: 240 5% 70%;
+    --file-icon-fold-dark: 240 5% 40%;
 
     /* Folder Icon Colors - Dark - Blue tint */
     --folder-icon-back: 205 50% 45%;
@@ -91,19 +91,19 @@
   }
 
   .midnight {
-    --background: 222 47% 11%;
+    --background: 217 33% 17%;
     --foreground: 210 40% 98%;
-    --card: 222 47% 11%;
+    --card: 217 33% 17%;
     --card-foreground: 210 40% 98%;
-    --popover: 222 47% 11%;
+    --popover: 217 33% 17%;
     --popover-foreground: 210 40% 98%;
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217 33% 17%;
+    --secondary: 222 47% 11%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
+    --muted: 222 47% 11%;
     --muted-foreground: 215 20% 80%;
-    --accent: 217 33% 17%;
+    --accent: 222 47% 11%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
@@ -641,6 +641,15 @@
   height: 24px !important;
   border-radius: 2px !important;
   margin-top: -12px; /* Center vertically */
+}
+
+/* Hide scrollbar but keep scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
 }
 
 

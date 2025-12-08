@@ -52,9 +52,7 @@ export function TitleBar() {
   return (
     <div
       className={cn(
-        "h-10 bg-background flex items-center select-none draggable app-region-drag",
-        // Use box-shadow for border (renders below overlay on Windows)
-        "shadow-[0_1px_0_0_hsl(var(--border))]",
+        "h-10 bg-secondary flex items-center select-none draggable app-region-drag",
         // macOS: leave space for traffic lights on the left
         isMac && "pl-20",
         // Windows: leave space for overlay controls on the right

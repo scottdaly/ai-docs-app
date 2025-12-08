@@ -18,6 +18,7 @@ import {
   NotionImportOptions,
   validatePath,
 } from './services'
+import { initAutoUpdater, stopAutoUpdater } from './services/autoUpdateService'
 
 // Active file watchers by workspace root
 const fileWatchers: Map<string, FileWatcher> = new Map();
@@ -229,6 +230,13 @@ function createMenu(window: BrowserWindow) {
         {
           role: 'help',
           submenu: [
+            {
+              label: 'Check for Updates...',
+              click: () => {
+                window.webContents.send('menu-action', 'check-for-updates');
+              }
+            },
+            { type: 'separator' },
             {
               label: 'Learn More',
               click: async () => {
@@ -1415,6 +1423,9 @@ app.on('window-all-closed', () => {
 
 // Clean up workspace managers and file watchers on quit
 app.on('before-quit', async () => {
+  // Stop auto-updater
+  stopAutoUpdater();
+
   // Stop all file watchers
   for (const watcher of fileWatchers.values()) {
     await watcher.stop();
@@ -1432,4 +1443,14 @@ app.on('activate', () => {
   }
 })
 
-app.whenReady().then(createWindow)
+// Check if we're in development mode
+const isDev = !!VITE_DEV_SERVER_URL;
+
+app.whenReady().then(() => {
+  createWindow();
+
+  // Initialize auto-updater in production only
+  if (win && !isDev) {
+    initAutoUpdater(win);
+  }
+})

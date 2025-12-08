@@ -9,7 +9,7 @@
     "publish": {
       "provider": "github",
       "owner": "scottdaly",
-      "repo": "ai-doc-app",
+      "repo": "ai-docs-app",
       "releaseType": "release"
     },
     "files": [

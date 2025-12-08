@@ -1,12 +1,47 @@
-import { X, Plus, FolderOpen } from 'lucide-react';
+import { X, Plus, FolderOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useFileSystem } from '../store/useFileSystem';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 export function TabBar() {
   const { openFiles, activeFilePath, selectFile, closeFile, createFile, openFile, renameFile, rootDir } = useFileSystem();
   const [renamingPath, setRenamingPath] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  // Check scroll state
+  const updateScrollState = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      setCanScrollLeft(container.scrollLeft > 0);
+      setCanScrollRight(container.scrollLeft < container.scrollWidth - container.clientWidth - 1);
+    }
+  }, []);
+
+  // Update scroll state on mount, resize, and when tabs change
+  useEffect(() => {
+    updateScrollState();
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', updateScrollState);
+      const resizeObserver = new ResizeObserver(updateScrollState);
+      resizeObserver.observe(container);
+      return () => {
+        container.removeEventListener('scroll', updateScrollState);
+        resizeObserver.disconnect();
+      };
+    }
+  }, [updateScrollState, openFiles.length]);
+
+  const scrollLeft = () => {
+    scrollContainerRef.current?.scrollBy({ left: -200, behavior: 'smooth' });
+  };
+
+  const scrollRight = () => {
+    scrollContainerRef.current?.scrollBy({ left: 200, behavior: 'smooth' });
+  };
 
   useEffect(() => {
     if (renamingPath && inputRef.current) {
@@ -60,66 +95,164 @@ export function TabBar() {
 
   if (openFiles.length === 0 && !rootDir) return null;
 
-  return (
-    <div className="flex items-center border-b bg-background overflow-x-auto scrollbar-hide">
-      {openFiles.map((file) => {
-        const isActive = file.path === activeFilePath;
-        const isRenaming = renamingPath === file.path;
+  const showScrollButtons = canScrollLeft || canScrollRight;
 
-        return (
-          <div
-            key={file.path}
-            onClick={() => !isRenaming && selectFile(file.path)}
-            onDoubleClick={() => handleDoubleClick(file)}
-            className={`
-              flex items-center min-w-[120px] max-w-[200px] h-9 px-3 border-r text-sm select-none cursor-pointer group
-              ${isActive ? 'bg-background text-foreground font-medium' : 'bg-muted/30 text-muted-foreground hover:bg-muted/50'}
-            `}
+  return (
+    <div className="flex items-end w-full bg-muted/50 dark:bg-muted/30 pt-2">
+      {/* Scrollable tabs container */}
+      <div className="relative flex-1 min-w-0">
+        {/* Left fade indicator */}
+        {canScrollLeft && (
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-muted/80 to-transparent pointer-events-none z-10" />
+        )}
+        {/* Right fade indicator */}
+        {canScrollRight && (
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-muted/80 to-transparent pointer-events-none z-10" />
+        )}
+        <div
+          ref={scrollContainerRef}
+          className="flex items-end overflow-x-auto overflow-y-hidden scrollbar-hide"
+        >
+        {openFiles.map((file, index) => {
+              const isActive = file.path === activeFilePath;
+              const isRenaming = renamingPath === file.path;
+
+              // Check if we should show a divider before this tab
+              // Show divider if: not first tab, current tab is not active, previous tab is not active
+              const prevFile = index > 0 ? openFiles[index - 1] : null;
+              const isPrevActive = prevFile?.path === activeFilePath;
+              const showDivider = index > 0 && !isActive && !isPrevActive;
+
+              return (
+                <div key={file.path} className="flex items-end">
+                  {/* Divider between inactive tabs */}
+                  {showDivider && (
+                    <div className="w-px h-5 bg-muted-foreground/30 mb-2" />
+                  )}
+                  <div
+                    onClick={() => !isRenaming && selectFile(file.path)}
+                    onDoubleClick={() => handleDoubleClick(file)}
+                    className={`
+                      relative flex items-center min-w-[120px] max-w-[200px] h-9 px-3 text-sm select-none cursor-pointer group transition-all rounded-t-lg
+                      ${isActive
+                        ? 'bg-background text-foreground font-medium z-20 relative'
+                        : 'bg-transparent border-transparent text-muted-foreground hover:bg-black/10 dark:hover:bg-white/10 mb-0 border-b-0'
+                      }
+                    `}
+                  >
+
+              {isRenaming ? (
+
+                <input
+
+                  ref={inputRef}
+
+                  type="text"
+
+                  value={renameValue}
+
+                  onChange={(e) => setRenameValue(e.target.value)}
+
+                  onBlur={handleRenameSubmit}
+
+                  onKeyDown={handleRenameKeyDown}
+
+                  onClick={(e) => e.stopPropagation()}
+
+                  className="flex-1 min-w-0 bg-background border rounded px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+
+                />
+
+              ) : (
+
+                <span className="truncate flex-1">{file.name}</span>
+
+              )}
+
+              <button
+
+                onClick={(e) => {
+
+                  e.stopPropagation();
+
+                  closeFile(file.path);
+
+                }}
+
+                className={`
+
+                  ml-2 p-0.5 rounded-full hover:bg-muted-foreground/20 text-muted-foreground hover:text-foreground
+
+                  opacity-0 group-hover:opacity-100 transition-opacity
+
+                  ${isActive ? 'opacity-100' : ''}
+
+                `}
+
+              >
+
+                <X size={13} />
+
+              </button>
+
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+      </div>
+
+      {/* Scroll arrows - both on the right */}
+      {showScrollButtons && (
+        <div className="flex items-center flex-shrink-0 h-9">
+          <button
+            onClick={scrollLeft}
+            disabled={!canScrollLeft}
+            className={`p-1 rounded transition-colors ${
+              canScrollLeft
+                ? 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                : 'text-muted-foreground/30 cursor-default'
+            }`}
           >
-            {isRenaming ? (
-              <input
-                ref={inputRef}
-                type="text"
-                value={renameValue}
-                onChange={(e) => setRenameValue(e.target.value)}
-                onBlur={handleRenameSubmit}
-                onKeyDown={handleRenameKeyDown}
-                onClick={(e) => e.stopPropagation()}
-                className="flex-1 min-w-0 bg-background border rounded px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            ) : (
-              <span className="truncate flex-1">{file.name}</span>
-            )}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                closeFile(file.path);
-              }}
-              className={`ml-2 p-0.5 rounded-sm hover:bg-muted-foreground/20 opacity-0 group-hover:opacity-100 ${isActive ? 'opacity-100' : ''}`}
-            >
-              <X size={12} />
-            </button>
-          </div>
-        );
-      })}
+            <ChevronLeft size={16} />
+          </button>
+          <button
+            onClick={scrollRight}
+            disabled={!canScrollRight}
+            className={`p-1 rounded transition-colors ${
+              canScrollRight
+                ? 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                : 'text-muted-foreground/30 cursor-default'
+            }`}
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      )}
+
       {rootDir && (
-        <>
+        <div className="flex items-center ml-1 flex-shrink-0 h-9">
+          {/* Divider before + button */}
+          <div className="w-px h-5 bg-muted-foreground/30 mr-1" />
           <button
             onClick={handleCreateDocument}
-            className="h-9 px-3 border-r text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
             title="New Document"
           >
-            <Plus size={14} />
+            <Plus size={16} />
           </button>
+          {/* Divider between + and folder buttons */}
+          <div className="w-px h-5 bg-muted-foreground/30 mx-0.5" />
           <button
             onClick={handleOpenFile}
-            className="h-9 px-3 border-r text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
             title="Open File"
           >
-            <FolderOpen size={14} />
+            <FolderOpen size={16} />
           </button>
-        </>
+        </div>
       )}
     </div>
   );
-}
+
+  }

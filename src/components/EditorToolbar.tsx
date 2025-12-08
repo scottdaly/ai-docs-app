@@ -14,6 +14,7 @@ import {
   History,
   Bookmark,
   GitBranch,
+  Sparkles,
 } from 'lucide-react';
 import { BlockTypeDropdown } from './BlockTypeDropdown';
 import { FontFamilyDropdown } from './FontFamilyDropdown';
@@ -25,15 +26,18 @@ import { useDraftStore } from '../store/useDraftStore';
 import { useFileSystem } from '../store/useFileSystem';
 import { useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { RightSidebarMode } from './RightSidebar';
 
 interface EditorToolbarProps {
   editor: Editor | null;
+  rightPanelMode: RightSidebarMode;
+  onSetRightPanelMode: (mode: RightSidebarMode) => void;
 }
 
-export function EditorToolbar({ editor }: EditorToolbarProps) {
+export function EditorToolbar({ editor, rightPanelMode, onSetRightPanelMode }: EditorToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { isOpen: isHistoryOpen, togglePanel: toggleHistory, createBookmark } = useHistoryStore();
-  const { isOpen: isDraftsOpen, togglePanel: toggleDrafts, activeDraft } = useDraftStore();
+  const { createBookmark } = useHistoryStore();
+  const { activeDraft } = useDraftStore();
   const { rootDir, activeFilePath } = useFileSystem();
   const [isCreatingBookmark, setIsCreatingBookmark] = useState(false);
   const [isSavingBookmark, setIsSavingBookmark] = useState(false);
@@ -120,7 +124,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
   };
 
   return (
-    <div className="border-b bg-muted/30 p-1 flex items-center gap-1 flex-wrap">
+    <div className="border-b bg-background p-1 flex items-center gap-1 flex-wrap">
       <BlockTypeDropdown editor={editor} />
       <FontFamilyDropdown editor={editor} />
       <FontSizeDropdown editor={editor} />
@@ -311,9 +315,9 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
 
       {/* History toggle */}
       <button
-        onClick={toggleHistory}
+        onClick={() => onSetRightPanelMode(rightPanelMode === 'history' ? null : 'history')}
         className={`p-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors ${
-          isHistoryOpen ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
+          rightPanelMode === 'history' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
         }`}
         title="Version History"
       >
@@ -322,13 +326,25 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
 
       {/* Drafts toggle */}
       <button
-        onClick={toggleDrafts}
+        onClick={() => onSetRightPanelMode(rightPanelMode === 'drafts' ? null : 'drafts')}
         className={`p-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors ${
-          isDraftsOpen || activeDraft ? 'bg-purple-500/20 text-purple-600' : 'text-muted-foreground'
+          rightPanelMode === 'drafts' || activeDraft ? 'bg-purple-500/20 text-purple-600' : 'text-muted-foreground'
         }`}
         title={activeDraft ? `Editing draft: ${activeDraft.name}` : 'Drafts'}
       >
         <GitBranch size={16} />
+      </button>
+
+      {/* AI Assistant toggle */}
+      <div className="w-px h-4 bg-border mx-1" />
+      <button
+        onClick={() => onSetRightPanelMode(rightPanelMode === 'ai' ? null : 'ai')}
+        className={`p-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors ${
+          rightPanelMode === 'ai' ? 'bg-primary/20 text-primary' : 'text-muted-foreground'
+        }`}
+        title="AI Assistant"
+      >
+        <Sparkles size={16} />
       </button>
     </div>
   );

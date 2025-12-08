@@ -1,15 +1,15 @@
-<!-- @mid:h-21unb5 -->
+<!-- @mid:h-cggznx -->
 # Git-Like Versioning for Regular People
 
-<!-- @mid:p-wayr0h -->
+<!-- @mid:p-fipfzg -->
 A design document exploring how to bring the power of Git-style version control to Midlight users who have never heard of Git—and how this fits into a freemium business model.
 
 ---
 
-<!-- @mid:h-eamtyt -->
+<!-- @mid:h-zdpps9 -->
 ## Table of Contents
 
-<!-- @mid:list-uifqhi -->
+<!-- @mid:list-h50pas -->
 1. The Vision
 2. Translating Git Concepts for Humans
 3. Technical Architecture
@@ -21,118 +21,118 @@ A design document exploring how to bring the power of Git-style version control 
 
 ---
 
-<!-- @mid:h-df6bg4 -->
+<!-- @mid:h-lf077y -->
 ## 1. The Vision
 
-<!-- @mid:h-c66mvb -->
+<!-- @mid:h-pj57lt -->
 ### What Git Does Well
 
-<!-- @mid:p-rftnad -->
+<!-- @mid:p-wcyntg -->
 Git is the most powerful version control system ever created. It offers:
 
-<!-- @mid:list-e01vkv -->
+<!-- @mid:list-g140lv -->
 - **Complete history**: Every change ever made is recoverable
 - **Efficient storage**: Content-addressable storage deduplicates identical content
 - **Branching**: Work on experiments without affecting the original
 - **Merging**: Combine work from different branches intelligently
 - **Distributed**: Works offline, syncs when connected
 
-<!-- @mid:h-8unmpn -->
+<!-- @mid:h-rjoqn5 -->
 ### Why Regular People Don't Use Git
 
-<!-- @mid:list-48e70f -->
+<!-- @mid:list-p7je6c -->
 - **Cryptic terminology**: "rebase," "HEAD," "detached state," "cherry-pick"
 - **Command-line focused**: Most interactions require typing commands
 - **Designed for code**: Assumes line-by-line text comparison
 - **Error-prone**: Easy to lose work if you don't understand the model
 - **Intimidating**: "I'll break something" fear
 
-<!-- @mid:h-43fn5o -->
+<!-- @mid:h-aktsig -->
 ### The Opportunity
 
-<!-- @mid:bq-axuwdi -->
+<!-- @mid:bq-8852mn -->
 > **Give users Git's superpowers through an interface so simple they don't know they're using version control.**
 
-<!-- @mid:p-bnhmcq -->
+<!-- @mid:p-nvuw0q -->
 Think of it like this:
 
-<!-- @mid:list-c23kaf -->
+<!-- @mid:list-w6fdl7 -->
 - **Git** is a manual transmission—maximum control, steep learning curve
 - **Midlight Versioning** is an automatic transmission—same engine, effortless to drive
 
 ---
 
-<!-- @mid:h-iwrx0c -->
+<!-- @mid:h-4h5eme -->
 ## 2. Translating Git Concepts for Humans
 
-<!-- @mid:h-xtx2ak -->
+<!-- @mid:h-8pakpe -->
 ### Terminology Mapping
 
-<!-- @mid:p-95g9m2 -->
-| Git Concept | Midlight Term | User Mental Model |
+<!-- @mid:p-ya3thp -->
+*****************| Git Concept | Midlight Term | User Mental Model |
 |-------------|---------------|-------------------|
-| Commit | **Checkpoint** | "Save a moment in time" |
-| Branch | **Draft** | "Try something without messing up the original" |
-| Main/Master | **Published** | "The real version" |
-| Merge | **Apply Changes** | "Use what I tried in the draft" |
-| Revert | **Restore** | "Go back to how it was" |
-| Diff | **Compare** | "What changed?" |
-| Repository | **Document History** | "All the versions" |
-| Clone | **Copy with History** | "Duplicate everything" |
-| Stash | **Set Aside** | "Save for later" |
+| Commit | *********Checkpoint************* | "Save a moment in time" |
+| Branch | *********Draft************* | "Try something without messing up the original" |
+| Main/Master | *********Published************* | "The real version" |
+| Merge | *********Apply Changes************* | "Use what I tried in the draft" |
+| Revert | *********Restore************* | "Go back to how it was" |
+| Diff | *********Compare************* | "What changed?" |
+| Repository | *********Document History************* | "All the versions" |
+| Clone | *********Copy with History************* | "Duplicate everything" |
+| Stash | *********Set Aside************* | "Save for later" |
 | HEAD | (hidden) | Users never see this |
-| Hash | (hidden) | Users never see this |
+| Hash | (hidden) | Users never see this |*****************
 
-<!-- @mid:h-cubyzk -->
+<!-- @mid:h-te8yp3 -->
 ### Core User-Facing Features
 
-<!-- @mid:p-mdadf0 -->
-#### 1. **Automatic Checkpoints**
-Like Google Docs' "See version history"—no manual action required.
+<!-- @mid:p-8gf9t5 -->
+**#### 1. ****Automatic Checkpoints****************
+Like Google Docs' "See version history"—no manual action required.**************
 
-<!-- @mid:bq-h6tlwd -->
+<!-- @mid:bq-wbve2k -->
 > "Midlight automatically saves checkpoints as you work. You can always go back."
 
-<!-- @mid:p-963e8n -->
-#### 2. **Named Checkpoints** (Bookmarks)
-Let users mark important moments.
+<!-- @mid:p-gx140q -->
+**#### 2. ****Named Checkpoints**************** (Bookmarks)
+Let users mark important moments.**************
 
-<!-- @mid:bq-k4x9ii -->
+<!-- @mid:bq-ne4khr -->
 > "Click the bookmark icon to name this version. Call it 'Before big rewrite' or 'Sent to client.'"
 
-<!-- @mid:p-9qyk7y -->
-#### 3. **Drafts** (Branches for Humans)
-Try changes without risk.
+<!-- @mid:p-e81j23 -->
+**#### 3. ****Drafts**************** (Branches for Humans)
+Try changes without risk.**************
 
-<!-- @mid:bq-jql6i2 -->
+<!-- @mid:bq-bkbg56 -->
 > "Start a Draft to experiment. If you like it, apply the changes. If not, just delete the draft."
 
-<!-- @mid:p-yp3u97 -->
-#### 4. **Compare View**
-Visual diff without technical jargon.
+<!-- @mid:p-ompd2w -->
+**#### 4. ****Compare View****************
+Visual diff without technical jargon.**************
 
-<!-- @mid:bq-9pbccz -->
+<!-- @mid:bq-pbwle2 -->
 > "See exactly what changed between any two versions—additions in blue, deletions in red."
 
-<!-- @mid:p-xol221 -->
-#### 5. **Restore**
-Go back in time, non-destructively.
+<!-- @mid:p-knyz65 -->
+**#### 5. ****Restore****************
+Go back in time, non-destructively.**************
 
-<!-- @mid:bq-eg8fef -->
+<!-- @mid:bq-xugow8 -->
 > "Restore any previous version. Don't worry—your current version becomes a checkpoint too."
 
 ---
 
-<!-- @mid:h-60ikab -->
+<!-- @mid:h-sti4cn -->
 ## 3. Technical Architecture
 
-<!-- @mid:h-qrzcwt -->
+<!-- @mid:h-bmaubz -->
 ### 3.1 Content-Addressable Storage
 
-<!-- @mid:p-bqk8ts -->
+<!-- @mid:p-86q6qm -->
 Store content by its hash, not by filename. Identical content is stored once.
 
-<!-- @mid:code-5bhdga -->
+<!-- @mid:code-79h82x -->
 ```
 workspace/
 ├── .midlight/
@@ -151,18 +151,18 @@ workspace/
 └── notes.md
 ```
 
-<!-- @mid:h-6owgsw -->
+<!-- @mid:h-jzyqhy -->
 ### 3.2 Object Storage Format
 
-<!-- @mid:p-jeq61r -->
+<!-- @mid:p-7lzisw -->
 Each content blob is:
 
-<!-- @mid:list-0cdm0v -->
+<!-- @mid:list-binkp1 -->
 1. The raw file content
 2. Gzip compressed
 3. Named by SHA-256 hash (first 2 chars as directory for filesystem efficiency)
 
-<!-- @mid:code-he5q2c -->
+<!-- @mid:code-u544oj -->
 ```typescript
 import { createHash } from 'crypto';
 import { gzipSync, gunzipSync } from 'zlib';
@@ -203,10 +203,10 @@ class ObjectStore {
 }
 ```
 
-<!-- @mid:h-4htfev -->
+<!-- @mid:h-4yi08x -->
 ### 3.3 Checkpoint Structure
 
-<!-- @mid:code-8ybhex -->
+<!-- @mid:code-jk8uii -->
 ```typescript
 interface Checkpoint {
   hash: string;              // Content hash (pointer to object)
@@ -226,10 +226,10 @@ interface CheckpointHistory {
 }
 ```
 
-<!-- @mid:p-8rui3u -->
+<!-- @mid:p-zmyxf5 -->
 **Example checkpoints/document.md.json:**
 
-<!-- @mid:code-236upw -->
+<!-- @mid:code-ihaua4 -->
 ```json
 {
   "filePath": "document.md",
@@ -270,10 +270,10 @@ interface CheckpointHistory {
 }
 ```
 
-<!-- @mid:h-5l7hbu -->
+<!-- @mid:h-wq4xfm -->
 ### 3.4 Draft (Branch) Structure
 
-<!-- @mid:code-tuvv7i -->
+<!-- @mid:code-yos03h -->
 ```typescript
 interface Draft {
   id: string;
@@ -286,10 +286,10 @@ interface Draft {
 }
 ```
 
-<!-- @mid:p-8uisib -->
+<!-- @mid:p-ytsrhv -->
 **Example drafts/document.md/experiment.json:**
 
-<!-- @mid:code-o9q37b -->
+<!-- @mid:code-5zwf0s -->
 ```json
 {
   "id": "draft_001",
@@ -321,10 +321,10 @@ interface Draft {
 }
 ```
 
-<!-- @mid:h-dl3ipu -->
+<!-- @mid:h-2uo9u7 -->
 ### 3.5 Checkpoint Creation Logic
 
-<!-- @mid:code-g9a7h3 -->
+<!-- @mid:code-p0tev0 -->
 ```typescript
 interface CheckpointConfig {
   intervalMs: number;           // Minimum time between auto checkpoints
@@ -381,13 +381,13 @@ class CheckpointManager {
 }
 ```
 
-<!-- @mid:h-1nf92w -->
+<!-- @mid:h-ac1ztu -->
 ### 3.6 Diff Generation
 
-<!-- @mid:p-83u8fw -->
+<!-- @mid:p-34fucd -->
 Use a diff library to show changes between versions:
 
-<!-- @mid:code-4qng9e -->
+<!-- @mid:code-txhrwu -->
 ```typescript
 import { diffWords, diffLines } from 'diff';
 
@@ -420,13 +420,13 @@ function renderDiff(segments: DiffSegment[]): string {
 }
 ```
 
-<!-- @mid:h-5hgw3f -->
+<!-- @mid:h-pukv59 -->
 ### 3.7 Merging Drafts
 
-<!-- @mid:p-uxlt5u -->
+<!-- @mid:p-j01c96 -->
 When applying changes from a draft back to the main document:
 
-<!-- @mid:code-j7yor4 -->
+<!-- @mid:code-91cqgs -->
 ```typescript
 type MergeStrategy = 'replace' | 'smart_merge';
 
@@ -471,28 +471,28 @@ async function mergeDraft(
 }
 ```
 
-<!-- @mid:p-vymrg6 -->
+<!-- @mid:p-b2afar -->
 **Note on Three-Way Merge:**
 
-<!-- @mid:p-qaovkg -->
+<!-- @mid:p-brwmib -->
 For rich text documents (not code), true three-way merge is complex. For MVP, offer two options:
 
-<!-- @mid:list-qptjas -->
+<!-- @mid:list-5k9te1 -->
 1. **Replace**: Draft content replaces main (user manually incorporates any main changes)
 2. **Side-by-side**: Show both versions, let user pick sections
 
-<!-- @mid:p-d0r72a -->
+<!-- @mid:p-p6lxz0 -->
 Advanced merge can come later if users need it.
 
 ---
 
-<!-- @mid:h-cta7m7 -->
+<!-- @mid:h-hcygpe -->
 ## 4. User Experience Design
 
-<!-- @mid:h-j5kdgx -->
+<!-- @mid:h-l7re32 -->
 ### 4.1 History Panel (Sidebar)
 
-<!-- @mid:code-3cxqj4 -->
+<!-- @mid:code-z43kzh -->
 ```
 ┌─────────────────────────────────────┐
 │  📜 Document History                │
@@ -522,10 +522,10 @@ Advanced merge can come later if users need it.
 └─────────────────────────────────────┘
 ```
 
-<!-- @mid:h-38xfmh -->
+<!-- @mid:h-1bc92t -->
 ### 4.2 Creating a Bookmark
 
-<!-- @mid:code-2qe28h -->
+<!-- @mid:code-l2vbxv -->
 ```
 ┌──────────────────────────────────────────────┐
 │  🔖 Create Bookmark                          │
@@ -542,10 +542,10 @@ Advanced merge can come later if users need it.
 └──────────────────────────────────────────────┘
 ```
 
-<!-- @mid:h-e0mob9 -->
+<!-- @mid:h-c4f1vs -->
 ### 4.3 Creating a Draft
 
-<!-- @mid:code-k2w0gs -->
+<!-- @mid:code-samdk1 -->
 ```
 ┌──────────────────────────────────────────────┐
 │  📝 Start a Draft                            │
@@ -568,10 +568,10 @@ Advanced merge can come later if users need it.
 └──────────────────────────────────────────────┘
 ```
 
-<!-- @mid:h-zo1tjn -->
+<!-- @mid:h-jy8wp3 -->
 ### 4.4 Compare View
 
-<!-- @mid:code-0likcc -->
+<!-- @mid:code-cr5vsn -->
 ```
 ┌───────────────────────────────────────────────────────────────────┐
 │  Compare Versions                                            [X]  │
@@ -597,10 +597,10 @@ Advanced merge can come later if users need it.
 └───────────────────────────────────────────────────────────────────┘
 ```
 
-<!-- @mid:h-kctsvl -->
+<!-- @mid:h-36uaf2 -->
 ### 4.5 Applying a Draft
 
-<!-- @mid:code-iuv04i -->
+<!-- @mid:code-pl5pa1 -->
 ```
 ┌──────────────────────────────────────────────┐
 │  📝 Apply Draft Changes                      │
@@ -625,10 +625,10 @@ Advanced merge can come later if users need it.
 └──────────────────────────────────────────────┘
 ```
 
-<!-- @mid:h-omlqbh -->
+<!-- @mid:h-vbs50b -->
 ### 4.6 Restore Confirmation
 
-<!-- @mid:code-a1bln3 -->
+<!-- @mid:code-ozmqzk -->
 ```
 ┌──────────────────────────────────────────────┐
 │  🔄 Restore Previous Version                 │
@@ -649,49 +649,49 @@ Advanced merge can come later if users need it.
 
 ---
 
-<!-- @mid:h-1k81ym -->
+<!-- @mid:h-mwvo3z -->
 ## 5. Free vs. Paid: Feature Placement Strategy
 
-<!-- @mid:h-xn2tsn -->
+<!-- @mid:h-ivdvsl -->
 ### Market Research Summary
 
-<!-- @mid:p-shvgzh -->
-| App | Free Tier History | Paid Tier History | Price |
+<!-- @mid:p-773jjt -->
+*****************| App | Free Tier History | Paid Tier History | Price |
 |-----|-------------------|-------------------|-------|
-| **Notion** | 7 days | 30/90/∞ days | $8-15/user/mo |
-| **Obsidian Sync** | Local only | 1-12 months | $4-8/mo |
-| **Dropbox** | 30 days | 180-365 days | $12-20/mo |
-| **Figma** | 30 days | Unlimited | $15/editor/mo |
-| **Google Docs** | Unlimited | Unlimited | Free |
+| *********Notion************* | 7 days | 30/90/∞ days | $8-15/user/mo |
+| *********Obsidian Sync************* | Local only | 1-12 months | $4-8/mo |
+| *********Dropbox************* | 30 days | 180-365 days | $12-20/mo |
+| *********Figma************* | 30 days | Unlimited | $15/editor/mo |
+| *********Google Docs****** | Unlimited | Unlimited | Free |**********
 
-<!-- @mid:h-ih28gx -->
+<!-- @mid:h-po8kdy -->
 ### Strategic Considerations
 
-<!-- @mid:p-ky75em -->
+<!-- @mid:p-dsb5un -->
 **Why Version History Should Be Partially Free:**
 
-<!-- @mid:list-864ayi -->
+<!-- @mid:list-fdakb5 -->
 1. **Safety is table stakes**: Users expect undo/recovery. Not offering it feels broken.
 2. **Builds trust**: Users trust apps that protect their work.
 3. **Low cost**: Local storage is cheap—this isn't a cloud resource drain.
 4. **Differentiation**: Many note apps don't have this. It's a selling point.
 
-<!-- @mid:p-ltnugt -->
+<!-- @mid:p-k2nzn6 -->
 **Why Some Features Should Be Paid:**
 
-<!-- @mid:list-p1ro5l -->
+<!-- @mid:list-zumtdm -->
 1. **Extended retention** requires more storage (especially with cloud sync).
 2. **Drafts/branching** is a power feature—casual users don't need it.
 3. **Cloud sync of history** is a real infrastructure cost.
 4. **Unlimited history** is premium positioning.
 
-<!-- @mid:h-jwlash -->
+<!-- @mid:h-bskr1j -->
 ### Recommended Tier Structure
 
-<!-- @mid:h-6axhix -->
+<!-- @mid:h-a0cqx7 -->
 #### Free Tier: "Midlight"
 
-<!-- @mid:p-juicgc -->
+<!-- @mid:p-7kh6ba -->
 | Feature | Limit | Rationale |
 |---------|-------|-----------|
 | Auto checkpoints | ✓ | Core safety—everyone needs this |
@@ -703,11 +703,11 @@ Advanced merge can come later if users need it.
 | Drafts | 1 active | Let users try branching |
 | Storage | Local only | No cloud costs |
 
-<!-- @mid:h-t76gmi -->
+<!-- @mid:h-e6z3x9 -->
 #### Paid Tier: "Midlight Pro" (~$8-10/month)
 
-<!-- @mid:p-qryq92 -->
-| Feature | Limit | Rationale |
+<!-- @mid:p-kdd1j0 -->
+*****************| Feature | Limit | Rationale |
 |---------|-------|-----------|
 | Auto checkpoints | ✓ | Same as free |
 | Checkpoint retention | 1 year | Power users need longer history |
@@ -716,19 +716,19 @@ Advanced merge can come later if users need it.
 | Compare versions | ✓ | Same as free |
 | Restore versions | ✓ | Same as free |
 | Drafts | Unlimited | Full branching power |
-| Cloud sync of history | ✓ | **Key paid feature** |
+| Cloud sync of history | ✓ | *********Key paid feature************* |
 | History across devices | ✓ | Requires sync |
 | Version export | ✓ | Export any version as standalone file |
 | AI: "What changed?" | ✓ | AI summarizes changes between versions |
-| AI: "Restore section" | ✓ | AI helps merge specific parts |
+| AI: "Restore section" | ✓ | AI helps merge specific parts |*****************
 
-<!-- @mid:h-z3mnl7 -->
+<!-- @mid:h-t4kuzf -->
 ### Feature Unlock Flow
 
-<!-- @mid:p-7353ft -->
+<!-- @mid:p-f0viur -->
 When a free user hits a limit:
 
-<!-- @mid:code-u4ugru -->
+<!-- @mid:code-kpcbbw -->
 ```
 ┌──────────────────────────────────────────────┐
 │  📝 Upgrade to Create More Drafts            │
@@ -748,31 +748,31 @@ When a free user hits a limit:
 └──────────────────────────────────────────────┘
 ```
 
-<!-- @mid:h-9973ru -->
+<!-- @mid:h-h6eiu9 -->
 ### Why This Split Works
 
-<!-- @mid:p-vehdwz -->
+<!-- @mid:p-4ovn7m -->
 **Free tier value:**
 
-<!-- @mid:list-4zollh -->
+<!-- @mid:list-jyrqtc -->
 - Enough history for "I just made a mistake" recovery
 - Enough to demonstrate the value of versioning
 - Drafts let users experience branching once
 - Local-only = zero marginal cost to you
 
-<!-- @mid:p-yd5ckx -->
+<!-- @mid:p-okckvo -->
 **Paid tier value:**
 
-<!-- @mid:list-nvszwf -->
+<!-- @mid:list-g4zzxe -->
 - Extended history for professionals who reference old work
 - Cloud sync is genuinely useful and costly to provide
 - AI integration adds clear value
 - Unlimited drafts for complex workflows
 
-<!-- @mid:p-ulzyxc -->
+<!-- @mid:p-dw3hyd -->
 **Psychological pricing:**
 
-<!-- @mid:list-admddm -->
+<!-- @mid:list-y6vqe3 -->
 - 7 days is enough to save users from most mistakes
 - But professionals *feel* the limit when referencing last month's version
 - "What if I need it later?" anxiety drives upgrades
@@ -780,16 +780,16 @@ When a free user hits a limit:
 
 ---
 
-<!-- @mid:h-d99mso -->
+<!-- @mid:h-3ddfub -->
 ## 6. Cloud Sync Integration
 
-<!-- @mid:p-ouy6i4 -->
+<!-- @mid:p-wtcgop -->
 When the paid tier syncs history to the cloud:
 
-<!-- @mid:h-ceacak -->
+<!-- @mid:h-j7duwq -->
 ### 6.1 Sync Architecture
 
-<!-- @mid:code-cdgaa2 -->
+<!-- @mid:code-wsnji3 -->
 ```
 ┌─────────────────┐         ┌─────────────────┐
 │   Device A      │         │   Device B      │
@@ -811,28 +811,28 @@ When the paid tier syncs history to the cloud:
     └─────────────────────────────────────┘
 ```
 
-<!-- @mid:h-1v9ibn -->
+<!-- @mid:h-2lwgcj -->
 ### 6.2 Content-Addressable Sync Benefits
 
-<!-- @mid:p-w9zyvj -->
+<!-- @mid:p-bcx49h -->
 Because objects are stored by hash:
 
-<!-- @mid:list-8j422x -->
+<!-- @mid:list-weyzbo -->
 1. **Deduplication**: Identical content synced once, even across files
 2. **Efficient sync**: Only new objects need to upload
 3. **Integrity**: Hash verifies content wasn't corrupted
 4. **Resumable**: Can resume interrupted syncs
 
-<!-- @mid:h-a27w6u -->
+<!-- @mid:h-2ony0z -->
 ### 6.3 Sync Conflict Handling
 
-<!-- @mid:p-cfliw6 -->
-**Scenario**: User edits document.md on both Device A and Device B offline.
+<!-- @mid:p-f4g5cx -->
+**Scenario****: User edits document.md on both Device A and Device B offline.**
 
-<!-- @mid:p-ylnhzl -->
-**Solution**: Both versions become checkpoints. User sees:
+<!-- @mid:p-y4bzlh -->
+**Solution****: Both versions become checkpoints. User sees:**
 
-<!-- @mid:code-1wcgmq -->
+<!-- @mid:code-5oalk7 -->
 ```
 ┌──────────────────────────────────────────────┐
 │  ⚠️ Sync Conflict                            │
@@ -853,16 +853,16 @@ Because objects are stored by hash:
 └──────────────────────────────────────────────┘
 ```
 
-<!-- @mid:p-wdwjnp -->
+<!-- @mid:p-z4knag -->
 Both versions are preserved in history regardless of which is chosen.
 
-<!-- @mid:h-nzmrna -->
+<!-- @mid:h-fu7ite -->
 ### 6.4 E2EE for History
 
-<!-- @mid:p-d9c555 -->
+<!-- @mid:p-enhzu5 -->
 Version history should be end-to-end encrypted:
 
-<!-- @mid:list-1mbspe -->
+<!-- @mid:list-n86e0g -->
 - User's encryption key derived from password
 - Objects encrypted before upload
 - Server cannot read content or history
@@ -870,212 +870,212 @@ Version history should be end-to-end encrypted:
 
 ---
 
-<!-- @mid:h-rerrpj -->
+<!-- @mid:h-g8hpbe -->
 ## 7. Implementation Roadmap
 
-<!-- @mid:h-8luxpy -->
+<!-- @mid:h-w42f3f -->
 ### Phase 1: Local Foundation (Weeks 1-3)
 
-<!-- @mid:p-i0romg -->
-**Goal**: Basic checkpoint system, no cloud
+<!-- @mid:p-cfzs7g -->
+**Goal****: Basic checkpoint system, no cloud**
 
-<!-- @mid:list-gmuyxh -->
+<!-- @mid:list-ewoj8z -->
 1. **Object store implementation**
  - Content-addressable storage
  - SHA-256 hashing
  - Gzip compression
 
-<!-- @mid:list-txebhn -->
+<!-- @mid:list-ht2ojb -->
 1. **Checkpoint system**
  - Auto-checkpoint on interval (5 min)
  - Auto-checkpoint on significant change
  - Checkpoint on file close
 
-<!-- @mid:list-gcqnjo -->
+<!-- @mid:list-kuff0t -->
 1. **Basic history UI**
  - List checkpoints in sidebar
  - Preview checkpoint content
  - Restore checkpoint (with safety save)
 
-<!-- @mid:list-7en0gx -->
+<!-- @mid:list-5z0n1q -->
 1. **Free tier limits**
  - 7-day retention
  - 50 checkpoints per file
 
-<!-- @mid:h-umri27 -->
+<!-- @mid:h-eou9dz -->
 ### Phase 2: Bookmarks & Compare (Weeks 4-5)
 
-<!-- @mid:p-4ykd6b -->
-**Goal**: Named checkpoints and visual diff
+<!-- @mid:p-rtlps0 -->
+**Goal****: Named checkpoints and visual diff**
 
-<!-- @mid:list-pfizpp -->
+<!-- @mid:list-q8koq9 -->
 1. **Bookmark feature**
  - Name checkpoints
  - Star/favorite checkpoints
  - Bookmarked checkpoints exempt from auto-cleanup
 
-<!-- @mid:list-b95sla -->
+<!-- @mid:list-p26ewe -->
 1. **Compare view**
  - Side-by-side or inline diff
  - Word-level highlighting
  - Change statistics
 
-<!-- @mid:list-kj9eai -->
+<!-- @mid:list-dc66ci -->
 1. **Settings**
  - Configure checkpoint interval
  - Configure retention
  - Storage usage display
 
-<!-- @mid:h-ozfnf3 -->
+<!-- @mid:h-ubluvn -->
 ### Phase 3: Drafts/Branching (Weeks 6-8)
 
-<!-- @mid:p-6wm6mg -->
-**Goal**: Non-destructive experimentation
+<!-- @mid:p-dqhysz -->
+**Goal****: Non-destructive experimentation**
 
-<!-- @mid:list-t9lhqh -->
+<!-- @mid:list-xr79qz -->
 1. **Draft creation**
  - Create draft from any checkpoint
  - Name draft
  - Switch between main and draft
 
-<!-- @mid:list-4pspcj -->
+<!-- @mid:list-pff14c -->
 1. **Draft management**
  - List active drafts
  - Archive/delete drafts
  - Draft-specific checkpoint history
 
-<!-- @mid:list-8uihji -->
+<!-- @mid:list-yjlrjt -->
 1. **Apply changes (merge)**
-  - Replace strategy
-  - Side-by-side comparison
-  - Conflict UI (if main changed)
+- Replace strategy
+- Side-by-side comparison
+- Conflict UI (if main changed)
 
-<!-- @mid:list-u6yi71 -->
+<!-- @mid:list-xovcto -->
 1. **Free tier limits**
-  - 1 active draft
+- 1 active draft
 
-<!-- @mid:h-hu8dvy -->
+<!-- @mid:h-tsip38 -->
 ### Phase 4: Cloud Sync (Weeks 9-12)
 
-<!-- @mid:p-53394y -->
-**Goal**: History syncs across devices (paid)
+<!-- @mid:p-4492qa -->
+**Goal****: History syncs across devices (paid)**
 
-<!-- @mid:list-mut5io -->
+<!-- @mid:list-ndd9qf -->
 1. **Cloud infrastructure**
-  - Object storage backend (S3/R2)
-  - User authentication
-  - E2EE implementation
+- Object storage backend (S3/R2)
+- User authentication
+- E2EE implementation
 
-<!-- @mid:list-5r6o6n -->
+<!-- @mid:list-b8ldzx -->
 1. **Sync logic**
-  - Upload new objects
-  - Download missing objects
-  - Sync checkpoint metadata
-  - Conflict resolution
+- Upload new objects
+- Download missing objects
+- Sync checkpoint metadata
+- Conflict resolution
 
-<!-- @mid:list-u00ik8 -->
+<!-- @mid:list-56wecv -->
 1. **Paid tier unlocks**
-  - 1-year retention
-  - Unlimited checkpoints
-  - Unlimited drafts
-  - Cloud sync
+- 1-year retention
+- Unlimited checkpoints
+- Unlimited drafts
+- Cloud sync
 
-<!-- @mid:h-8jp54e -->
+<!-- @mid:h-qw5ur8 -->
 ### Phase 5: AI Integration (Weeks 13-16)
 
-<!-- @mid:p-7k5qsm -->
-**Goal**: AI-powered version features (paid)
+<!-- @mid:p-k0wis5 -->
+**Goal****: AI-powered version features (paid)**
 
-<!-- @mid:list-3pnz75 -->
+<!-- @mid:list-yi03to -->
 1. **"What changed?" summary**
-  - AI describes changes between versions
-  - Natural language diff
+- AI describes changes between versions
+- Natural language diff
 
-<!-- @mid:list-9rlctf -->
+<!-- @mid:list-kuxo1t -->
 1. **"Restore section"**
-  - Select text, ask AI to find in history
-  - AI suggests which version had the content
+- Select text, ask AI to find in history
+- AI suggests which version had the content
 
-<!-- @mid:list-mtn0m0 -->
+<!-- @mid:list-pd0k5b -->
 1. **Smart merge assistance**
-  - AI helps resolve conflicts
-  - Suggests how to combine versions
+- AI helps resolve conflicts
+- Suggests how to combine versions
 
 ---
 
-<!-- @mid:h-lg9l55 -->
+<!-- @mid:h-v87swb -->
 ## 8. Competitive Analysis
 
-<!-- @mid:h-9wb44g -->
+<!-- @mid:h-eqj9wf -->
 ### How Competitors Handle Versioning
 
-<!-- @mid:h-v1rra2 -->
+<!-- @mid:h-6wjn7n -->
 #### Notion
 
-<!-- @mid:list-6rq3lc -->
+<!-- @mid:list-n28x6x -->
 - **Free**: 7 days page history
 - **Paid**: 30/90/unlimited days
 - **UX**: Simple "Page history" sidebar
 - **Branching**: No (databases have different version model)
 - **Insight**: Notion proves 7-day free tier converts to paid
 
-<!-- @mid:h-eqmlxq -->
+<!-- @mid:h-np7czy -->
 #### Obsidian
 
-<!-- @mid:list-f6gzfl -->
+<!-- @mid:list-wbpvfd -->
 - **Free**: Local-only, plugin-based (Git, File Recovery)
 - **Paid Sync**: 1-12 months history
 - **UX**: Plugin-dependent, varies
 - **Branching**: Via Git plugin (technical users)
 - **Insight**: Power users use Git; casual users need simpler option
 
-<!-- @mid:h-6pp5xl -->
+<!-- @mid:h-d18cax -->
 #### Figma
 
-<!-- @mid:list-8y10m4 -->
+<!-- @mid:list-mjjwhm -->
 - **Free**: 30 days history
 - **Paid**: Unlimited history, branching
 - **UX**: Excellent—timeline scrubber, named versions, branches
 - **Branching**: Full branching with merge and review
 - **Insight**: Best-in-class UX for non-technical branching
 
-<!-- @mid:h-rg04yh -->
+<!-- @mid:h-cvp0xd -->
 #### Dropbox Paper
 
-<!-- @mid:list-lnq4fd -->
+<!-- @mid:list-v9bfqk -->
 - **Free**: 30 days
 - **Paid**: Extended via Dropbox plan
 - **UX**: Simple "Version history" modal
 - **Branching**: No
 - **Insight**: Minimal feature, not a differentiator
 
-<!-- @mid:h-tfg9c4 -->
+<!-- @mid:h-jk7x6u -->
 #### Google Docs
 
-<!-- @mid:list-1t4bud -->
+<!-- @mid:list-y2b92e -->
 - **Free**: Unlimited (but Google owns your data)
 - **UX**: "Version history" with named versions
 - **Branching**: "Make a copy" (manual, loses connection)
 - **Insight**: Unlimited free history is possible—Google monetizes data
 
-<!-- @mid:h-o1f73s -->
+<!-- @mid:h-x9t7zq -->
 ### Midlight's Differentiation
 
-<!-- @mid:p-g6l4y8 -->
-| Factor | Notion | Obsidian | Figma | **Midlight** |
+<!-- @mid:p-pj88lh -->
+***| Factor | Notion | Obsidian | Figma | ******Midlight******************** |
 |--------|--------|----------|-------|--------------|
 | Local-first | ❌ | ✓ | ❌ | ✓ |
-| Free history | 7 days | Local | 30 days | **7 days** |
-| Paid history | 90 days | 12 mo | ∞ | **1 year** |
-| Branching | ❌ | Git plugin | ✓ | **✓ (simplified)** |
-| AI integration | ✓ (separate) | Plugins | ❌ | **✓ (native)** |
-| Offline-first | ❌ | ✓ | ❌ | **✓** |
-| E2EE | ❌ | N/A | ❌ | **✓** |
+| Free history | 7 days | Local | 30 days | *********7 days************* |
+| Paid history | 90 days | 12 mo | ∞ | *********1 year************* |
+| Branching | ❌ | Git plugin | ✓ | *********✓ (simplified)************* |
+| AI integration | ✓ (separate) | Plugins | ❌ | *********✓ (native)************* |
+| Offline-first | ❌ | ✓ | ❌ | *********✓************* |
+| E2EE | ❌ | N/A | ❌ | *********✓****** |**********
 
-<!-- @mid:p-klqw3a -->
+<!-- @mid:p-gnydt3 -->
 **Midlight's unique position:**
 
-<!-- @mid:list-jfl4hn -->
+<!-- @mid:list-xd8y4v -->
 - **Local-first** like Obsidian, but with **Figma-quality UX**
 - **Branching** without Git complexity
 - **AI-native** version features (unique differentiator)
@@ -1083,32 +1083,32 @@ Version history should be end-to-end encrypted:
 
 ---
 
-<!-- @mid:h-3736n0 -->
+<!-- @mid:h-05inzj -->
 ## Summary & Recommendations
 
-<!-- @mid:h-na8sbv -->
+<!-- @mid:h-hzeog6 -->
 ### Key Decisions
 
-<!-- @mid:list-r067cb -->
+<!-- @mid:list-njkevs -->
 1. **Use content-addressable storage**: Efficient, deduplicated, future-proof for sync
 2. **Call it "Checkpoints" and "Drafts"**: Friendly terminology
 3. **Free tier: 7 days, 1 draft**: Enough to be useful, drives upgrades
 4. **Paid tier: 1 year, unlimited drafts, cloud sync**: Clear value proposition
 5. **AI features in paid tier**: Unique differentiator, high perceived value
 
-<!-- @mid:h-m1sk3s -->
+<!-- @mid:h-4w07gu -->
 ### Critical Success Factors
 
-<!-- @mid:list-sb609f -->
+<!-- @mid:list-xg080f -->
 1. **UX must be invisible**: Users shouldn't think about versioning—it just works
 2. **Recovery must be non-destructive**: Restoring creates a new checkpoint
 3. **Drafts must be simple**: Not "branches"—just "try something without messing up"
 4. **Free tier must be useful**: If it feels crippled, users won't convert—they'll leave
 
-<!-- @mid:h-181nnm -->
+<!-- @mid:h-0vdxa4 -->
 ### Risks & Mitigations
 
-<!-- @mid:p-9j2grv -->
+<!-- @mid:p-8b3bwc -->
 | Risk | Mitigation |
 |------|------------|
 | Storage bloat | Content-addressable deduplication; retention limits |
@@ -1119,10 +1119,10 @@ Version history should be end-to-end encrypted:
 
 ---
 
-<!-- @mid:h-ic3j8o -->
+<!-- @mid:h-3bb819 -->
 ## References
 
-<!-- @mid:list-uuzfkt -->
+<!-- @mid:list-vmzpgf -->
 - Dropbox Version History
 - Notion Pricing
 - Figma Version History
@@ -1132,6 +1132,6 @@ Version history should be end-to-end encrypted:
 
 ---
 
-<!-- @mid:p-5yz14e -->
-*Document created: 2025-12-05*
-*Status: Design complete, ready for implementation decisions*
+<!-- @mid:p-spg69n -->
+*Document created: 2025-12-05********
+*****Status: Design complete, ready for implementation decisions****

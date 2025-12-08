@@ -2,7 +2,7 @@
   "version": 1,
   "meta": {
     "created": "2025-12-06T02:48:51.132Z",
-    "modified": "2025-12-06T02:48:51.133Z",
+    "modified": "2025-12-08T00:58:11.380Z",
     "wordCount": 1372,
     "readingTime": 7,
     "title": "Midlight: Implementation Roadmap"
@@ -10,7 +10,16 @@
   "document": {},
   "blocks": {},
   "spans": {
-    "p-9y7h6z": [
+    "p-5ckpk3": [
+      {
+        "start": 0,
+        "end": 51,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
+      },
       {
         "start": 51,
         "end": 59,
@@ -19,9 +28,18 @@
             "type": "bold"
           }
         ]
+      },
+      {
+        "start": 59,
+        "end": 60,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
       }
     ],
-    "p-n4e37y": [
+    "p-ogjrly": [
       {
         "start": 0,
         "end": 5,
@@ -30,9 +48,18 @@
             "type": "bold"
           }
         ]
+      },
+      {
+        "start": 5,
+        "end": 119,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
       }
     ],
-    "p-6289d6": [
+    "p-u1b1m7": [
       {
         "start": 0,
         "end": 5,
@@ -41,9 +68,27 @@
             "type": "bold"
           }
         ]
+      },
+      {
+        "start": 5,
+        "end": 101,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
       }
     ],
-    "h-q25o10": [
+    "h-i605hk": [
+      {
+        "start": 0,
+        "end": 20,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
+      },
       {
         "start": 20,
         "end": 25,
@@ -52,9 +97,18 @@
             "type": "code"
           }
         ]
+      },
+      {
+        "start": 25,
+        "end": 31,
+        "marks": [
+          {
+            "type": "code"
+          }
+        ]
       }
     ],
-    "p-6jkxky": [
+    "p-vqfku3": [
       {
         "start": 0,
         "end": 5,
@@ -63,9 +117,18 @@
             "type": "bold"
           }
         ]
+      },
+      {
+        "start": 5,
+        "end": 70,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
       }
     ],
-    "p-jwqg8j": [
+    "p-e1q98y": [
       {
         "start": 0,
         "end": 5,
@@ -74,9 +137,18 @@
             "type": "bold"
           }
         ]
+      },
+      {
+        "start": 5,
+        "end": 48,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
       }
     ],
-    "p-hen3xq": [
+    "p-0ozdfp": [
       {
         "start": 0,
         "end": 5,
@@ -85,15 +157,60 @@
             "type": "bold"
           }
         ]
+      },
+      {
+        "start": 5,
+        "end": 62,
+        "marks": [
+          {
+            "type": "bold"
+          }
+        ]
       }
     ],
-    "p-4sx5vr": [
+    "p-kn8443": [
+      {
+        "start": 0,
+        "end": 23,
+        "marks": [
+          {
+            "type": "bold"
+          },
+          {
+            "type": "italic"
+          },
+          {
+            "type": "code"
+          }
+        ]
+      },
       {
         "start": 23,
         "end": 40,
         "marks": [
           {
             "type": "bold"
+          },
+          {
+            "type": "italic"
+          },
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 40,
+        "end": 109,
+        "marks": [
+          {
+            "type": "bold"
+          },
+          {
+            "type": "italic"
+          },
+          {
+            "type": "code"
           }
         ]
       },
@@ -102,7 +219,28 @@
         "end": 114,
         "marks": [
           {
+            "type": "bold"
+          },
+          {
             "type": "italic"
+          },
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 114,
+        "end": 162,
+        "marks": [
+          {
+            "type": "bold"
+          },
+          {
+            "type": "italic"
+          },
+          {
+            "type": "code"
           }
         ]
       },
@@ -112,6 +250,27 @@
         "marks": [
           {
             "type": "bold"
+          },
+          {
+            "type": "italic"
+          },
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 173,
+        "end": 296,
+        "marks": [
+          {
+            "type": "bold"
+          },
+          {
+            "type": "italic"
+          },
+          {
+            "type": "code"
           }
         ]
       },
@@ -121,6 +280,27 @@
         "marks": [
           {
             "type": "bold"
+          },
+          {
+            "type": "italic"
+          },
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 310,
+        "end": 371,
+        "marks": [
+          {
+            "type": "bold"
+          },
+          {
+            "type": "italic"
+          },
+          {
+            "type": "code"
           }
         ]
       },
@@ -128,6 +308,27 @@
         "start": 371,
         "end": 389,
         "marks": [
+          {
+            "type": "bold"
+          },
+          {
+            "type": "italic"
+          },
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 389,
+        "end": 425,
+        "marks": [
+          {
+            "type": "bold"
+          },
+          {
+            "type": "italic"
+          },
           {
             "type": "code"
           }
@@ -139,6 +340,27 @@
         "marks": [
           {
             "type": "bold"
+          },
+          {
+            "type": "italic"
+          },
+          {
+            "type": "code"
+          }
+        ]
+      },
+      {
+        "start": 438,
+        "end": 575,
+        "marks": [
+          {
+            "type": "bold"
+          },
+          {
+            "type": "italic"
+          },
+          {
+            "type": "code"
           }
         ]
       }

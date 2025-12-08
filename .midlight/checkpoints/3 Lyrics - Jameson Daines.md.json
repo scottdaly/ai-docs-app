@@ -1,6 +1,6 @@
 {
   "fileKey": "3 Lyrics - Jameson Daines.md",
-  "headId": "cp-1su2xs",
+  "headId": "cp-d4lz42",
   "checkpoints": [
     {
       "id": "cp-123fnn",
@@ -22,6 +22,132 @@
       "sidecarHash": "a925439940ccdc3800c58608beac7c487251d9ef7cb48c74cd07bf1ad0f7d073",
       "timestamp": "2025-12-07T03:40:45.672Z",
       "parentId": "cp-123fnn",
+      "type": "auto",
+      "stats": {
+        "wordCount": 242,
+        "charCount": 1452,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-9jj0kk",
+      "contentHash": "134df1e194a3a1dc08d79861b64a074e0454d7b529a3eb5e99d79bfc04369dc0",
+      "sidecarHash": "b5530f24e546466f3a16083ec20a9bb7c4d56bf2108f649ee5a6b721878ca199",
+      "timestamp": "2025-12-07T23:42:50.871Z",
+      "parentId": "cp-1su2xs",
+      "type": "auto",
+      "stats": {
+        "wordCount": 242,
+        "charCount": 1452,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-miy5l6",
+      "contentHash": "467f7e6f6233dbcec6eb61a865b4f4d78cca08f816c10b5e88dfd7d4e78a29a0",
+      "sidecarHash": "24c2552c604154ed91967382dce63433f637944c6be6b88128964e7bfad91f6f",
+      "timestamp": "2025-12-08T01:15:32.386Z",
+      "parentId": "cp-9jj0kk",
+      "type": "auto",
+      "stats": {
+        "wordCount": 242,
+        "charCount": 1452,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-4voqz4",
+      "contentHash": "c07f1cd02efc6b98c91f62002c1ce7b2b8c274a0865deda993f7f0fa877a33fb",
+      "sidecarHash": "8ead36cc5e2f76319493b647eb7991cbe506491dad31a983446cf599841e9567",
+      "timestamp": "2025-12-08T01:16:54.914Z",
+      "parentId": "cp-miy5l6",
+      "type": "auto",
+      "stats": {
+        "wordCount": 242,
+        "charCount": 1452,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-zcauy9",
+      "contentHash": "7b0c00dfb0980e1868e3daac5f6c0270c494815281a07a59414fbb9c3aba0b94",
+      "sidecarHash": "ea1e016e8c42b25cd66e563e2af7c85b92b2c9b04ea5a56a57db77ae7c380e24",
+      "timestamp": "2025-12-08T01:20:24.993Z",
+      "parentId": "cp-4voqz4",
+      "type": "auto",
+      "stats": {
+        "wordCount": 242,
+        "charCount": 1452,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-nk6hjd",
+      "contentHash": "ab019d8f5d8f62361db52ce2c6e3b43f89988483358160b188a04d67f87a120d",
+      "sidecarHash": "1ec77ad7877d0bfbd947b9e05fff654f60e16f5fb97e2732a4a69d70783715e8",
+      "timestamp": "2025-12-08T01:21:45.796Z",
+      "parentId": "cp-zcauy9",
+      "type": "auto",
+      "stats": {
+        "wordCount": 242,
+        "charCount": 1452,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-zjljv5",
+      "contentHash": "847bcc0645580477e0a6dea6098274f61925970e096266e0a3d94936eb5b8717",
+      "sidecarHash": "f6ec6a895966b36880ca6ac298b5273bd52bb7345cb977833b961d80994888f0",
+      "timestamp": "2025-12-08T01:22:44.909Z",
+      "parentId": "cp-nk6hjd",
+      "type": "auto",
+      "stats": {
+        "wordCount": 242,
+        "charCount": 1452,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-iwp9hl",
+      "contentHash": "009f110d0f685545bb04337dfe7c42267d43b9c8f887c9d059e5cbc6d0eb3b1e",
+      "sidecarHash": "efb66d88cc8e660c87104b2b069f7e3198ea2b54fe2f9ff45281f08e1600857c",
+      "timestamp": "2025-12-08T01:22:51.438Z",
+      "parentId": "cp-zjljv5",
+      "type": "auto",
+      "stats": {
+        "wordCount": 242,
+        "charCount": 1452,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-dna32c",
+      "contentHash": "21516dce7e57663d532a3c14a33b5893866512f8d56483792b860af5ac62e34a",
+      "sidecarHash": "5698b53b231fae0de9a6bf957c395f3025e382cb5081cd0942ef4fe2be20a239",
+      "timestamp": "2025-12-08T01:23:15.134Z",
+      "parentId": "cp-iwp9hl",
+      "type": "auto",
+      "stats": {
+        "wordCount": 242,
+        "charCount": 1452,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-d4lz42",
+      "contentHash": "b999698d0b7eaa7653279da35a3fe71c6b4368ed23ed2d4970ecb6dd60191333",
+      "sidecarHash": "4e517a1d937f0d21c1dda6d08c3aae6defb8b49dbd2992949f15a95090f0f9d9",
+      "timestamp": "2025-12-08T01:29:53.667Z",
+      "parentId": "cp-dna32c",
       "type": "auto",
       "stats": {
         "wordCount": 242,

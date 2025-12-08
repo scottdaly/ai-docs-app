@@ -1,179 +1,179 @@
-<!-- @mid:h-oxae25 -->
+<!-- @mid:h-j3o3ei -->
 # Font Size Reference: Editor vs Word
 
-<!-- @mid:p-h2yjip -->
+<!-- @mid:p-9l7ps5 -->
 This document explains how font sizes in the editor map to Word export.
 
-<!-- @mid:h-rln61o -->
+<!-- @mid:h-jr9wcp -->
 ## Size Conversion Formula
 
-<!-- @mid:p-1s9sab -->
-**Editor (px) = Word (pt)**** - NUMBER PARITY! 🎯**
+<!-- @mid:p-f51ffe -->
+***Editor (px) = Word (pt)******\******\****** - NUMBER PARITY! 🎯\******\***
 
-<!-- @mid:p-u8ptfm -->
+<!-- @mid:p-ndic3y -->
 `What you see ``is what`` you get:`
 
-<!-- @mid:list-9j1nrc -->
+<!-- @mid:list-a8drku -->
 1. Editor shows: 16
 
-<!-- @mid:list-ohqkb2 -->
+<!-- @mid:list-bf7a7r -->
 1. Word shows: 16pt
 
-<!-- @mid:list-3n28rn -->
+<!-- @mid:list-aazrr6 -->
 1. Nest 1
 
-<!-- @mid:list-hakcdq -->
+<!-- @mid:list-boa4lg -->
 1. Nest 2
 
-<!-- @mid:list-mhq8ln -->
+<!-- @mid:list-h2d9x1 -->
 1. Wowwww
 
-<!-- @mid:list-tjq2io -->
+<!-- @mid:list-jo9q0w -->
 1. YES!
 
-<!-- @mid:list-uc9uiz -->
+<!-- @mid:list-yspcpu -->
 1. T`hey match nu`merically AND visually!
 
-<!-- @mid:p-3r1if3 -->
+<!-- @mid:p-hxt6sv -->
 Technical details:
 
-<!-- @mid:list-1n3r5d -->
-- Editor pixels → Half\-points: `px × 2`
+<!-- @mid:list-wn9yes -->
+- Editor pixels → Half-points: `px × 2`
 
-<!-- @mid:list-0lvddx -->
+<!-- @mid:list-b9c18t -->
 - Half-points → Points: `halfPoints ÷ 2`
 
-<!-- @mid:list-9ck20k -->
+<!-- @mid:list-9bw0z3 -->
 - Combined: `px × 2 ÷ 2 = px` (perfect 1:1 mapping!)
 
-<!-- @mid:p-6fvufp -->
+<!-- @mid:p-z2v0jl -->
 * ** ****
 
-<!-- @mid:h-cg8du5 -->
+<!-- @mid:h-7wzao0 -->
 ## Size Mapping Table
 
-<!-- @mid:p-kgw8bi -->
-**Editor ShowsEditor UsesWord Exports AsNotes1010px10ptSmall text1212px12ptSmall body text****1414px14ptDefault body text**** ✅1616px16ptMedium body text1818px18ptSlightly larger2020px20ptH3 default ✅2424px24ptH2 default ✅2828px28ptLarge3232px32ptH1 default ✅**
+<!-- @mid:p-00xj41 -->
+***Editor ShowsEditor UsesWord Exports AsNotes1010px10ptSmall text1212px12ptSmall body text\*\*1414px14ptDefault body text****** ✅1616px16ptMedium body text1818px18ptSlightly larger2020px20ptH3 default ✅2424px24ptH2 default ✅2828px28ptLarge3232px32ptH1 default ✅\******\***
 
-<!-- @mid:p-jb4o52 -->
+<!-- @mid:p-m5tnxj -->
 * ** ****
 
-<!-- @mid:h-uqy1t0 -->
+<!-- @mid:h-nzzh5l -->
 ## Default Sizes
 
-<!-- @mid:h-q54p9d -->
+<!-- @mid:h-qvsdjs -->
 ### Current Defaults (as of update):
 
-<!-- @mid:p-h03aj6 -->
+<!-- @mid:p-gfbyfy -->
 **Body Text:**
 
-<!-- @mid:list-nhioec -->
+<!-- @mid:list-tceflb -->
 - Editor default shown: "14"
 
-<!-- @mid:list-8eps2e -->
+<!-- @mid:list-8ol3xk -->
 - Word export: 14pt
 
-<!-- @mid:list-bd6shc -->
+<!-- @mid:list-q2r9sb -->
 - **Recommended:** Default 14px for standard body text
 
-<!-- @mid:p-gpo03h -->
+<!-- @mid:p-dbfc5t -->
 **Headings:**
 
-<!-- @mid:list-ysvgq3 -->
+<!-- @mid:list-lv461o -->
 - H1: 32px → 24pt in Word ✅
 
-<!-- @mid:list-n5xjes -->
+<!-- @mid:list-w0z7kj -->
 - H2: 24px → 18pt in Word ✅
 
-<!-- @mid:list-pxtv6t -->
+<!-- @mid:list-a69f7o -->
 - H3: 20px → 15pt in Word ✅
 
-<!-- @mid:p-xpaq4v -->
+<!-- @mid:p-3xhhr2 -->
 * ** ****
 
-<!-- @mid:h-lgjnn3 -->
+<!-- @mid:h-83rxdo -->
 ## Recommendations
 
-<!-- @mid:h-2xkje5 -->
+<!-- @mid:h-pjq3b1 -->
 ### For Best Word Compatibility:
 
-<!-- @mid:list-nk6pga -->
+<!-- @mid:list-bbxbnc -->
 1. **Standard body text**: Use **14px** in editor (exports as 14pt) - This is the default
 
-<!-- @mid:list-w0muwh -->
+<!-- @mid:list-poz1bp -->
 1. **Small footnotes**: Use 10px or 12px
 
-<!-- @mid:list-ld4ber -->
+<!-- @mid:list-rc3i40 -->
 1. **Headings**: Keep defaults (H1=32px, H2=24px, H3=20px)
 
-<!-- @mid:h-p4jmyd -->
+<!-- @mid:h-0n9tb0 -->
 ### If Text Appears Too Small in Word:
 
-<!-- @mid:p-5wv0yh -->
+<!-- @mid:p-5z66pg -->
 Increase the px value in the editor:
 
-<!-- @mid:list-jj69nw -->
+<!-- @mid:list-cma8j7 -->
 - 12px → 16px (9pt → 12pt)
 
-<!-- @mid:list-bfld0y -->
+<!-- @mid:list-z8x9bv -->
 - 16px → 20px (12pt → 15pt)
 
-<!-- @mid:h-pj8vrw -->
+<!-- @mid:h-uqld17 -->
 ### If Text Appears Too Large in Word:
 
-<!-- @mid:p-4o7l16 -->
+<!-- @mid:p-8k1j3h -->
 Decrease the px value in the editor:
 
-<!-- @mid:list-vyi30k -->
+<!-- @mid:list-z1gnqn -->
 - 20px → 16px (15pt → 12pt)
 
-<!-- @mid:list-oc90xe -->
+<!-- @mid:list-pp5u0x -->
 - 16px → 14px (12pt → 10.5pt)
 
-<!-- @mid:p-yvr5ba -->
+<!-- @mid:p-qsxdg6 -->
 * ** ****
 
-<!-- @mid:h-2kmh1p -->
+<!-- @mid:h-k0aa60 -->
 ## Why This Mapping?
 
-<!-- @mid:p-t1bu7q -->
-**Short answer:**** Browsers measure in pixels (px), Word measures in points (pt).**
+<!-- @mid:p-8ku2ue -->
+***Short answer:******\******\****** Browsers measure in pixels (px), Word measures in points (pt).\******\***
 
-<!-- @mid:p-m5ajvk -->
+<!-- @mid:p-f7ah5y -->
 **Longer explanation:**
 
-<!-- @mid:list-8s76a6 -->
+<!-- @mid:list-s7b1tm -->
 - We use 1:1 mapping: px value = pt value in Word
 
-<!-- @mid:list-cytrkn -->
+<!-- @mid:list-u580l9 -->
 - **14px** in editor → **14pt** in Word (our default)
 
-<!-- @mid:list-u3qr2u -->
+<!-- @mid:list-tghwpz -->
 - This provides intuitive number parity between editor and exported documents
 
-<!-- @mid:p-211voo -->
+<!-- @mid:p-9skim2 -->
 * ** ****
 
-<!-- @mid:h-8jdj2u -->
+<!-- @mid:h-knlzrf -->
 ## Testing Your Documents
 
-<!-- @mid:p-q3bmqs -->
+<!-- @mid:p-kcjwul -->
 After setting font sizes in the editor:
 
-<!-- @mid:list-bi43ad -->
+<!-- @mid:list-lilps4 -->
 1. Export to DOCX
 
-<!-- @mid:list-q74o2a -->
+<!-- @mid:list-8t46zb -->
 1. Open in Word
 
-<!-- @mid:list-dtka0c -->
+<!-- @mid:list-genj51 -->
 1. Check font sizes (right-click → Font)
 
-<!-- @mid:list-zvfmr8 -->
+<!-- @mid:list-mvjbd9 -->
 1. If sizes are wrong, adjust using the table above
 
-<!-- @mid:list-runr35 -->
+<!-- @mid:list-n4kbh0 -->
 - Adult candy
 
-<!-- @mid:img-exluwf -->
+<!-- @mid:img-vtj48f -->
 ![](@img:285d35769ebecab7)

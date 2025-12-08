@@ -8,18 +8,32 @@ import { ResizableImage } from './extensions/ResizableImage';
 import { TextColor } from './extensions/TextColor';
 import { TextHighlight } from './extensions/TextHighlight';
 import { CustomCode } from './extensions/CustomCode';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { useFileSystem } from '../store/useFileSystem';
 import { EditorToolbar } from './EditorToolbar';
 import { ImageWrapMenu } from './ImageWrapMenu';
 import { RecoveryPrompt } from './RecoveryPrompt';
 import { ExternalChangeDialog } from './ExternalChangeDialog';
-import { HistoryPanel } from './HistoryPanel';
-import { DraftPanel } from './DraftPanel';
-import { useHistoryStore } from '../store/useHistoryStore';
+import { RightSidebarMode } from './RightSidebar';
 import { useDraftStore } from '../store/useDraftStore';
+import { useHistoryStore } from '../store/useHistoryStore';
 
-export function Editor() {
+interface EditorProps {
+  rightPanelMode: RightSidebarMode;
+  onSetRightPanelMode: (mode: RightSidebarMode) => void;
+}
+
+export interface EditorHandle {
+  restoreContent: (content: any) => void;
+  switchToDraft: (content: any) => void;
+  switchToMain: () => void;
+  getCurrentContent: () => any;
+}
+
+export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
+  { rightPanelMode, onSetRightPanelMode },
+  ref
+) {
   const {
     activeFilePath,
     rootDir,
@@ -36,9 +50,8 @@ export function Editor() {
     keepCurrentVersion,
     closeFile,
   } = useFileSystem();
-  const { isOpen: isHistoryOpen, loadCheckpoints } = useHistoryStore();
+  const { loadCheckpoints } = useHistoryStore();
   const {
-    isOpen: isDraftsOpen,
     activeDraftId,
     activeDraft,
     saveDraftContent,
@@ -286,6 +299,14 @@ export function Editor() {
     return null;
   };
 
+  // Expose methods to parent via ref
+  useImperativeHandle(ref, () => ({
+    restoreContent: handleRestoreContent,
+    switchToDraft: handleSwitchToDraft,
+    switchToMain: handleSwitchToMain,
+    getCurrentContent,
+  }), [editor, rootDir, activeFilePath, activeDraftId]);
+
   return (
     <div className="flex-1 flex h-full overflow-hidden">
       {/* Main editor area */}
@@ -294,7 +315,11 @@ export function Editor() {
           <ImageWrapMenu editor={editor} />
         )}
 
-        <EditorToolbar editor={editor} />
+        <EditorToolbar
+          editor={editor}
+          rightPanelMode={rightPanelMode}
+          onSetRightPanelMode={onSetRightPanelMode}
+        />
 
         {/* Draft mode indicator */}
         {activeDraft && (
@@ -342,20 +367,6 @@ export function Editor() {
           />
         )}
       </div>
-
-      {/* History panel */}
-      {isHistoryOpen && (
-        <HistoryPanel onRestoreContent={handleRestoreContent} />
-      )}
-
-      {/* Drafts panel */}
-      {isDraftsOpen && (
-        <DraftPanel
-          onSwitchToDraft={handleSwitchToDraft}
-          onSwitchToMain={handleSwitchToMain}
-          getCurrentContent={getCurrentContent}
-        />
-      )}
     </div>
   );
-}
+});

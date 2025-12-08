@@ -1,50 +1,50 @@
-<!-- @mid:h-60y9nj -->
+<!-- @mid:h-m5q3i1 -->
 # Implementation Plan: Storage, Versioning & Document Management
 
-<!-- @mid:p-ctk02e -->
+<!-- @mid:p-hhttiz -->
 A comprehensive implementation plan for Midlight's new storage architecture, Git-like versioning system, and document management—designed for long-term scalability and user-friendly operation.
 
 ---
 
-<!-- @mid:h-r79nyn -->
+<!-- @mid:h-k7vu97 -->
 ## Implementation Status
 
-<!-- @mid:p-3vzs4u -->
-**| Phase | Description | Status | Completion Date |
+<!-- @mid:p-0i6j5w -->
+************| Phase | Description | Status | Completion Date |
 |-------|-------------|--------|-----------------|
-| Phase 1 | Core Services | ****Complete**** | 2025-12-05 |
-| Phase 2 | Frontend Integration | ****Complete**** | 2025-12-05 |
-| Phase 3 | File Watching | ****Complete**** | 2025-12-05 |
-| Phase 4 | History UI | ****Complete**** | 2025-12-05 |
-| Phase 5 | Drafts System | ****Complete**** | 2025-12-06 |
+| Phase 1 | Core Services | ******Complete********** | 2025-12-05 |
+| Phase 2 | Frontend Integration | ******Complete********** | 2025-12-05 |
+| Phase 3 | File Watching | ******Complete********** | 2025-12-05 |
+| Phase 4 | History UI | ******Complete********** | 2025-12-05 |
+| Phase 5 | Drafts System | ******Complete********** | 2025-12-06 |
 | Phase 6 | Tier Enforcement | Pending | - |
-| Phase 7 | Polish & Testing | Pending | - |**
+| Phase 7 | Polish & Testing | Pending | - |************
 
 ---
 
-<!-- @mid:h-qx72zc -->
+<!-- @mid:h-ju4m28 -->
 ## Executive Summary
 
-<!-- @mid:p-lb8nxr -->
+<!-- @mid:p-j9qjnt -->
 This plan consolidates our research into an actionable implementation roadmap that:
 
-<!-- @mid:list-qvkfn1 -->
+<!-- @mid:list-tiir30 -->
 1. **Replaces inline HTML storage** with a clean Markdown + Sidecar approach
 2. **Implements content-addressable versioning** (Git-like, but invisible to users)
 3. **Separates images** from documents for efficient storage
 4. **Adds file watching** for external change detection
 5. **Prepares for cloud sync** (paid tier) without requiring it (free tier)
 
-<!-- @mid:p-ibegss -->
-**Timeline****: 8-10 weeks for full implementation
-****Risk Level****: Medium (requires migration of existing files)**
+<!-- @mid:p-leqokc -->
+**Timeline**************: 8-10 weeks for full implementation
+******Risk Level******: Medium (requires migration of existing files)********
 
 ---
 
-<!-- @mid:h-5nbrtq -->
+<!-- @mid:h-itkssl -->
 ## Table of Contents
 
-<!-- @mid:list-rjk09n -->
+<!-- @mid:list-ibbagn -->
 1. Architecture Overview
 2. File Format Specification
 3. Content-Addressable Object Store
@@ -62,13 +62,13 @@ This plan consolidates our research into an actionable implementation roadmap th
 
 ---
 
-<!-- @mid:h-e0k81e -->
+<!-- @mid:h-2w5l9f -->
 ## 1. Architecture Overview
 
-<!-- @mid:h-4d80d6 -->
+<!-- @mid:h-5f6a89 -->
 ### Directory Structure
 
-<!-- @mid:code-u6a3do -->
+<!-- @mid:code-6ml7rx -->
 ```
 workspace/                              # User's chosen folder
 ├── My Essay.md                         # Clean Markdown content
@@ -102,10 +102,10 @@ workspace/                              # User's chosen folder
         └── {encoded-path}.wal
 ```
 
-<!-- @mid:h-rsu3k5 -->
+<!-- @mid:h-wtksbj -->
 ### Data Flow Diagram
 
-<!-- @mid:code-xrevs5 -->
+<!-- @mid:code-yd1cuo -->
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                           USER EDITING                                  │
@@ -156,16 +156,16 @@ workspace/                              # User's chosen folder
 
 ---
 
-<!-- @mid:h-1ln53u -->
+<!-- @mid:h-gu0hpk -->
 ## 2. File Format Specification
 
-<!-- @mid:h-k38anp -->
+<!-- @mid:h-ma18dn -->
 ### 2.1 Markdown File (.md)
 
-<!-- @mid:p-s6gzjj -->
+<!-- @mid:p-1dlxhn -->
 Clean, portable Markdown with invisible block anchors.
 
-<!-- @mid:code-1c79bi -->
+<!-- @mid:code-x6a8te -->
 ```markdown
 # The Art of Writing
 
@@ -182,23 +182,23 @@ The most important aspects are:
 ![A vintage typewriter](@img:abc123def456)
 ```
 
-<!-- @mid:p-txqsl3 -->
+<!-- @mid:p-45fd7y -->
 **Rules:**
 
-<!-- @mid:list-e7pobv -->
+<!-- @mid:list-lfx2f5 -->
 - Block IDs are HTML comments (invisible in all renderers)
 - Format: `<!-- @mid:{type}-{6-char-id} -->`
 - IDs generated on first save, preserved thereafter
 - If ID missing on load, generate new one
 - Image references use `@img:{hash}` syntax
 
-<!-- @mid:h-kv5clr -->
+<!-- @mid:h-h7cdwu -->
 ### 2.2 Sidecar File (.midlight/sidecars/{hash}.json)
 
-<!-- @mid:p-ry0w6f -->
+<!-- @mid:p-6q9eoi -->
 JSON file containing all formatting, metadata, and document settings.
 
-<!-- @mid:code-uyrhsk -->
+<!-- @mid:code-oe1uv8 -->
 ```json
 {
   "version": 1,
@@ -249,10 +249,10 @@ JSON file containing all formatting, metadata, and document settings.
 }
 ```
 
-<!-- @mid:h-wt2gsi -->
+<!-- @mid:h-gqhxoi -->
 ### 2.3 Workspace Config (.midlight/config.json)
 
-<!-- @mid:code-9hsgwc -->
+<!-- @mid:code-97foe1 -->
 ```json
 {
   "version": 1,
@@ -289,29 +289,29 @@ JSON file containing all formatting, metadata, and document settings.
 
 ---
 
-<!-- @mid:h-t7bkmi -->
+<!-- @mid:h-h670cl -->
 ## 3. Content-Addressable Object Store
 
-<!-- @mid:h-efzgnr -->
+<!-- @mid:h-qqwkhh -->
 ### **Status: ****IMPLEMENTED**** (Phase 1)**
 
-<!-- @mid:p-0986cv -->
-**`File`****`: `****`electron/services/objectStore.ts`**
+<!-- @mid:p-ni33fb -->
+**``File``****``: ``****``electron/services/objectStore.ts``**
 
-<!-- @mid:h-dgapxh -->
+<!-- @mid:h-qdvbs2 -->
 ### Features Implemented:
 
-<!-- @mid:list-dzog38 -->
+<!-- @mid:list-7un16c -->
 - SHA-256 content hashing
 - Gzip compression for storage efficiency
 - Automatic deduplication
 - Garbage collection support
 - Storage size tracking
 
-<!-- @mid:h-bsywod -->
+<!-- @mid:h-7bkdt1 -->
 ### API:
 
-<!-- @mid:code-63uddg -->
+<!-- @mid:code-lys8fq -->
 ```typescript
 class ObjectStore {
   async init(): Promise<void>
@@ -325,24 +325,24 @@ class ObjectStore {
 }
 ```
 
-<!-- @mid:h-31ghhd -->
+<!-- @mid:h-6bw4mc -->
 ### Test Coverage: 24 tests passing
 
 ---
 
-<!-- @mid:h-gil56m -->
+<!-- @mid:h-sqhemq -->
 ## 4. Checkpoint System
 
-<!-- @mid:h-jftbq0 -->
+<!-- @mid:h-0hpza4 -->
 ### **Status: ****IMPLEMENTED**** (Phase 1)**
 
-<!-- @mid:p-f62pxh -->
-**`File`****`: `****`electron/services/checkpointManager.ts`**
+<!-- @mid:p-28ky50 -->
+**``File``****``: ``****``electron/services/checkpointManager.ts``**
 
-<!-- @mid:h-e1mcky -->
+<!-- @mid:h-3uehiw -->
 ### Features Implemented:
 
-<!-- @mid:list-yfapba -->
+<!-- @mid:list-7kekt3 -->
 - Automatic checkpoint creation on save
 - Bookmark support (named checkpoints)
 - Checkpoint restoration
@@ -350,10 +350,10 @@ class ObjectStore {
 - Retention limits (max checkpoints, age)
 - Parent-child relationship tracking
 
-<!-- @mid:h-307e2h -->
+<!-- @mid:h-td9amf -->
 ### Checkpoint Metadata Structure:
 
-<!-- @mid:code-gl3k41 -->
+<!-- @mid:code-8yqkbq -->
 ```typescript
 interface Checkpoint {
   id: string;                    // Unique ID (e.g., "cp-a1b2c3")
@@ -372,10 +372,10 @@ interface Checkpoint {
 }
 ```
 
-<!-- @mid:h-lbpfdc -->
+<!-- @mid:h-a90cx8 -->
 ### API:
 
-<!-- @mid:code-w6bbqv -->
+<!-- @mid:code-expali -->
 ```typescript
 class CheckpointManager {
   async init(): Promise<void>
@@ -393,24 +393,24 @@ class CheckpointManager {
 }
 ```
 
-<!-- @mid:h-28u2uu -->
+<!-- @mid:h-xb1vul -->
 ### Test Coverage: 26 tests passing
 
 ---
 
-<!-- @mid:h-9hjikm -->
+<!-- @mid:h-8jzhjb -->
 ## 5. Draft System (Branching)
 
-<!-- @mid:h-tzg8l1 -->
+<!-- @mid:h-mt4gqz -->
 ### **Status: ****IMPLEMENTED**** (Phase 5)**
 
-<!-- @mid:p-d6xms8 -->
+<!-- @mid:p-5ly9qr -->
 **`File`****`: `****`electron/services/draftManager.ts`**
 
-<!-- @mid:h-dr1234 -->
+<!-- @mid:h-xhmcz3 -->
 ### Features Implemented:
 
-<!-- @mid:list-dr5678 -->
+<!-- @mid:list-0du56o -->
 - Create drafts from current document or any checkpoint
 - Independent checkpoint history per draft (max 20 checkpoints)
 - Draft statuses: active, merged, archived
@@ -419,10 +419,10 @@ class CheckpointManager {
 - Permanent draft deletion
 - GC integration for draft content hashes
 
-<!-- @mid:h-dr9012 -->
+<!-- @mid:h-j38v91 -->
 ### API:
 
-<!-- @mid:code-dr3456 -->
+<!-- @mid:code-vd3mwq -->
 ```typescript
 class DraftManager {
   async init(): Promise<void>
@@ -440,24 +440,24 @@ class DraftManager {
 }
 ```
 
-<!-- @mid:h-dr7890 -->
+<!-- @mid:h-fm8lhf -->
 ### Test Coverage: 37 tests passing
 
 ---
 
-<!-- @mid:h-uia7us -->
+<!-- @mid:h-x3uyna -->
 ## 6. File Watcher Integration
 
-<!-- @mid:h-ql84uj -->
+<!-- @mid:h-euwh2f -->
 ### **Status: ****IMPLEMENTED**** (Phase 3)**
 
-<!-- @mid:p-lcjcdr -->
+<!-- @mid:p-h90hy4 -->
 **`File`****`: `****`electron/services/fileWatcher.ts`**
 
-<!-- @mid:h-fw1234 -->
+<!-- @mid:h-w6ye2k -->
 ### Features Implemented:
 
-<!-- @mid:list-fw5678 -->
+<!-- @mid:list-l31dpt -->
 - chokidar-based file watching with debouncing
 - "Saving" marks to ignore self-triggered changes
 - mtime tracking for external change detection
@@ -465,10 +465,10 @@ class DraftManager {
 - Ignored patterns (.midlight, .git, node_modules)
 - IPC events for renderer notification
 
-<!-- @mid:h-fw9012 -->
+<!-- @mid:h-c64h1s -->
 ### API:
 
-<!-- @mid:code-fw3456 -->
+<!-- @mid:code-qm03fs -->
 ```typescript
 class FileWatcher extends EventEmitter {
   async start(): Promise<void>
@@ -481,33 +481,33 @@ class FileWatcher extends EventEmitter {
 }
 ```
 
-<!-- @mid:h-fw7890 -->
+<!-- @mid:h-a4d8qo -->
 ### UI Component: `src/components/ExternalChangeDialog.tsx`
 
-<!-- @mid:list-fwabc -->
+<!-- @mid:list-vm1bpy -->
 - Modal dialog for external change notifications
 - Handles modified files (Reload/Keep Mine options)
 - Handles deleted files (Keep Editing/Close File options)
 - Time-ago display for change timestamp
 
-<!-- @mid:h-fwdef -->
+<!-- @mid:h-cg8esn -->
 ### Test Coverage: 17 tests (12 passing, 5 skipped for flaky FS events)
 
 ---
 
-<!-- @mid:h-v6nj7h -->
+<!-- @mid:h-uy28c1 -->
 ## 7. Image Management
 
-<!-- @mid:h-2moyoo -->
+<!-- @mid:h-1tgh6r -->
 ### **Status: ****IMPLEMENTED**** (Phase 1)**
 
-<!-- @mid:p-uamqmj -->
-**`File`****`: `****`electron/services/imageManager.ts`**
+<!-- @mid:p-7ac8g3 -->
+**``File``****``: ``****``electron/services/imageManager.ts``**
 
-<!-- @mid:h-87l0gn -->
+<!-- @mid:h-nrdz2a -->
 ### Features Implemented:
 
-<!-- @mid:list-nuo877 -->
+<!-- @mid:list-tkedx4 -->
 - Base64 image storage
 - Buffer image storage
 - Content-based deduplication (SHA-256)
@@ -515,10 +515,10 @@ class FileWatcher extends EventEmitter {
 - Image reference system (`@img:{hash}`)
 - Garbage collection for unreferenced images
 
-<!-- @mid:h-7yab08 -->
+<!-- @mid:h-r7e85m -->
 ### API:
 
-<!-- @mid:code-cbguzh -->
+<!-- @mid:code-ny3934 -->
 ```typescript
 class ImageManager {
   async init(): Promise<void>
@@ -536,24 +536,24 @@ class ImageManager {
 }
 ```
 
-<!-- @mid:h-zq4uhq -->
+<!-- @mid:h-erb516 -->
 ### Test Coverage: 29 tests passing
 
 ---
 
-<!-- @mid:h-lggnkh -->
+<!-- @mid:h-mrjr19 -->
 ## 8. Crash Recovery
 
-<!-- @mid:h-2vifso -->
+<!-- @mid:h-rxz7h8 -->
 ### **Status: ****IMPLEMENTED**** (Phase 1 + Phase 2)**
 
-<!-- @mid:p-wlakx5 -->
-**`File`****`: `****`electron/services/recoveryManager.ts`**
+<!-- @mid:p-w9puf1 -->
+**``File``****``: ``****``electron/services/recoveryManager.ts``**
 
-<!-- @mid:h-4gl043 -->
+<!-- @mid:h-uzoltq -->
 ### Features Implemented:
 
-<!-- @mid:list-6fayvd -->
+<!-- @mid:list-zjmb7l -->
 - Write-Ahead Log (WAL) for crash recovery
 - Configurable WAL interval (default 500ms)
 - Recovery detection on startup
@@ -561,10 +561,10 @@ class ImageManager {
 - Per-file recovery tracking
 - Recovery prompt UI in editor
 
-<!-- @mid:h-68m158 -->
+<!-- @mid:h-xwg0x8 -->
 ### API:
 
-<!-- @mid:code-plhwit -->
+<!-- @mid:code-axck0p -->
 ```typescript
 class RecoveryManager {
   async init(): Promise<void>
@@ -583,103 +583,103 @@ class RecoveryManager {
 }
 ```
 
-<!-- @mid:h-qiask2 -->
+<!-- @mid:h-rc7o5g -->
 ### `UI Component: ``src/components/RecoveryPrompt.tsx`
 
-<!-- @mid:list-vn7xtc -->
+<!-- @mid:list-s9obmc -->
 - Yellow warning banner
 - "Restore changes" / "Discard" buttons
 - Time-ago display
 
-<!-- @mid:h-vd5nf7 -->
+<!-- @mid:h-ojjbmb -->
 ### Test Coverage: 29 tests passing
 
 ---
 
-<!-- @mid:h-u0xkm3 -->
+<!-- @mid:h-n2zj12 -->
 ## 9. Migration Strategy
 
-<!-- @mid:h-7fqy0v -->
+<!-- @mid:h-xdf2q8 -->
 ### **Status: ****IMPLEMENTED**** (Phase 2)**
 
-<!-- @mid:p-kejil7 -->
+<!-- @mid:p-dz3smw -->
 Existing markdown files without sidecars are automatically handled:
 
-<!-- @mid:list-5iw5mo -->
+<!-- @mid:list-24drju -->
 1. `workspaceLoadDocument()` detects missing sidecar
 2. Backend reads raw markdown
 3. Backend parses markdown to Tiptap JSON (basic conversion)
 4. On first save, full sidecar is created
 5. Future loads use the sidecar
 
-<!-- @mid:p-t6sgny -->
+<!-- @mid:p-gm9j4d -->
 **No explicit migration UI needed**** - handled transparently by DocumentDeserializer.**
 
 ---
 
-<!-- @mid:h-tl2yi8 -->
+<!-- @mid:h-w94wl6 -->
 ## 10. UI Components
 
-<!-- @mid:h-68kyx0 -->
+<!-- @mid:h-05sozk -->
 ### Implemented (Phase 2)
 
-<!-- @mid:list-ecyak9 -->
+<!-- @mid:list-5h44oh -->
 - **RecoveryPrompt** (`src/components/RecoveryPrompt.tsx`)
-  - Crash recovery notification
-  - Restore/discard options
+- Crash recovery notification
+- Restore/discard options
 
-<!-- @mid:h-etmau1 -->
+<!-- @mid:h-xw8079 -->
 ### Implemented (Phase 3)
 
-<!-- @mid:list-ph3ui1 -->
+<!-- @mid:list-8i1bxd -->
 - **ExternalChangeDialog** (`src/components/ExternalChangeDialog.tsx`)
-  - External file change notification
-  - Reload/Keep Mine options for modified files
-  - Keep Editing/Close File options for deleted files
+- External file change notification
+- Reload/Keep Mine options for modified files
+- Keep Editing/Close File options for deleted files
 
-<!-- @mid:h-z9pui2 -->
+<!-- @mid:h-9ld2a9 -->
 ### Implemented (Phase 4)
 
-<!-- @mid:list-yk5aef -->
+<!-- @mid:list-ibbxlb -->
 - **HistoryPanel** (`src/components/HistoryPanel.tsx`)
-  - Browse checkpoints by file
-  - Bookmark and auto-save sections
-  - Restore and compare actions
+- Browse checkpoints by file
+- Bookmark and auto-save sections
+- Restore and compare actions
 - **CheckpointItem** (`src/components/CheckpointItem.tsx`)
-  - Individual checkpoint display
-  - Time-ago formatting
-  - Word/char stats
-  - Label editing
+- Individual checkpoint display
+- Time-ago formatting
+- Word/char stats
+- Label editing
 - **CompareModal** (`src/components/CompareModal.tsx`)
-  - Side-by-side diff view
-  - Word-level diff highlighting
-  - Restore from comparison
+- Side-by-side diff view
+- Word-level diff highlighting
+- Restore from comparison
 
-<!-- @mid:h-z9pw2b -->
+<!-- @mid:h-9n0eqk -->
 ### Implemented (Phase 5)
 
-<!-- @mid:list-tzqy9p -->
+<!-- @mid:list-yovh5h -->
 - **DraftPanel** (`src/components/DraftPanel.tsx`)
-  - Draft list with status badges
-  - Create new draft button
-  - Switch between drafts and main document
+- Draft list with status badges
+- Create new draft button
+- Switch between drafts and main document
 - **DraftItem** (`src/components/DraftItem.tsx`)
-  - Individual draft display
-  - Rename, apply, discard, delete actions
+- Individual draft display
+- Rename, apply, discard, delete actions
 - **CreateDraftModal** (`src/components/CreateDraftModal.tsx`)
-  - New draft dialog with name input
-  - Option to create from current or checkpoint
+- New draft dialog with name input
+- Option to create from current or checkpoint
 - **DraftIndicator** - Visual indicator in toolbar when editing a draft
 
 ---
 
-<!-- @mid:h-cg2416 -->
+<!-- @mid:h-8wp2oj -->
 ## 11. Free vs Paid Tier Logic
 
-<!-- @mid:h-tm6yrc -->
+<!-- @mid:h-i98656 -->
 ### **Status: ****DEFINED**** (Implementation in Phase 6)**
 
-<!-- @mid:code-25xh7s -->
+<!-- @mid:code-hh8aik -->
 ```typescript
 const FREE_TIER: TierConfig = {
   versioning: {
@@ -718,19 +718,19 @@ const PRO_TIER: TierConfig = {
 
 ---
 
-<!-- @mid:h-uv9iyz -->
+<!-- @mid:h-9oed0c -->
 ## 12. Implementation Phases
 
-<!-- @mid:h-pgdd5u -->
+<!-- @mid:h-4nm0tm -->
 ### **Phase 1: Core Services - ****COMPLETE**
 
-<!-- @mid:p-35l84q -->
+<!-- @mid:p-dhpkf6 -->
 **Completed****: 2025-12-05**
 
-<!-- @mid:p-vqxwit -->
+<!-- @mid:p-fs8379 -->
 **Files Created****:**
 
-<!-- @mid:list-m781xi -->
+<!-- @mid:list-10yzh2 -->
 - `electron/services/objectStore.ts` - Content-addressable storage
 - `electron/services/checkpointManager.ts` - Version history
 - `electron/services/imageManager.ts` - Image extraction/deduplication
@@ -741,10 +741,10 @@ const PRO_TIER: TierConfig = {
 - `electron/services/types.ts` - Shared type definitions
 - `electron/services/index.ts` - Barrel exports
 
-<!-- @mid:p-09morw -->
+<!-- @mid:p-8sb17l -->
 **Test Files Created****:**
 
-<!-- @mid:list-qel54q -->
+<!-- @mid:list-xplfbb -->
 - `electron/services/objectStore.test.ts` (24 tests)
 - `electron/services/checkpointManager.test.ts` (26 tests)
 - `electron/services/imageManager.test.ts` (29 tests)
@@ -752,21 +752,21 @@ const PRO_TIER: TierConfig = {
 - `electron/services/documentSerializer.test.ts` (31 tests)
 - `electron/services/workspaceManager.test.ts` (26 tests)
 
-<!-- @mid:p-4uda76 -->
+<!-- @mid:p-jvn2ce -->
 **Total****: 165 tests passing, ~83% coverage**
 
 ---
 
-<!-- @mid:h-1376tm -->
+<!-- @mid:h-m4qtmh -->
 ### **Phase 2: Frontend Integration - ****COMPLETE**
 
-<!-- @mid:p-j9gxay -->
+<!-- @mid:p-p402xk -->
 **Completed****: 2025-12-05**
 
-<!-- @mid:p-m8ar90 -->
+<!-- @mid:p-hwvxpn -->
 **Files Modified****:**
 
-<!-- @mid:list-t7y5fk -->
+<!-- @mid:list-ka6tm1 -->
 - `src/store/useFileSystem.ts` - Complete rewrite to use workspace APIs
 - `src/components/Editor.tsx` - Changed from markdown to JSON content
 - `src/App.tsx` - Updated DOCX import to use Tiptap JSON
@@ -774,23 +774,23 @@ const PRO_TIER: TierConfig = {
 - `electron/preload.ts` - Exposed workspace APIs to renderer
 - `src/vite-env.d.ts` - Added type definitions for new APIs
 
-<!-- @mid:p-f8ngml -->
+<!-- @mid:p-axuomr -->
 **Files Created****:**
 
-<!-- @mid:list-4pgd75 -->
+<!-- @mid:list-stq5vy -->
 - `src/components/RecoveryPrompt.tsx` - Recovery notification UI
 - `src/utils/htmlToTiptap.ts` - HTML to Tiptap JSON converter (for DOCX import)
 
-<!-- @mid:p-p82dce -->
+<!-- @mid:p-t2szt2 -->
 **Files Deleted****:**
 
-<!-- @mid:list-lain1m -->
+<!-- @mid:list-xj7led -->
 - `src/utils/markdown.ts` - Replaced by backend serializers
 
-<!-- @mid:p-06bsh7 -->
+<!-- @mid:p-bm2zeu -->
 **Key Changes****:**
 
-<!-- @mid:list-xryb2m -->
+<!-- @mid:list-s5eh7k -->
 - Editor now stores/loads Tiptap JSON directly (not markdown strings)
 - Workspace initialization on directory load
 - Recovery detection and UI prompt
@@ -798,34 +798,34 @@ const PRO_TIER: TierConfig = {
 
 ---
 
-<!-- @mid:h-bddzjh -->
+<!-- @mid:h-ia8r6w -->
 ### **Phase 3: File Watching - ****COMPLETE**
 
-<!-- @mid:p-8ndqa0 -->
+<!-- @mid:p-wfbpui -->
 **Completed****: 2025-12-05**
 
-<!-- @mid:p-nd6vya -->
+<!-- @mid:p-2yvlbb -->
 **Files Created****:**
 
-<!-- @mid:list-qvuod5 -->
+<!-- @mid:list-8sk0a1 -->
 - `electron/services/fileWatcher.ts` - Core file watching class
 - `electron/services/fileWatcher.test.ts` - Tests (17 total, 12 passing)
 - `src/components/ExternalChangeDialog.tsx` - External change notification UI
 
-<!-- @mid:p-nd7abc -->
+<!-- @mid:p-wcuvnz -->
 **Files Modified****:**
 
-<!-- @mid:list-qv7def -->
+<!-- @mid:list-xxptg8 -->
 - `electron/main.ts` - FileWatcher integration and IPC handlers
 - `electron/preload.ts` - Exposed new APIs (stopWatcher, hasExternalChange, onFileChangedExternally)
 - `src/vite-env.d.ts` - Type definitions for new APIs
 - `src/store/useFileSystem.ts` - External change state and actions
 - `src/components/Editor.tsx` - External change listener and dialog integration
 
-<!-- @mid:p-nd8ghi -->
+<!-- @mid:p-d41ogm -->
 **Key Features****:**
 
-<!-- @mid:list-qv9jkl -->
+<!-- @mid:list-yxjm1y -->
 - [x] chokidar-based file watching with debouncing (500ms default)
 - [x] "Saving" marks to ignore self-triggered changes
 - [x] mtime tracking for external change detection
@@ -835,38 +835,38 @@ const PRO_TIER: TierConfig = {
 
 ---
 
-<!-- @mid:h-z7n5q7 -->
+<!-- @mid:h-2uq8p7 -->
 ### **Phase 4: History UI - ****COMPLETE**
 
-<!-- @mid:p-ab1n6d -->
+<!-- @mid:p-fi362o -->
 **Completed****: 2025-12-05**
 
-<!-- @mid:p-0kmdhi -->
+<!-- @mid:p-x0f72a -->
 **Files Created****:**
 
-<!-- @mid:list-cwgbx8 -->
+<!-- @mid:list-yj73pe -->
 - `src/store/useHistoryStore.ts` - State management for history panel
 - `src/components/HistoryPanel.tsx` - Sidebar panel for version history
 - `src/components/CheckpointItem.tsx` - Individual checkpoint display
 - `src/components/CompareModal.tsx` - Diff view modal for comparing versions
 
-<!-- @mid:p-h4abc1 -->
+<!-- @mid:p-jsh2k4 -->
 **Files Modified****:**
 
-<!-- @mid:list-h4def2 -->
+<!-- @mid:list-39xd9h -->
 - `src/components/EditorToolbar.tsx` - Added history toggle and bookmark button
 - `src/components/Editor.tsx` - Integrated HistoryPanel with restore flow
 
-<!-- @mid:p-h4ghi3 -->
+<!-- @mid:p-c3gwar -->
 **Dependencies Added****:**
 
-<!-- @mid:list-h4jkl4 -->
+<!-- @mid:list-bzctca -->
 - `diff` - Word-level diff algorithm for compare view
 
-<!-- @mid:p-h4mno5 -->
+<!-- @mid:p-pe0fs4 -->
 **Key Features****:**
 
-<!-- @mid:list-h4pqr6 -->
+<!-- @mid:list-219d9u -->
 - [x] History panel with bookmark and auto-save sections
 - [x] Checkpoint selection and restore flow
 - [x] Create bookmarks from toolbar
@@ -877,16 +877,16 @@ const PRO_TIER: TierConfig = {
 
 ---
 
-<!-- @mid:h-8w92lh -->
+<!-- @mid:h-9svoew -->
 ### **Phase 5: Drafts - ****COMPLETE**
 
-<!-- @mid:p-s2941k -->
+<!-- @mid:p-2953h8 -->
 **Completed****: 2025-12-06**
 
-<!-- @mid:p-ph5abc -->
+<!-- @mid:p-61sk94 -->
 **Files Created****:**
 
-<!-- @mid:list-ph5def -->
+<!-- @mid:list-bihj5f -->
 - `electron/services/draftManager.ts` - Draft management with checkpoints
 - `electron/services/draftManager.test.ts` - 37 tests
 - `src/store/useDraftStore.ts` - Zustand store for draft state
@@ -894,10 +894,10 @@ const PRO_TIER: TierConfig = {
 - `src/components/DraftItem.tsx` - Individual draft display
 - `src/components/CreateDraftModal.tsx` - New draft dialog
 
-<!-- @mid:p-ph5ghi -->
+<!-- @mid:p-3fn4lw -->
 **Files Modified****:**
 
-<!-- @mid:list-ph5jkl -->
+<!-- @mid:list-wi4fc6 -->
 - `electron/services/workspaceManager.ts` - Added DraftManager integration
 - `electron/main.ts` - Added 12 draft IPC handlers
 - `electron/preload.ts` - Exposed draft APIs
@@ -905,10 +905,10 @@ const PRO_TIER: TierConfig = {
 - `src/components/EditorToolbar.tsx` - Added draft toggle button
 - `src/components/Editor.tsx` - Integrated DraftPanel and draft mode
 
-<!-- @mid:p-ph5mno -->
+<!-- @mid:p-p2hm95 -->
 **Key Features****:**
 
-<!-- @mid:list-ph5pqr -->
+<!-- @mid:list-ioemn0 -->
 - [x] Create drafts from current document or checkpoint
 - [x] Independent checkpoint history per draft (max 20)
 - [x] Switch between main document and drafts
@@ -921,16 +921,16 @@ const PRO_TIER: TierConfig = {
 
 ---
 
-<!-- @mid:h-fy8fsa -->
+<!-- @mid:h-kpb4kh -->
 ### **Phase 6: Tier Enforcement - ****PENDING**
 
-<!-- @mid:p-vlaogr -->
+<!-- @mid:p-7w1i89 -->
 **Goal****: Free/paid limits work correctly**
 
-<!-- @mid:p-9s9l30 -->
+<!-- @mid:p-uspnbn -->
 **Tasks****:**
 
-<!-- @mid:list-xxol8g -->
+<!-- @mid:list-90id9u -->
 - [ ] Create tier configuration system
 - [ ] Add license/subscription check
 - [ ] Implement limit checking
@@ -940,16 +940,16 @@ const PRO_TIER: TierConfig = {
 
 ---
 
-<!-- @mid:h-jl1lu0 -->
+<!-- @mid:h-0c8m7k -->
 ### **Phase 7: Polish & Testing - ****PENDING**
 
-<!-- @mid:p-3jpyrr -->
+<!-- @mid:p-ax6sci -->
 **Goal****: Production-ready quality**
 
-<!-- @mid:p-uay2py -->
+<!-- @mid:p-arb0ql -->
 **Tasks****:**
 
-<!-- @mid:list-0fk8ph -->
+<!-- @mid:list-c501n8 -->
 - [ ] Comprehensive error handling
 - [ ] Loading states for all async operations
 - [ ] Keyboard shortcuts for history/drafts
@@ -960,16 +960,16 @@ const PRO_TIER: TierConfig = {
 
 ---
 
-<!-- @mid:h-bivtya -->
+<!-- @mid:h-rqvzh7 -->
 ## 13. Technical Specifications
 
-<!-- @mid:h-9i3s2t -->
+<!-- @mid:h-8ntwci -->
 ### **13.1 IPC API - ****IMPLEMENTED**
 
-<!-- @mid:p-akzl66 -->
+<!-- @mid:p-hp3w6l -->
 `All workspace IPC handlers are implemented in ``electron/main.ts``:`
 
-<!-- @mid:code-1hmlzo -->
+<!-- @mid:code-t538so -->
 ```typescript
 // Workspace management
 ipcMain.handle('workspace:init', ...)
@@ -999,13 +999,13 @@ ipcMain.handle('workspace:getConfig', ...)
 ipcMain.handle('workspace:updateConfig', ...)
 ```
 
-<!-- @mid:h-f0bp1i -->
+<!-- @mid:h-4xu428 -->
 ### **13.2 Preload API - ****IMPLEMENTED**
 
-<!-- @mid:p-eub682 -->
+<!-- @mid:p-lggfz4 -->
 `All workspace methods exposed in ``electron/preload.ts``:`
 
-<!-- @mid:code-e22jev -->
+<!-- @mid:code-gyahzj -->
 ```typescript
 contextBridge.exposeInMainWorld('electronAPI', {
   // ... existing methods ...
@@ -1031,27 +1031,27 @@ contextBridge.exposeInMainWorld('electronAPI', {
 });
 ```
 
-<!-- @mid:h-4htkyf -->
+<!-- @mid:h-oy2yey -->
 ### 13.3 Dependencies
 
-<!-- @mid:p-1jmdlh -->
+<!-- @mid:p-y823kw -->
 **Added for Storage & Versioning****:**
 
-<!-- @mid:list-cssnma -->
+<!-- @mid:list-w3m4bo -->
 - `chokidar` - File watching (Phase 3)
 - `diff` - Word-level diffing for compare view (Phase 4)
 - `vitest` - Testing framework (dev dependency)
 
 ---
 
-<!-- @mid:h-hzoh9m -->
+<!-- @mid:h-r7xudg -->
 ## 14. Testing Strategy
 
-<!-- @mid:h-6weqz9 -->
+<!-- @mid:h-nq8fyw -->
 ### **Unit Tests - ****IMPLEMENTED**
 
-<!-- @mid:p-zl2mx6 -->
-**| Service | Tests | Status |
+<!-- @mid:p-l3upp5 -->
+************| Service | Tests | Status |
 |---------|-------|--------|
 | ObjectStore | 24 | Passing |
 | CheckpointManager | 26 | Passing |
@@ -1061,12 +1061,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
 | WorkspaceManager | 26 | Passing |
 | FileWatcher | 17 | 12 Passing, 5 Skipped |
 | DraftManager | 37 | Passing |
-| ****Total**** | ****221**** | ****216 Passing, 5 Skipped**** |**
+| ******Total****** | ******221****** | ******216 Passing, 5 Skipped****** |********
 
-<!-- @mid:h-v7b8e2 -->
+<!-- @mid:h-65rxlc -->
 ### Coverage Report
 
-<!-- @mid:code-q819fy -->
+<!-- @mid:code-9yo62q -->
 ```
 File                      | % Stmts | % Branch | % Funcs | % Lines
 --------------------------|---------|----------|---------|--------
@@ -1082,33 +1082,33 @@ workspaceManager.ts       |   77.16 |    58.62 |   72.22 |   79.48
 Overall                   |   82.62 |    64.28 |   91.01 |   83.21
 ```
 
-<!-- @mid:h-qzznr6 -->
+<!-- @mid:h-qwcy1j -->
 ### **Integration Tests - ****IMPLEMENTED**
 
-<!-- @mid:p-yoe1zw -->
+<!-- @mid:p-f0q5pk -->
 WorkspaceManager tests cover:
 
-<!-- @mid:list-wulz6i -->
+<!-- @mid:list-agywco -->
 - Full save/load cycle with versioning
 - Checkpoint creation and restoration
 - Recovery flow
 - Error handling
 
-<!-- @mid:h-4d3hfk -->
+<!-- @mid:h-9kmgtp -->
 ### **Manual Test Cases - ****PENDING**
 
-<!-- @mid:p-p6l51e -->
+<!-- @mid:p-iqxl2s -->
 See Phase 7 for manual testing checklist.
 
 ---
 
-<!-- @mid:h-dorzv8 -->
+<!-- @mid:h-64rja5 -->
 ## Summary
 
-<!-- @mid:h-padw7o -->
+<!-- @mid:h-irkgqc -->
 ### Completed
 
-<!-- @mid:list-a85zoh -->
+<!-- @mid:list-u85vhq -->
 - Clean Markdown + Sidecar storage format
 - Git-like content-addressable object store
 - Automatic checkpoint versioning
@@ -1123,22 +1123,22 @@ See Phase 7 for manual testing checklist.
 - Draft system for experimental changes
 - Comprehensive test suite (221 tests, 5 skipped)
 
-<!-- @mid:h-6qmgte -->
+<!-- @mid:h-9qnk6g -->
 ### In Progress
 
-<!-- @mid:list-u2o63z -->
+<!-- @mid:list-xrxs8z -->
 - None
 
-<!-- @mid:h-b5yc37 -->
+<!-- @mid:h-iw70as -->
 ### Remaining
 
-<!-- @mid:list-2tb879 -->
+<!-- @mid:list-64wudx -->
 - Tier enforcement for free/paid (Phase 6)
 - Polish and final testing (Phase 7)
 
 ---
 
-<!-- @mid:p-yhhyvc -->
-*Document created: 2025-12-05**
-**Last updated: 2025-12-06**
-**Status: Phases 1-5 Complete, Phases 6-7 Pending*
+<!-- @mid:p-054xue -->
+*Document created: 2025-12-05*****
+****Last updated: 2025-12-06****
+***Status: Phases 1-5 Complete, Phases 6-7 Pending*

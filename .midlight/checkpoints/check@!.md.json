@@ -1,6 +1,6 @@
 {
   "fileKey": "check@!.md",
-  "headId": "cp-gt1ach",
+  "headId": "cp-4o53s6",
   "checkpoints": [
     {
       "id": "cp-hi4b8b",
@@ -36,6 +36,20 @@
       "sidecarHash": "281a03aaeec346490f616b9f602f01481df6a2dfd426229518a1067dba3dbe09",
       "timestamp": "2025-12-07T03:24:13.578Z",
       "parentId": "cp-4vi3dk",
+      "type": "auto",
+      "stats": {
+        "wordCount": 10,
+        "charCount": 92,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-4o53s6",
+      "contentHash": "b98e2088af78b0a3765c7456f995201094cb16d4eb76c6b048903e8e0077bb2e",
+      "sidecarHash": "8303e62a974cd1272955e827332b6d6f546405b6bf10d025f383facd8b21e546",
+      "timestamp": "2025-12-08T00:55:57.778Z",
+      "parentId": "cp-gt1ach",
       "type": "auto",
       "stats": {
         "wordCount": 10,

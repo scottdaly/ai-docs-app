@@ -1,6 +1,6 @@
 {
   "fileKey": "Wow.md",
-  "headId": "cp-vrycu5",
+  "headId": "cp-cvy54m",
   "checkpoints": [
     {
       "id": "cp-lxyxvq",
@@ -50,6 +50,48 @@
       "sidecarHash": "5d9e2f52886e7369f958099c2855ba6fff4dd51409f4e330fc944d58061b2248",
       "timestamp": "2025-12-07T03:29:19.071Z",
       "parentId": "cp-5sms19",
+      "type": "auto",
+      "stats": {
+        "wordCount": 10,
+        "charCount": 62,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-f5olfw",
+      "contentHash": "8d456f5cd2e7395f1013f66f73b0e941b4750c9a15b7290aab3228035c4cc392",
+      "sidecarHash": "36d3329bdbaf5bdcdb3ccca68c1f8a278f18ef3c7773e3f196ce2e55a0e5336c",
+      "timestamp": "2025-12-08T01:23:24.041Z",
+      "parentId": "cp-vrycu5",
+      "type": "auto",
+      "stats": {
+        "wordCount": 10,
+        "charCount": 62,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-fkh6rc",
+      "contentHash": "fa802b6ea68ab192e2a9c33ce842a8559e8d9eb20b186315a80bf6db75cc0ba2",
+      "sidecarHash": "0a84d81198c169828f19b8b72e4065443c57e35feac0d9755f04ed37cec5da86",
+      "timestamp": "2025-12-08T01:24:13.775Z",
+      "parentId": "cp-f5olfw",
+      "type": "auto",
+      "stats": {
+        "wordCount": 10,
+        "charCount": 62,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-cvy54m",
+      "contentHash": "45233356f18a941825b5fa437a4f1a1afef0ec45feafe483b69b240a5db50e9e",
+      "sidecarHash": "8fdede5413598c5be9049c1f90f21693cf947600c8d9eb72f72ee477bc0ce1e7",
+      "timestamp": "2025-12-08T02:07:30.921Z",
+      "parentId": "cp-fkh6rc",
       "type": "auto",
       "stats": {
         "wordCount": 10,

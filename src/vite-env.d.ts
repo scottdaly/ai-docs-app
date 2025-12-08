@@ -442,12 +442,33 @@ interface IElectronAPI {
   // Import from Notion export
   importNotion: (analysisJson: string, destPath: string, optionsJson: string) => Promise<ImportResultResponse>;
 
+  // --- Auto-Update APIs ---
+
+  // Check for updates manually
+  checkForUpdates: () => Promise<{ success: boolean; updateInfo?: any; error?: string }>;
+
+  // Download the available update
+  downloadUpdate: () => Promise<{ success: boolean; error?: string }>;
+
+  // Quit and install the downloaded update
+  quitAndInstall: () => void;
+
+  // Get current app version
+  getAppVersion: () => Promise<string>;
+
   // Listeners
   onMenuAction: (callback: (action: string) => void) => () => void;
   onUpdateTheme: (callback: (theme: string) => void) => () => void;
   onDocxExportProgress: (callback: (progress: DocxExportProgress) => void) => () => void;
   onFileChangedExternally: (callback: (event: ExternalChangeEvent) => void) => () => void;
   onImportProgress: (callback: (progress: ImportProgress) => void) => () => void;
+
+  // Auto-update listeners
+  onUpdateAvailable: (callback: (data: { version: string; releaseDate?: string; releaseNotes?: string }) => void) => () => void;
+  onUpdateNotAvailable: (callback: (data: { version: string }) => void) => () => void;
+  onUpdateDownloadProgress: (callback: (data: { percent: number; bytesPerSecond: number; total: number; transferred: number }) => void) => () => void;
+  onUpdateDownloaded: (callback: (data: { version: string; releaseNotes?: string }) => void) => () => void;
+  onUpdateError: (callback: (data: { message: string }) => void) => () => void;
 }
 
 interface Window {

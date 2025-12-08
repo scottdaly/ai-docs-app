@@ -1,15 +1,15 @@
-<!-- @mid:h-ia3cmn -->
+<!-- @mid:h-vlno8n -->
 # Markdown Storage Strategy: Achieving Word Processor Parity
 
-<!-- @mid:p-ear21g -->
+<!-- @mid:p-jbkyor -->
 A critical analysis of how to store rich document features while maintaining Markdown as the backbone, and whether this is the right architectural choice.
 
 ---
 
-<!-- @mid:h-lhr0ws -->
+<!-- @mid:h-3cvmsg -->
 ## Table of Contents
 
-<!-- @mid:list-2mbvo7 -->
+<!-- @mid:list-xgc2au -->
 1. The Fundamental Tension
 2. Current Implementation Analysis
 3. Feature Storage Requirements
@@ -22,16 +22,16 @@ A critical analysis of how to store rich document features while maintaining Mar
 
 ---
 
-<!-- @mid:h-ab5thm -->
+<!-- @mid:h-yq5kzw -->
 ## 1. The Fundamental Tension
 
-<!-- @mid:h-9tg61o -->
+<!-- @mid:h-mw587z -->
 ### What Markdown Does Well
 
-<!-- @mid:p-0c4o92 -->
+<!-- @mid:p-8lugzr -->
 **Markdown was designed for ****semantic simplicity****:**
 
-<!-- @mid:code-utqlnq -->
+<!-- @mid:code-s5lq2x -->
 ```markdown
 # Heading           → "This is important"
 **bold**            → "This is emphasized"
@@ -39,21 +39,21 @@ A critical analysis of how to store rich document features while maintaining Mar
 [link](url)         → "This points somewhere"
 ```
 
-<!-- @mid:p-1ocrl4 -->
+<!-- @mid:p-6kg3sk -->
 **It deliberately ****avoids**** visual formatting because:**
 
-<!-- @mid:list-izvhwo -->
+<!-- @mid:list-1rgjcc -->
 - Content should be portable across renderers
 - Presentation should be separate from content
 - Files should be human-readable
 
-<!-- @mid:h-q0ji7k -->
+<!-- @mid:h-6p3i89 -->
 ### What Word Processors Expect
 
-<!-- @mid:p-zfw8rk -->
+<!-- @mid:p-6ooem5 -->
 **Users expect ****visual formatting****:**
 
-<!-- @mid:p-3rlzp7 -->
+<!-- @mid:p-qyilkx -->
 | Feature | Markdown Support | Word Processor |
 |---------|------------------|----------------|
 | Bold/Italic | ✓ Native | ✓ |
@@ -76,30 +76,30 @@ A critical analysis of how to store rich document features while maintaining Mar
 | Columns | ✗ None | ✓ |
 | Footnotes | ~Extension | ✓ |
 
-<!-- @mid:h-okkx9v -->
+<!-- @mid:h-nrqhwc -->
 ### The Core Question
 
-<!-- @mid:bq-4k23bo -->
+<!-- @mid:bq-b8xndh -->
 > **Can we achieve word processor feature parity while keeping Markdown as "the backbone"?**
 
-<!-- @mid:p-ag8lgi -->
+<!-- @mid:p-z59wdu -->
 **Short answer****: Yes, but Markdown becomes the ****content backbone****, not the ****format backbone****. We need additional storage for visual formatting.**
 
 ---
 
-<!-- @mid:h-8zp5mu -->
+<!-- @mid:h-3mu6hg -->
 ## 2. Current Implementation Analysis
 
-<!-- @mid:h-7ty1kv -->
+<!-- @mid:h-xcr8l9 -->
 ### How We Currently Store Rich Formatting
 
-<!-- @mid:p-7fnz3o -->
-**`File`****`: `****`src/utils/markdown.ts`**
+<!-- @mid:p-0n8bqu -->
+**````File````****````: ````****````src/utils/markdown.ts````**
 
-<!-- @mid:p-lrzgoy -->
+<!-- @mid:p-5yyl60 -->
 **We use ****inline HTML within Markdown**** for features Markdown doesn't support:**
 
-<!-- @mid:code-p1mord -->
+<!-- @mid:code-fdznu4 -->
 ```markdown
 # My Document
 
@@ -118,13 +118,13 @@ This is **bold** and *italic* text.
 ![](data:image/png;base64,iVBORw0KGgo...)
 ```
 
-<!-- @mid:h-znvf1f -->
+<!-- @mid:h-4xs458 -->
 ### Problems with Current Approach
 
-<!-- @mid:h-bm8x6q -->
+<!-- @mid:h-rrkceg -->
 #### **1. ****Bloated Files**
 
-<!-- @mid:code-niej7v -->
+<!-- @mid:code-2ru74n -->
 ```markdown
 <!-- Simple sentence with formatting becomes: -->
 <span style="font-family: 'Merriweather'; font-size: 16px; color: #333333">
@@ -138,74 +138,74 @@ the lazy dog.
 </span>
 ```
 
-<!-- @mid:p-unju4j -->
+<!-- @mid:p-6yldoi -->
 A paragraph that would be 50 characters becomes 400+ characters.
 
-<!-- @mid:p-iw4i5h -->
-**#### 2. ****Lost Readability****
-The file is no longer "human-readable Markdown"—it's HTML soup:**
+<!-- @mid:p-pfni5j -->
+***#### 2. ******Lost Readability********************
+The file is no longer "human-readable Markdown"—it's HTML soup:*****************
 
-<!-- @mid:code-zkxrws -->
+<!-- @mid:code-vq0rei -->
 ```markdown
 <p style="text-align: justify"><span style="font-family: 'Inter'; font-size: 14px; color: #1a1a1a">Lorem ipsum dolor sit amet, <span style="font-weight: bold; color: #ff0000">consectetur</span> adipiscing elit.</span></p>
 ```
 
-<!-- @mid:h-4trg29 -->
+<!-- @mid:h-aocmu9 -->
 #### **3. ****Renderer Incompatibility**
 
-<!-- @mid:list-ss7vhh -->
+<!-- @mid:list-pqmzpt -->
 - GitHub won't render `style` attributes (security)
 - Many Markdown viewers strip HTML
 - Obsidian shows raw HTML
 - Static site generators may sanitize
 
-<!-- @mid:p-grogj9 -->
-**#### 4. ****Diff Noise****
-Version control becomes useless:**
+<!-- @mid:p-2xx47g -->
+***#### 4. ******Diff Noise********************
+Version control becomes useless:*****************
 
-<!-- @mid:code-fa0jxv -->
+<!-- @mid:code-cgxjm2 -->
 ```diff
 - <span style="font-family: 'Inter'; font-size: 14px">Hello</span>
 + <span style="font-family: 'Inter'; font-size: 16px">Hello</span>
 ```
 
-<!-- @mid:p-vzxrtb -->
+<!-- @mid:p-wi89ah -->
 User changed font size, but it looks like the whole line changed.
 
-<!-- @mid:p-tpx1eg -->
-**#### 5. ****No Document-Level Settings****
-Where do we store:**
+<!-- @mid:p-m3x6uk -->
+***#### 5. ******No Document-Level Settings********************
+Where do we store:*****************
 
-<!-- @mid:list-x9zbht -->
+<!-- @mid:list-g3i7oq -->
 - Default font for the document?
 - Page margins?
 - Line spacing?
 - Theme preferences?
 
-<!-- @mid:p-oyrya0 -->
+<!-- @mid:p-rtjwty -->
 **Currently: ****Nowhere****. Every paragraph carries its own styles.**
 
-<!-- @mid:p-kj8xxx -->
-**#### 6. ****Image Problems****
-Base64 images embedded in Markdown:**
+<!-- @mid:p-vc06pw -->
+***#### 6. ******Image Problems********************
+Base64 images embedded in Markdown:*****************
 
-<!-- @mid:list-bcc4kf -->
+<!-- @mid:list-6qa3e0 -->
 - 1MB image = 1.37MB in base64
 - Every version stores the full image
 - Files become multi-megabyte
 
 ---
 
-<!-- @mid:h-h8uyvf -->
+<!-- @mid:h-m409mq -->
 ## 3. Feature Storage Requirements
 
-<!-- @mid:h-6xchp5 -->
+<!-- @mid:h-zyvx8d -->
 ### Complete Feature Inventory
 
-<!-- @mid:p-rbj25r -->
+<!-- @mid:p-ehturz -->
 Let's catalog everything a word processor user expects:
 
-<!-- @mid:p-ozybxu -->
+<!-- @mid:p-ltj1ms -->
 #### Document-Level Settings
 | Feature | Storage Need | Current Support |
 |---------|--------------|-----------------|
@@ -219,7 +219,7 @@ Let's catalog everything a word processor user expects:
 | Paragraph spacing | Document metadata | ❌ None |
 | Headers/Footers | Document metadata + content | ❌ None |
 
-<!-- @mid:p-p8tm02 -->
+<!-- @mid:p-8tc07g -->
 #### Block-Level Formatting
 | Feature | Storage Need | Current Support |
 |---------|--------------|-----------------|
@@ -233,7 +233,7 @@ Let's catalog everything a word processor user expects:
 | Horizontal rules | Native markdown | ✅ Native |
 | Page breaks | Per-location | ❌ None |
 
-<!-- @mid:p-7wrspd -->
+<!-- @mid:p-s01mnc -->
 #### Inline/Span-Level Formatting
 | Feature | Storage Need | Current Support |
 |---------|--------------|-----------------|
@@ -249,7 +249,7 @@ Let's catalog everything a word processor user expects:
 | Subscript | Per-span | ❌ None |
 | Small caps | Per-span | ❌ None |
 
-<!-- @mid:p-2m351s -->
+<!-- @mid:p-ckwa9r -->
 #### Media & Objects
 | Feature | Storage Need | Current Support |
 |---------|--------------|-----------------|
@@ -260,7 +260,7 @@ Let's catalog everything a word processor user expects:
 | Tables | GFM or HTML | ⚠️ Limited |
 | Embeds (video, etc.) | URL reference | ❌ None |
 
-<!-- @mid:p-8qhj3z -->
+<!-- @mid:p-ylv2e7 -->
 #### Version Control & Metadata
 | Feature | Storage Need | Current Support |
 |---------|--------------|-----------------|
@@ -274,16 +274,16 @@ Let's catalog everything a word processor user expects:
 
 ---
 
-<!-- @mid:h-3cr3r5 -->
+<!-- @mid:h-6fbb7y -->
 ## 4. Storage Architecture Options
 
-<!-- @mid:h-gc84p6 -->
+<!-- @mid:h-ooz1bt -->
 ### Option A: Pure Markdown + Inline HTML (Current)
 
-<!-- @mid:p-c0t83g -->
+<!-- @mid:p-lqqws7 -->
 `Keep everything in one ``.md`` file with HTML for rich features.`
 
-<!-- @mid:code-2epez8 -->
+<!-- @mid:code-up3cj6 -->
 ```markdown
 ---
 title: My Document
@@ -296,36 +296,36 @@ Styled paragraph content here.
 </p>
 ```
 
-<!-- @mid:p-jps79m -->
+<!-- @mid:p-u9p8kd -->
 **Pros:**
 
-<!-- @mid:list-uko7c5 -->
+<!-- @mid:list-73e4d2 -->
 - Single file
 - "It's still Markdown"
 - No format change needed
 
-<!-- @mid:p-jv7beg -->
+<!-- @mid:p-aha2f1 -->
 **Cons:**
 
-<!-- @mid:list-nfc3pu -->
+<!-- @mid:list-gq9vkl -->
 - Bloated, unreadable files
 - No document-level settings
 - Base64 images explode file size
 - Diff/version control useless
 - Other Markdown tools won't render correctly
 
-<!-- @mid:p-xuhcv0 -->
+<!-- @mid:p-og6p3u -->
 **Verdict:**** ❌ ****Not viable for word processor parity**
 
 ---
 
-<!-- @mid:h-hmp2l5 -->
+<!-- @mid:h-o9oue2 -->
 ### Option B: Markdown + YAML Frontmatter
 
-<!-- @mid:p-tym5wu -->
+<!-- @mid:p-0jllng -->
 Use YAML frontmatter for document settings, keep inline HTML for span formatting.
 
-<!-- @mid:code-m6d9u9 -->
+<!-- @mid:code-c14sio -->
 ```markdown
 ---
 title: My Document
@@ -341,44 +341,44 @@ pageMargins: 1in
 <span style="color: red">Highlighted text</span> in a paragraph.
 ```
 
-<!-- @mid:p-ob8cqa -->
+<!-- @mid:p-g97jg3 -->
 **Pros:**
 
-<!-- @mid:list-49bkju -->
+<!-- @mid:list-bgpirf -->
 - Document settings have a home
 - Standard format (Obsidian, Jekyll, etc.)
 - Still one file
 
-<!-- @mid:p-08zkh7 -->
+<!-- @mid:p-gx5nw5 -->
 **Cons:**
 
-<!-- @mid:list-y0qhm8 -->
+<!-- @mid:list-wf9260 -->
 - Inline HTML still bloats content
 - No solution for images
 - Frontmatter can't handle complex structures (per-paragraph styles)
 - Still unreadable with heavy formatting
 
-<!-- @mid:p-iessit -->
+<!-- @mid:p-lrb0s8 -->
 **Verdict:**** ⚠️ ****Partial solution—good for document metadata, not formatting**
 
 ---
 
-<!-- @mid:h-wbq8df -->
+<!-- @mid:h-s3ryot -->
 ### Option C: Markdown + Sidecar JSON
 
-<!-- @mid:p-pvnzf0 -->
+<!-- @mid:p-x5yszx -->
 Store content in Markdown, formatting/metadata in a companion file.
 
-<!-- @mid:code-yejiy0 -->
+<!-- @mid:code-gtav9b -->
 ```
 document.md           # Pure, clean Markdown
 document.md.midlight  # Formatting, settings, media references
 ```
 
-<!-- @mid:p-ekmsay -->
+<!-- @mid:p-m3hozr -->
 **document.md:**
 
-<!-- @mid:code-jmtqt2 -->
+<!-- @mid:code-o8p1ar -->
 ```markdown
 # My Document
 
@@ -387,10 +387,10 @@ The quick brown fox jumps over the lazy dog.
 Here's another paragraph with some important text.
 ```
 
-<!-- @mid:p-6y35qe -->
+<!-- @mid:p-wjgzc9 -->
 **document.md.midlight:**
 
-<!-- @mid:code-q2bgck -->
+<!-- @mid:code-w7154k -->
 ```json
 {
   "version": 1,
@@ -419,41 +419,41 @@ Here's another paragraph with some important text.
 }
 ```
 
-<!-- @mid:p-k4nrg3 -->
+<!-- @mid:p-9bhu96 -->
 **Pros:**
 
-<!-- @mid:list-70s8wp -->
+<!-- @mid:list-xuarw1 -->
 - Markdown stays clean and portable
 - All formatting centralized and structured
 - Images stored separately (efficient)
 - Easy to diff/version control
 - Could open `.md` in any editor (basic viewing)
 
-<!-- @mid:p-gsvmix -->
+<!-- @mid:p-zgex8d -->
 **Cons:**
 
-<!-- @mid:list-o44n5k -->
+<!-- @mid:list-r3zlsg -->
 - Two files per document
 - Sync complexity (what if one changes?)
 - Position tracking (`start: 45`) fragile
 - Midlight-specific format
 - Learning curve for users who look at files
 
-<!-- @mid:p-zkwmyo -->
+<!-- @mid:p-u611gn -->
 **Verdict:**** ⚠️ ****Good separation, but position-based spans are fragile**
 
 ---
 
-<!-- @mid:h-jydgfs -->
+<!-- @mid:h-vm89rw -->
 ### Option D: Tiptap JSON as Primary Format
 
-<!-- @mid:p-p4qq8m -->
+<!-- @mid:p-j90wd2 -->
 Abandon Markdown storage; use Tiptap's native JSON.
 
-<!-- @mid:p-cmlse0 -->
+<!-- @mid:p-0skd1g -->
 **document.midlight:**
 
-<!-- @mid:code-jaq3kq -->
+<!-- @mid:code-ykoha0 -->
 ```json
 {
   "type": "doc",
@@ -484,38 +484,38 @@ Abandon Markdown storage; use Tiptap's native JSON.
 }
 ```
 
-<!-- @mid:p-s8tkja -->
+<!-- @mid:p-wkvf8n -->
 **Pros:**
 
-<!-- @mid:list-r934ze -->
+<!-- @mid:list-hxn9ug -->
 - Perfect fidelity with editor state
 - No conversion loss
 - All formatting naturally preserved
 - Structured, queryable
 - Future-proof for collaboration (CRDTs)
 
-<!-- @mid:p-5u6wo2 -->
+<!-- @mid:p-k2n1ir -->
 **Cons:**
 
-<!-- @mid:list-u5fyo6 -->
+<!-- @mid:list-qymcuf -->
 - Not human-readable
 - Can't open in other editors
 - Proprietary format lock-in
 - Breaks "Markdown backbone" promise
 - Users can't edit files manually
 
-<!-- @mid:p-7gnl25 -->
+<!-- @mid:p-szhqwh -->
 **Verdict:**** ⚠️ ****Maximum fidelity, but abandons Markdown philosophy**
 
 ---
 
-<!-- @mid:h-b09rkq -->
+<!-- @mid:h-l401an -->
 ### Option E: Hybrid—Markdown Content + Embedded Formatting Blocks
 
-<!-- @mid:p-8heigz -->
+<!-- @mid:p-exq48x -->
 Use Markdown with special code blocks for formatting data.
 
-<!-- @mid:code-t9zqdl -->
+<!-- @mid:code-vyl69s -->
 ```markdown
 ---
 title: My Document
@@ -536,36 +536,36 @@ The quick brown fox jumps over the lazy dog.
 Here's another paragraph.
 ```
 
-<!-- @mid:p-zpeg4d -->
+<!-- @mid:p-1u9pz0 -->
 **Pros:**
 
-<!-- @mid:list-on4wnk -->
+<!-- @mid:list-9v0wa4 -->
 - Single file
 - Markdown viewers show content (ignore comment)
 - All data together
 - HTML comment is standard
 
-<!-- @mid:p-u3q77w -->
+<!-- @mid:p-g09isd -->
 **Cons:**
 
-<!-- @mid:list-d8nsdn -->
+<!-- @mid:list-itshvw -->
 - Fragile text matching for spans
 - Comment block is ugly
 - Position tracking still problematic
 - Complex parsing
 
-<!-- @mid:p-b23hv5 -->
+<!-- @mid:p-vszwox -->
 **Verdict:**** ⚠️ ****Clever hack, but fragile**
 
 ---
 
-<!-- @mid:h-gk7sl3 -->
+<!-- @mid:h-ew8og7 -->
 ### Option F: Markdown + Per-Block Attributes (Custom Syntax)
 
-<!-- @mid:p-21te53 -->
+<!-- @mid:p-in3qds -->
 Extend Markdown with attribute syntax (like Pandoc/Kramdown).
 
-<!-- @mid:code-p6ud45 -->
+<!-- @mid:code-de69jo -->
 ```markdown
 ---
 title: My Document
@@ -580,39 +580,39 @@ The quick brown fox [jumps over]{.bold .color-red} the lazy dog.
 Here's another paragraph.
 ```
 
-<!-- @mid:p-6451wi -->
+<!-- @mid:p-oxcayb -->
 **Pros:**
 
-<!-- @mid:list-7xux68 -->
+<!-- @mid:list-8g034s -->
 - Stays in Markdown paradigm
 - Attributes are inline with content
 - Used by Pandoc, Hugo, Jekyll
 - Readable
 
-<!-- @mid:p-9zwtrb -->
+<!-- @mid:p-x5ywxt -->
 **Cons:**
 
-<!-- @mid:list-wid6h5 -->
+<!-- @mid:list-f3xn8c -->
 - Non-standard Markdown
 - Limited expressiveness (can't do `color: #ff3366`)
 - Requires custom parser
 - Other tools won't understand
 
-<!-- @mid:p-jza0fb -->
+<!-- @mid:p-97xqcp -->
 **Verdict:**** ⚠️ ****Elegant but limited and non-standard**
 
 ---
 
-<!-- @mid:h-o5rbax -->
+<!-- @mid:h-wdocv1 -->
 ## 5. Recommendation: Hybrid Markdown+Sidecar
 
-<!-- @mid:p-hcz17q -->
+<!-- @mid:p-8zw5k9 -->
 **After analyzing all options, I recommend ****Option C (Sidecar) with improvements****:**
 
-<!-- @mid:h-y9scae -->
+<!-- @mid:h-e3cr5u -->
 ### The Approach
 
-<!-- @mid:code-pxldhy -->
+<!-- @mid:code-kzxain -->
 ```
 workspace/
 ├── documents/
@@ -624,10 +624,10 @@ workspace/
 │   └── config.json                 # Workspace settings
 ```
 
-<!-- @mid:h-l1yob5 -->
+<!-- @mid:h-5odib6 -->
 ### Why This Approach?
 
-<!-- @mid:list-chfq8v -->
+<!-- @mid:list-h5czyu -->
 1. **Markdown stays portable**: Open `essay.md` in any editor, GitHub, Obsidian
 2. **Rich formatting preserved**: `.midlight` file has everything
 3. **Images optimized**: Not embedded, deduplicated by hash
@@ -635,13 +635,13 @@ workspace/
 5. **Graceful degradation**: Without `.midlight`, content still readable
 6. **Forward compatible**: Can add features without breaking format
 
-<!-- @mid:h-a7y4jl -->
+<!-- @mid:h-deda3q -->
 ### Solving the Position Problem
 
-<!-- @mid:p-56o9ia -->
+<!-- @mid:p-1gbxvs -->
 **Instead of character positions (fragile), use ****content addressing****:**
 
-<!-- @mid:code-f9bpkc -->
+<!-- @mid:code-leil46 -->
 ```json
 {
   "spans": [
@@ -653,27 +653,27 @@ workspace/
 }
 ```
 
-<!-- @mid:p-3ac7gc -->
+<!-- @mid:p-fvecem -->
 **Or use ****block IDs**** that Tiptap can generate:**
 
-<!-- @mid:code-wiln81 -->
+<!-- @mid:code-u5c6bg -->
 ```markdown
 The quick brown fox jumps over the lazy dog.
 <!-- mid:p-a1b2c3 -->
 ```
 
-<!-- @mid:p-jh5mlg -->
+<!-- @mid:p-oydyf0 -->
 The comment is invisible to renderers but lets us anchor formatting.
 
 ---
 
-<!-- @mid:h-1lw13k -->
+<!-- @mid:h-uwdi4y -->
 ## 6. Implementation Specification
 
-<!-- @mid:h-t2bjp5 -->
+<!-- @mid:h-8zfa0w -->
 ### `6.1 File Format: ``.midlight`` Sidecar`
 
-<!-- @mid:code-q91tb1 -->
+<!-- @mid:code-cb9hvd -->
 ```typescript
 interface MidlightDocument {
   version: 1;
@@ -764,13 +764,13 @@ type SpanMark =
   | { type: 'subscript' };
 ```
 
-<!-- @mid:h-s3rw2w -->
+<!-- @mid:h-yhuck5 -->
 ### 6.2 Markdown with Block IDs
 
-<!-- @mid:p-4gc48u -->
+<!-- @mid:p-h6p24v -->
 To anchor formatting, we inject invisible block IDs:
 
-<!-- @mid:code-ydjuec -->
+<!-- @mid:code-nedpd3 -->
 ```markdown
 # My Document
 
@@ -779,58 +779,58 @@ The quick brown fox jumps over the lazy dog.
 Here's another paragraph with some text.
 ```
 
-<!-- @mid:p-aaxhq5 -->
+<!-- @mid:p-gqeghb -->
 **Rules:**
 
-<!-- @mid:list-upq65i -->
+<!-- @mid:list-ia0aoy -->
 - IDs are HTML comments (invisible to renderers)
 - Format: `<!-- @mid:{type}-{id} -->`
 - Generated automatically, never shown to user
 - If missing, regenerated on open
 
-<!-- @mid:h-tmi66w -->
+<!-- @mid:h-b0m3hi -->
 ### 6.3 Image Handling
 
-<!-- @mid:p-d131c8 -->
+<!-- @mid:p-uzfo2u -->
 **On paste/drop:**
 
-<!-- @mid:list-f44wrb -->
+<!-- @mid:list-sh6t0m -->
 1. Hash image content (SHA-256, first 16 chars)
 2. Save to `.midlight/images/{hash}.{ext}`
 3. Add reference to `.midlight` sidecar
 4. Insert placeholder in Markdown: `![caption](@img:abc123)`
 
-<!-- @mid:p-5wytq1 -->
+<!-- @mid:p-sel9iv -->
 **Custom image syntax:**
 
-<!-- @mid:code-4e805g -->
+<!-- @mid:code-gb1arw -->
 ```markdown
 ![@img:abc123]
 ```
 
-<!-- @mid:p-473cw0 -->
+<!-- @mid:p-q7l1nx -->
 This is non-standard but:
 
-<!-- @mid:list-ddb8f5 -->
+<!-- @mid:list-uc73bh -->
 - Degrades to showing `@img:abc123` (tells user there's an image)
 - Easy to find and replace
 - Doesn't break Markdown parsing
 
-<!-- @mid:p-59zh6r -->
+<!-- @mid:p-3z9rpn -->
 **Alternative (more compatible):**
 
-<!-- @mid:code-o3x0f8 -->
+<!-- @mid:code-k0p1ik -->
 ```markdown
 ![A brown fox](.midlight/images/abc123.png)
 ```
 
-<!-- @mid:p-5koqa5 -->
+<!-- @mid:p-lpu1u4 -->
 This works in GitHub/Obsidian if files are together.
 
-<!-- @mid:h-gr3oro -->
+<!-- @mid:h-9wwy6e -->
 ### 6.4 Save Flow
 
-<!-- @mid:code-lncz65 -->
+<!-- @mid:code-63cr12 -->
 ```
 ┌─────────────────┐
 │  Tiptap Editor  │
@@ -856,10 +856,10 @@ This works in GitHub/Obsidian if files are together.
 └─────────────────┘     └─────────────────┘
 ```
 
-<!-- @mid:h-uyvbh6 -->
+<!-- @mid:h-016y89 -->
 ### 6.5 Load Flow
 
-<!-- @mid:code-mef09b -->
+<!-- @mid:code-2z092a -->
 ```
 ┌─────────────────┐     ┌─────────────────┐
 │   essay.md      │     │ essay.md.midlight│
@@ -883,31 +883,31 @@ This works in GitHub/Obsidian if files are together.
          └─────────────────────┘
 ```
 
-<!-- @mid:h-i7l8rn -->
+<!-- @mid:h-la9ikl -->
 ### 6.6 Graceful Degradation
 
-<!-- @mid:p-f494uc -->
+<!-- @mid:p-0d6jkh -->
 **Scenario 1: User opens `.md` in another editor**
 
-<!-- @mid:list-zrkpau -->
+<!-- @mid:list-582184 -->
 - They see clean Markdown with block ID comments
 - Comments are invisible in preview
 - Content is fully readable and editable
 - If they save, block IDs might shift (we handle on re-import)
 
-<!-- @mid:p-ojr9gj -->
+<!-- @mid:p-mqwxc3 -->
 **Scenario 2: `.midlight` file is missing**
 
-<!-- @mid:list-688823 -->
+<!-- @mid:list-es8y6s -->
 - Open Markdown as plain content
 - No custom formatting applied
 - Document defaults from workspace config
 - On first save, create new `.midlight` file
 
-<!-- @mid:p-879fc4 -->
+<!-- @mid:p-ixir25 -->
 **Scenario 3: Block IDs mismatch**
 
-<!-- @mid:list-f8o5i4 -->
+<!-- @mid:list-3udrgv -->
 - Re-scan Markdown content
 - Attempt to match blocks by content similarity
 - Orphaned formatting is discarded
@@ -915,16 +915,16 @@ This works in GitHub/Obsidian if files are together.
 
 ---
 
-<!-- @mid:h-nxnsie -->
+<!-- @mid:h-09smft -->
 ## 7. Migration & Compatibility
 
-<!-- @mid:h-rfp7cq -->
+<!-- @mid:h-mskc6q -->
 ### 7.1 Migrating Current Files
 
-<!-- @mid:p-6lpp4n -->
+<!-- @mid:p-2o6q4x -->
 Current files use inline HTML. Migration process:
 
-<!-- @mid:code-7udpj8 -->
+<!-- @mid:code-kkfyyd -->
 ```typescript
 async function migrateToSidecar(filePath: string): Promise<void> {
   const content = await readFile(filePath);
@@ -946,94 +946,94 @@ async function migrateToSidecar(filePath: string): Promise<void> {
 }
 ```
 
-<!-- @mid:h-979p3e -->
+<!-- @mid:h-1z64jj -->
 ### 7.2 Import from Other Formats
 
-<!-- @mid:p-olscjs -->
+<!-- @mid:p-gqalrv -->
 **From DOCX:**
 
-<!-- @mid:list-hy5c7e -->
+<!-- @mid:list-thvjpg -->
 - Use existing Mammoth import
 - Extract images to `.midlight/images/`
 - Generate block IDs
 - Create `.midlight` sidecar with formatting
 
-<!-- @mid:p-aobmp3 -->
+<!-- @mid:p-rtvyd4 -->
 **From HTML:**
 
-<!-- @mid:list-mq189e -->
+<!-- @mid:list-rkwwqe -->
 - Parse HTML structure
 - Convert to Markdown + sidecar
 - Preserve inline styles as span marks
 
-<!-- @mid:p-4qabve -->
+<!-- @mid:p-im1obw -->
 **From Notion Export:**
 
-<!-- @mid:list-3fbnzh -->
+<!-- @mid:list-6do805 -->
 - Parse Markdown export
 - Limited formatting recovery (Notion strips most)
 - Images already external (good)
 
-<!-- @mid:h-lh1ows -->
+<!-- @mid:h-avjn40 -->
 ### 7.3 Export to Other Formats
 
-<!-- @mid:p-h9qyf8 -->
+<!-- @mid:p-26p7q4 -->
 **To DOCX:**
 
-<!-- @mid:list-0oe013 -->
+<!-- @mid:list-zfrydy -->
 - Merge Markdown + sidecar
 - Apply formatting during conversion
 - Embed images from `.midlight/images/`
 - (Already implemented, needs sidecar awareness)
 
-<!-- @mid:p-itrnwr -->
+<!-- @mid:p-uh8bvy -->
 **To PDF:**
 
-<!-- @mid:list-sqkq4n -->
+<!-- @mid:list-e4wwqs -->
 - Render in Electron with full formatting
 - Use `printToPDF` (already implemented)
 
-<!-- @mid:p-uhn8z1 -->
+<!-- @mid:p-z4dp19 -->
 **To Plain Markdown:**
 
-<!-- @mid:list-wcdmzt -->
+<!-- @mid:list-tsdfs2 -->
 - Export just the `.md` file
 - Strip block ID comments
 - User warned: "Formatting will not be preserved"
 
-<!-- @mid:p-hk8clp -->
+<!-- @mid:p-bcl3xr -->
 **To HTML:**
 
-<!-- @mid:list-ookwwl -->
+<!-- @mid:list-rhecok -->
 - Render Tiptap state to HTML
 - Inline all styles
 - Embed or link images
 
 ---
 
-<!-- @mid:h-sf3zqa -->
+<!-- @mid:h-3wsuip -->
 ## 8. Version Control Integration
 
-<!-- @mid:h-0cggou -->
+<!-- @mid:h-koaflw -->
 ### 8.1 What Gets Versioned
 
-<!-- @mid:p-bdz8lh -->
+<!-- @mid:p-gezbg8 -->
 With the sidecar approach:
 
-<!-- @mid:p-5czpe4 -->
+<!-- @mid:p-gp1g9r -->
 `| Component | Versioned? | Why |
 |-----------|------------|-----|
 | ``essay.md`` | ✓ | Content changes tracked |
 | ``essay.md.midlight`` | ✓ | Formatting changes tracked |
 | ``.midlight/images/*`` | ✓ | Media changes tracked |`
 
-<!-- @mid:h-jk0moi -->
+<!-- @mid:h-40lil4 -->
 ### 8.2 Efficient Diffing
 
-<!-- @mid:p-z840i3 -->
+<!-- @mid:p-rej7ry -->
 **Markdown diff**** (clean, meaningful):**
 
-<!-- @mid:code-tzxg3a -->
+<!-- @mid:code-riurl0 -->
 ```diff
   # My Document
 
@@ -1041,10 +1041,10 @@ With the sidecar approach:
 + The quick brown fox leaps over the lazy dog.
 ```
 
-<!-- @mid:p-izhxtj -->
+<!-- @mid:p-d46u32 -->
 **Sidecar diff**** (formatting changes isolated):**
 
-<!-- @mid:code-8ezq6a -->
+<!-- @mid:code-v9499n -->
 ```diff
   "blocks": {
     "p-002": {
@@ -1054,41 +1054,41 @@ With the sidecar approach:
   }
 ```
 
-<!-- @mid:h-73q4b9 -->
+<!-- @mid:h-u2hlde -->
 ### 8.3 Content-Addressable Images
 
-<!-- @mid:p-y9h67c -->
+<!-- @mid:p-dh6qpy -->
 Images stored by hash means:
 
-<!-- @mid:list-95n1ce -->
+<!-- @mid:list-se7lm6 -->
 - Same image used twice → stored once
 - Unchanged images don't inflate versions
 - Easy deduplication in sync
 
-<!-- @mid:h-qa7ppq -->
+<!-- @mid:h-9ku580 -->
 ### 8.4 Merge Conflicts
 
-<!-- @mid:p-c8kqxr -->
-**Markdown conflict****: Standard text merge
-****Sidecar conflict****: JSON merge (more complex)**
+<!-- @mid:p-wpj03s -->
+***Markdown conflict***************************: Standard text merge
+*************Sidecar conflict*******: JSON merge (more complex)**********
 
-<!-- @mid:p-2gkqvd -->
+<!-- @mid:p-8rpgsj -->
 Strategy for sidecar:
 
-<!-- @mid:list-mx3g1l -->
+<!-- @mid:list-ivh6vh -->
 - Block-level merge (each block independent)
 - Span-level: last writer wins (or prompt user)
 - Document settings: last writer wins
 
 ---
 
-<!-- @mid:h-oyeimg -->
+<!-- @mid:h-h7l9mh -->
 ## 9. Decision Matrix
 
-<!-- @mid:h-vktrbk -->
+<!-- @mid:h-7s9ru7 -->
 ### Option Comparison
 
-<!-- @mid:p-rcga47 -->
+<!-- @mid:p-lhj1nm -->
 | Factor | Inline HTML | YAML Only | Sidecar | Pure JSON | Attributes |
 |--------|-------------|-----------|---------|-----------|------------|
 | MD Readability | ❌ Poor | ⚠️ OK | ✅ Clean | ❌ None | ⚠️ OK |
@@ -1100,23 +1100,23 @@ Strategy for sidecar:
 | Implementation | ✅ Done | ⚠️ Medium | ⚠️ Medium | ⚠️ Medium | ⚠️ Medium |
 | Future-Proof | ❌ Limited | ⚠️ OK | ✅ Great | ✅ Great | ⚠️ Limited |
 
-<!-- @mid:h-ga6lwk -->
+<!-- @mid:h-a16jbx -->
 ### Recommendation Summary
 
-<!-- @mid:p-dm5oua -->
+<!-- @mid:p-srl9yu -->
 **For Midlight, implement the Sidecar approach (Option C) because:**
 
-<!-- @mid:list-2k5dwc -->
+<!-- @mid:list-2h6rw0 -->
 1. **Maintains Markdown Promise**: Users' content is always accessible
 2. **Full Word Processor Parity**: JSON sidecar can store anything
 3. **Optimal for Version Control**: Clean diffs, efficient storage
 4. **Graceful Degradation**: Works without sidecar (just loses formatting)
 5. **Future-Ready**: Easy to extend, sync, collaborate
 
-<!-- @mid:h-qbvuph -->
+<!-- @mid:h-f53643 -->
 ### Implementation Priority
 
-<!-- @mid:list-frgj8o -->
+<!-- @mid:list-acj1dj -->
 1. **Phase 1**: Document-level settings in sidecar
 2. **Phase 2**: Block-level formatting (alignment, spacing)
 3. **Phase 3**: Span-level formatting (colors, fonts)
@@ -1125,13 +1125,13 @@ Strategy for sidecar:
 
 ---
 
-<!-- @mid:h-fi5zm7 -->
+<!-- @mid:h-30ipgw -->
 ## Appendix A: Example Complete Document
 
-<!-- @mid:h-2sbe8u -->
+<!-- @mid:h-0qnkty -->
 ### essay.md
 
-<!-- @mid:code-buyciu -->
+<!-- @mid:code-d1c9b3 -->
 ```markdown
 # The Art of Writing
 
@@ -1150,10 +1150,10 @@ The most important aspects of good writing are:
 As Stephen King wrote: "The road to hell is paved with adverbs."
 ```
 
-<!-- @mid:h-m5th5x -->
+<!-- @mid:h-p9fmj1 -->
 ### essay.md.midlight
 
-<!-- @mid:code-1vvc5t -->
+<!-- @mid:code-ph3zu5 -->
 ```json
 {
   "version": 1,
@@ -1203,10 +1203,10 @@ As Stephen King wrote: "The road to hell is paved with adverbs."
 
 ---
 
-<!-- @mid:h-5wlo3z -->
+<!-- @mid:h-ugsz7d -->
 ## Appendix B: References
 
-<!-- @mid:list-o3vkig -->
+<!-- @mid:list-nz9umk -->
 - Markdown Guide - Hacks
 - Obsidian Metadata
 - MDX Specification
@@ -1215,6 +1215,6 @@ As Stephen King wrote: "The road to hell is paved with adverbs."
 
 ---
 
-<!-- @mid:p-uhpwfr -->
-*Document created: 2025-12-05**
-**Status: Architecture decision needed before implementation*
+<!-- @mid:p-vciab2 -->
+*Document created: 2025-12-05*********
+******Status: Architecture decision needed before implementation******

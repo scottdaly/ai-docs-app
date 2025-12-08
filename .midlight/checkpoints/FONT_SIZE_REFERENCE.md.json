@@ -1,91 +1,7 @@
 {
   "fileKey": "FONT_SIZE_REFERENCE.md",
-  "headId": "cp-nq8xa8",
+  "headId": "cp-9v599z",
   "checkpoints": [
-    {
-      "id": "cp-r26jak",
-      "contentHash": "de7c0b66e1cbef9226ae08c3bb9245aa96eeaeb0bdde3a63ec955e3bba7879a9",
-      "sidecarHash": "4f175d2c9c0e58f4c9006b3f9a78eba02e95c092adbed40f9b1cee1daa555388",
-      "timestamp": "2025-12-06T17:07:34.079Z",
-      "parentId": "cp-oyrye7",
-      "type": "auto",
-      "stats": {
-        "wordCount": 551,
-        "charCount": 3690,
-        "changeSize": 0
-      },
-      "trigger": "interval"
-    },
-    {
-      "id": "cp-jeyxn2",
-      "contentHash": "cbaa8e33d2365b243459c9121e2f70a5189761bb9899d7f212227ff1309916b1",
-      "sidecarHash": "16c7fccf15a0bfc18d317f464c9fc199194d24998087257e7f0a24b2c95658ca",
-      "timestamp": "2025-12-06T17:07:51.661Z",
-      "parentId": "cp-r26jak",
-      "type": "auto",
-      "stats": {
-        "wordCount": 551,
-        "charCount": 3690,
-        "changeSize": 0
-      },
-      "trigger": "interval"
-    },
-    {
-      "id": "cp-yamjnv",
-      "contentHash": "8a91bb515a674795123bf0141233248ea8f1c45d099e8b6b8ecb3ac058563557",
-      "sidecarHash": "f1d96005d382f2ef0966e334bd516c01bc62b2949c465d16a793edcf56cdcccd",
-      "timestamp": "2025-12-06T17:07:56.246Z",
-      "parentId": "cp-jeyxn2",
-      "type": "auto",
-      "stats": {
-        "wordCount": 551,
-        "charCount": 3690,
-        "changeSize": 0
-      },
-      "trigger": "interval"
-    },
-    {
-      "id": "cp-xv6ms0",
-      "contentHash": "76eb4d2c9d45f0c0b51c123504169f3f0af7fd817c327b9f4c820f58f45cb48a",
-      "sidecarHash": "324de06a71b189e8ec94db4d764e7d0246c883fe44dbd46f6120115711d2af15",
-      "timestamp": "2025-12-06T17:08:01.475Z",
-      "parentId": "cp-yamjnv",
-      "type": "auto",
-      "stats": {
-        "wordCount": 551,
-        "charCount": 3690,
-        "changeSize": 0
-      },
-      "trigger": "interval"
-    },
-    {
-      "id": "cp-3czc5k",
-      "contentHash": "46986e0c1cb7c9e78d1f723338372d9e3a2e153961a2cf4be8bbcc5e72a946e0",
-      "sidecarHash": "9edd547eb64577a9b81f09d6ef22705370ef007589134d867762e32fbceac3f2",
-      "timestamp": "2025-12-06T17:08:08.104Z",
-      "parentId": "cp-xv6ms0",
-      "type": "auto",
-      "stats": {
-        "wordCount": 551,
-        "charCount": 3690,
-        "changeSize": 0
-      },
-      "trigger": "interval"
-    },
-    {
-      "id": "cp-u70pn8",
-      "contentHash": "cb6a28e9b1cd44fa55081b52bb40b96a410fa09dd244a91ae15eae9ec5f5f866",
-      "sidecarHash": "42bd14bc1c5b7e0fdfcb78f39f2a797cd36d3a501a90c4e45aeab7f45c3fd3df",
-      "timestamp": "2025-12-06T17:08:13.098Z",
-      "parentId": "cp-3czc5k",
-      "type": "auto",
-      "stats": {
-        "wordCount": 551,
-        "charCount": 3690,
-        "changeSize": 0
-      },
-      "trigger": "interval"
-    },
     {
       "id": "cp-14v72u",
       "contentHash": "b27595923cb03d4f2538608ab3fffda1b8ea47cfba1ddc0356f01aee7a6266d7",
@@ -698,6 +614,90 @@
       "stats": {
         "wordCount": 551,
         "charCount": 3690,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-c5uznt",
+      "contentHash": "fe12ab2154472a4101d845d0bec37ae58bed14479473b04e41f2a580c6237477",
+      "sidecarHash": "4ae8a0a3c8f3122a83e031b6bc5e3cf37383923270d69c9c857b75863734f465",
+      "timestamp": "2025-12-08T00:32:50.140Z",
+      "parentId": "cp-nq8xa8",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3677,
+        "changeSize": 13
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-t1m7kc",
+      "contentHash": "86c2e6ea1f58df67c97363613cce3915e7cb74faa2227dd0b7131512c339d506",
+      "sidecarHash": "36348747f2970d5bad259c16c315a404ba8d476eccb9778c19e981b3744211fd",
+      "timestamp": "2025-12-08T00:40:41.048Z",
+      "parentId": "cp-c5uznt",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3753,
+        "changeSize": 76
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-8i7wij",
+      "contentHash": "b06d6e688684d884dfd5104b38a9ccc9353d63142d9ef3945b12484c613c0316",
+      "sidecarHash": "b5599d9d35e360dbe5d2c944fa563dcb464d86c93b3db81b195d4f72e1fc750a",
+      "timestamp": "2025-12-08T01:23:00.806Z",
+      "parentId": "cp-t1m7kc",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3753,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-jam8ro",
+      "contentHash": "1ff2859fba02f746cd4a720be7da793b0b75c239a8c43b30520ffd8220dbb826",
+      "sidecarHash": "792b596f893d08614135d2166f23a05c6d38ff42e8c4a2ac7af680291906e437",
+      "timestamp": "2025-12-08T01:26:06.994Z",
+      "parentId": "cp-8i7wij",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3753,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-joiv0g",
+      "contentHash": "8af206ce5ebb50325c19eca30e406fab85d951eee18306d4af547eb27b227c14",
+      "sidecarHash": "8ed2506dde7fbcb2051d779b35ed1911634694f988b50eb1b222d29cac1a81e0",
+      "timestamp": "2025-12-08T01:35:48.508Z",
+      "parentId": "cp-jam8ro",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3753,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-9v599z",
+      "contentHash": "f0ec2408dee69532bc9f32974651bf9e6feed4f8010d5c277ff83e3fd1db6c8e",
+      "sidecarHash": "1dec4289e83c20c113cf9f0bca0e017eb65008d55e6b201e990b7bbaf49b30bb",
+      "timestamp": "2025-12-08T01:43:03.196Z",
+      "parentId": "cp-joiv0g",
+      "type": "auto",
+      "stats": {
+        "wordCount": 551,
+        "charCount": 3753,
         "changeSize": 0
       },
       "trigger": "interval"
