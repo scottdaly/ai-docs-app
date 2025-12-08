@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Download, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react';
+import { X, Download, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface UpdateState {
   status: 'idle' | 'checking' | 'available' | 'downloading' | 'ready' | 'not-available' | 'error';
@@ -108,8 +108,9 @@ export function UpdateNotification({ onCheckForUpdates }: UpdateNotificationProp
     }
   };
 
-  // Don't show anything if idle and not manually checking
-  if (updateState.status === 'idle') {
+  // Only show for actionable states: available, downloading, ready, error
+  // Don't show for: idle, checking, not-available
+  if (updateState.status === 'idle' || updateState.status === 'checking' || updateState.status === 'not-available') {
     return null;
   }
 
@@ -124,9 +125,6 @@ export function UpdateNotification({ onCheckForUpdates }: UpdateNotificationProp
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
           <div className="flex items-center gap-2">
-            {updateState.status === 'checking' && (
-              <RefreshCw className="w-4 h-4 text-muted-foreground animate-spin" />
-            )}
             {updateState.status === 'available' && (
               <Download className="w-4 h-4 text-primary" />
             )}
@@ -136,18 +134,13 @@ export function UpdateNotification({ onCheckForUpdates }: UpdateNotificationProp
             {updateState.status === 'ready' && (
               <CheckCircle className="w-4 h-4 text-green-500" />
             )}
-            {updateState.status === 'not-available' && (
-              <CheckCircle className="w-4 h-4 text-green-500" />
-            )}
             {updateState.status === 'error' && (
               <AlertCircle className="w-4 h-4 text-destructive" />
             )}
             <span className="font-medium text-sm">
-              {updateState.status === 'checking' && 'Checking for Updates'}
               {updateState.status === 'available' && 'Update Available'}
               {updateState.status === 'downloading' && 'Downloading Update'}
               {updateState.status === 'ready' && 'Ready to Install'}
-              {updateState.status === 'not-available' && 'Up to Date'}
               {updateState.status === 'error' && 'Update Error'}
             </span>
           </div>
@@ -163,12 +156,6 @@ export function UpdateNotification({ onCheckForUpdates }: UpdateNotificationProp
 
         {/* Content */}
         <div className="px-4 py-3">
-          {updateState.status === 'checking' && (
-            <p className="text-sm text-muted-foreground">
-              Looking for new versions...
-            </p>
-          )}
-
           {updateState.status === 'available' && (
             <>
               <p className="text-sm text-muted-foreground">
@@ -230,12 +217,6 @@ export function UpdateNotification({ onCheckForUpdates }: UpdateNotificationProp
                 </button>
               </div>
             </>
-          )}
-
-          {updateState.status === 'not-available' && (
-            <p className="text-sm text-muted-foreground">
-              You're running the latest version{updateState.version ? ` (${updateState.version})` : ''}.
-            </p>
           )}
 
           {updateState.status === 'error' && (

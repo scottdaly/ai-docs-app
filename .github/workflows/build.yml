@@ -74,6 +74,35 @@ jobs:
           find artifacts -type f \( -name "*.dmg" -o -name "*.zip" -o -name "*.exe" -o -name "*.blockmap" -o -name "latest*.yml" \) -exec cp {} deploy/ \;
           ls -la deploy/
 
+      - name: Generate version.json
+        run: |
+          # Extract version from tag (e.g., v0.0.5 -> 0.0.5)
+          VERSION=${GITHUB_REF#refs/tags/v}
+
+          # Find the actual filenames
+          MAC_DMG=$(ls deploy/*.dmg 2>/dev/null | xargs -n1 basename || echo "")
+          MAC_ZIP=$(ls deploy/*-mac.zip 2>/dev/null | xargs -n1 basename || echo "")
+          WIN_EXE=$(ls deploy/*.exe 2>/dev/null | xargs -n1 basename || echo "")
+
+          # Create version.json
+          cat > deploy/version.json << EOF
+          {
+            "version": "$VERSION",
+            "releaseDate": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "downloads": {
+              "mac": {
+                "dmg": "https://midlight.ai/releases/$MAC_DMG",
+                "zip": "https://midlight.ai/releases/$MAC_ZIP"
+              },
+              "windows": {
+                "exe": "https://midlight.ai/releases/$(echo $WIN_EXE | sed 's/ /%20/g')"
+              }
+            }
+          }
+          EOF
+
+          cat deploy/version.json
+
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
