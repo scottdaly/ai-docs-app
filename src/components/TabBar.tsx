@@ -1,6 +1,7 @@
 import { X, Plus, FolderOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useFileSystem } from '../store/useFileSystem';
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { FileNode } from '../shared/types';
 
 export function TabBar() {
   const { openFiles, activeFilePath, selectFile, closeFile, createFile, openFile, renameFile, rootDir } = useFileSystem();
@@ -35,6 +36,16 @@ export function TabBar() {
     }
   }, [updateScrollState, openFiles.length]);
 
+  // Scroll active tab into view when it changes
+  useEffect(() => {
+    if (activeFilePath && scrollContainerRef.current) {
+      const activeTab = scrollContainerRef.current.querySelector(`[data-tab-path="${CSS.escape(activeFilePath)}"]`);
+      if (activeTab) {
+        activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+      }
+    }
+  }, [activeFilePath]);
+
   const scrollLeft = () => {
     scrollContainerRef.current?.scrollBy({ left: -200, behavior: 'smooth' });
   };
@@ -46,9 +57,8 @@ export function TabBar() {
   useEffect(() => {
     if (renamingPath && inputRef.current) {
       inputRef.current.focus();
-      // Select filename without extension
-      const nameWithoutExt = renameValue.replace(/\.md$/, '');
-      inputRef.current.setSelectionRange(0, nameWithoutExt.length);
+      // Select all text (extension is already stripped)
+      inputRef.current.select();
     }
   }, [renamingPath]);
 
@@ -60,7 +70,8 @@ export function TabBar() {
       content: [{ type: 'paragraph', content: [] }],
     };
 
-    await createFile('Untitled', emptyDoc);
+    // Create file with triggerRename=true to auto-enter rename mode in sidebar
+    await createFile('Untitled', emptyDoc, undefined, true);
   };
 
   const handleOpenFile = async () => {
@@ -71,9 +82,16 @@ export function TabBar() {
     }
   };
 
-  const handleDoubleClick = (file: { name: string; path: string }) => {
-    setRenameValue(file.name);
-    setRenamingPath(file.path);
+  const handleDoubleClick = (file: FileNode) => {
+    // Only allow renaming for editable files (native/compatible markdown)
+    if (file.category === 'native' || file.category === 'compatible') {
+      // Strip .md extension for rename input
+      const nameWithoutExt = file.name.toLowerCase().endsWith('.md')
+        ? file.name.slice(0, -3)
+        : file.name;
+      setRenameValue(nameWithoutExt);
+      setRenamingPath(file.path);
+    }
   };
 
   const handleRenameSubmit = async () => {
@@ -117,6 +135,11 @@ export function TabBar() {
               const isActive = file.path === activeFilePath;
               const isRenaming = renamingPath === file.path;
 
+              // Hide .md extension for markdown files in tab display
+              const displayName = file.name.toLowerCase().endsWith('.md')
+                ? file.name.slice(0, -3)
+                : file.name;
+
               // Check if we should show a divider before this tab
               // Show divider if: not first tab, current tab is not active, previous tab is not active
               const prevFile = index > 0 ? openFiles[index - 1] : null;
@@ -130,8 +153,10 @@ export function TabBar() {
                     <div className="w-px h-5 bg-muted-foreground/30 mb-2" />
                   )}
                   <div
+                    data-tab-path={file.path}
                     onClick={() => !isRenaming && selectFile(file.path)}
                     onDoubleClick={() => handleDoubleClick(file)}
+                    title={displayName}
                     className={`
                       relative flex items-center min-w-[120px] max-w-[200px] h-9 px-3 text-sm select-none cursor-pointer group transition-all rounded-t-lg
                       ${isActive
@@ -165,7 +190,7 @@ export function TabBar() {
 
               ) : (
 
-                <span className="truncate flex-1">{file.name}</span>
+                <span className="truncate flex-1">{displayName}</span>
 
               )}
 

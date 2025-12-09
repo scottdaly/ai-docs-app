@@ -25,6 +25,7 @@ export function FontSizeDropdown({ editor }: FontSizeDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [customSize, setCustomSize] = useState('');
   const [showCustomInput, setShowCustomInput] = useState(false);
+  const [, forceUpdate] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const customInputRef = useRef<HTMLInputElement>(null);
 
@@ -40,6 +41,17 @@ export function FontSizeDropdown({ editor }: FontSizeDropdownProps) {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Re-render when editor selection or content changes
+  useEffect(() => {
+    const handleUpdate = () => forceUpdate(n => n + 1);
+    editor.on('selectionUpdate', handleUpdate);
+    editor.on('transaction', handleUpdate);
+    return () => {
+      editor.off('selectionUpdate', handleUpdate);
+      editor.off('transaction', handleUpdate);
+    };
+  }, [editor]);
 
   // Focus custom input when shown
   useEffect(() => {

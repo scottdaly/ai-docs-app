@@ -21,6 +21,7 @@ const FONTS = [
 
 export function FontFamilyDropdown({ editor }: FontFamilyDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [, forceUpdate] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
   // We track the font that was active *before* any hovering started
   const initialFontRef = useRef<string | null>(null);
@@ -39,6 +40,17 @@ export function FontFamilyDropdown({ editor }: FontFamilyDropdownProps) {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Re-render when editor selection or content changes
+  useEffect(() => {
+    const handleUpdate = () => forceUpdate(n => n + 1);
+    editor.on('selectionUpdate', handleUpdate);
+    editor.on('transaction', handleUpdate);
+    return () => {
+      editor.off('selectionUpdate', handleUpdate);
+      editor.off('transaction', handleUpdate);
+    };
+  }, [editor]);
 
   const captureInitialFont = () => {
       // This is tricky because selection might have mixed fonts.

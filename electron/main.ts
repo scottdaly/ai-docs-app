@@ -287,9 +287,9 @@ ipcMain.handle('select-file', async () => {
 // File categorization helpers
 // NOTE: These utilities are duplicated in src/shared/fileUtils.ts for use in the renderer process.
 // Electron main and renderer processes cannot share code directly, so keep them in sync manually.
-const IMPORTABLE_EXTENSIONS = new Set(['.docx', '.rtf', '.html', '.odt']);
+const IMPORTABLE_EXTENSIONS = new Set(['.docx', '.rtf', '.odt', '.pdf']);
 const VIEWABLE_EXTENSIONS = new Set([
-  '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp', '.ico', '.pdf'
+  '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp', '.ico'
 ]);
 const HIDDEN_FOLDERS = new Set([
   '.midlight', '.git', '.svn', '.hg', 'node_modules', '.vscode', '.idea'
@@ -442,6 +442,34 @@ ipcMain.handle('read-file', async (_, filePath: string) => {
   return fs.readFile(filePath, 'utf-8')
 })
 
+ipcMain.handle('file-exists', async (_, filePath: string) => {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+})
+
+ipcMain.handle('read-image-as-data-url', async (_, filePath: string) => {
+  const ext = path.extname(filePath).toLowerCase();
+  const mimeTypes: Record<string, string> = {
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif',
+    '.webp': 'image/webp',
+    '.svg': 'image/svg+xml',
+    '.bmp': 'image/bmp',
+    '.ico': 'image/x-icon',
+  };
+
+  const mimeType = mimeTypes[ext] || 'application/octet-stream';
+  const buffer = await fs.readFile(filePath);
+  const base64 = buffer.toString('base64');
+  return `data:${mimeType};base64,${base64}`;
+})
+
 ipcMain.handle('write-file', async (_, filePath: string, content: string) => {
   return fs.writeFile(filePath, content, 'utf-8')
 })
@@ -457,7 +485,47 @@ ipcMain.handle('delete-file', async (_, filePath: string) => {
 })
 
 ipcMain.handle('rename-file', async (_, oldPath: string, newPath: string) => {
+    // Rename the main file
     await fs.rename(oldPath, newPath)
+
+    // Also rename the sidecar file in .midlight/sidecars/ if it exists
+    if (oldPath.endsWith('.md')) {
+        try {
+            const workspaceRoot = await findWorkspaceRoot(path.dirname(oldPath))
+            if (workspaceRoot) {
+                const oldFileKey = path.relative(workspaceRoot, oldPath)
+                const newFileKey = path.relative(workspaceRoot, newPath)
+                const oldSidecarName = getSidecarFilename(oldFileKey)
+                const newSidecarName = getSidecarFilename(newFileKey)
+                const sidecarsDir = path.join(workspaceRoot, '.midlight', 'sidecars')
+                const oldSidecarPath = path.join(sidecarsDir, oldSidecarName)
+                const newSidecarPath = path.join(sidecarsDir, newSidecarName)
+
+                try {
+                    await fs.access(oldSidecarPath)
+                    // Sidecar exists, rename it
+                    await fs.rename(oldSidecarPath, newSidecarPath)
+                } catch {
+                    // No sidecar file, that's fine
+                }
+
+                // Also rename checkpoint file if it exists
+                const checkpointsDir = path.join(workspaceRoot, '.midlight', 'checkpoints')
+                const oldCheckpointPath = path.join(checkpointsDir, oldSidecarName)
+                const newCheckpointPath = path.join(checkpointsDir, newSidecarName)
+                try {
+                    await fs.access(oldCheckpointPath)
+                    await fs.rename(oldCheckpointPath, newCheckpointPath)
+                } catch {
+                    // No checkpoint file, that's fine
+                }
+            }
+        } catch (error) {
+            console.error('Failed to rename sidecar:', error)
+            // Don't fail the whole operation if sidecar rename fails
+        }
+    }
+
     return newPath
 })
 
@@ -485,6 +553,32 @@ ipcMain.handle('file:duplicate', async (_, filePath: string) => {
         }
 
         await fs.copyFile(filePath, newPath)
+
+        // Also copy the sidecar file in .midlight/sidecars/ if it exists
+        if (filePath.endsWith('.md')) {
+            try {
+                const workspaceRoot = await findWorkspaceRoot(dir)
+                if (workspaceRoot) {
+                    const oldFileKey = path.relative(workspaceRoot, filePath)
+                    const newFileKey = path.relative(workspaceRoot, newPath)
+                    const oldSidecarName = getSidecarFilename(oldFileKey)
+                    const newSidecarName = getSidecarFilename(newFileKey)
+                    const sidecarsDir = path.join(workspaceRoot, '.midlight', 'sidecars')
+                    const oldSidecarPath = path.join(sidecarsDir, oldSidecarName)
+                    const newSidecarPath = path.join(sidecarsDir, newSidecarName)
+
+                    try {
+                        await fs.access(oldSidecarPath)
+                        await fs.copyFile(oldSidecarPath, newSidecarPath)
+                    } catch {
+                        // No sidecar file, that's fine
+                    }
+                }
+            } catch {
+                // Workspace not found, skip sidecar
+            }
+        }
+
         return { success: true, newPath }
     } catch (error) {
         console.error('Failed to duplicate file:', error)
@@ -496,6 +590,38 @@ ipcMain.handle('file:trash', async (_, filePath: string) => {
     try {
         // Use shell.trashItem for proper trash behavior on all platforms
         await shell.trashItem(filePath)
+
+        // Also trash the sidecar file in .midlight/sidecars/ if it exists
+        if (filePath.endsWith('.md')) {
+            try {
+                const dir = path.dirname(filePath)
+                const workspaceRoot = await findWorkspaceRoot(dir)
+                if (workspaceRoot) {
+                    const fileKey = path.relative(workspaceRoot, filePath)
+                    const sidecarName = getSidecarFilename(fileKey)
+                    const sidecarPath = path.join(workspaceRoot, '.midlight', 'sidecars', sidecarName)
+
+                    try {
+                        await fs.access(sidecarPath)
+                        await shell.trashItem(sidecarPath)
+                    } catch {
+                        // No sidecar file, that's fine
+                    }
+
+                    // Also trash checkpoint file if it exists
+                    const checkpointPath = path.join(workspaceRoot, '.midlight', 'checkpoints', sidecarName)
+                    try {
+                        await fs.access(checkpointPath)
+                        await shell.trashItem(checkpointPath)
+                    } catch {
+                        // No checkpoint file, that's fine
+                    }
+                }
+            } catch {
+                // Workspace not found, skip sidecar cleanup
+            }
+        }
+
         return { success: true }
     } catch (error) {
         console.error('Failed to trash file:', error)
@@ -586,6 +712,34 @@ ipcMain.handle('file:copyTo', async (_, sourcePaths: string[], destDir: string) 
                 await copyDirectory(sourcePath, destPath)
             } else {
                 await fs.copyFile(sourcePath, destPath)
+
+                // Also copy the sidecar file in .midlight/sidecars/ if it exists
+                if (sourcePath.endsWith('.md')) {
+                    try {
+                        const sourceDir = path.dirname(sourcePath)
+                        const sourceWorkspace = await findWorkspaceRoot(sourceDir)
+                        const destWorkspace = await findWorkspaceRoot(destDir)
+
+                        if (sourceWorkspace && destWorkspace) {
+                            const sourceFileKey = path.relative(sourceWorkspace, sourcePath)
+                            const destFileKey = path.relative(destWorkspace, destPath)
+                            const sourceSidecarName = getSidecarFilename(sourceFileKey)
+                            const destSidecarName = getSidecarFilename(destFileKey)
+                            const sourceSidecarPath = path.join(sourceWorkspace, '.midlight', 'sidecars', sourceSidecarName)
+                            const destSidecarPath = path.join(destWorkspace, '.midlight', 'sidecars', destSidecarName)
+
+                            try {
+                                await fs.access(sourceSidecarPath)
+                                await fs.mkdir(path.dirname(destSidecarPath), { recursive: true })
+                                await fs.copyFile(sourceSidecarPath, destSidecarPath)
+                            } catch {
+                                // No sidecar file, that's fine
+                            }
+                        }
+                    } catch {
+                        // Workspace not found, skip sidecar
+                    }
+                }
             }
 
             results.push({ source: sourcePath, dest: destPath, success: true })
@@ -624,6 +778,40 @@ ipcMain.handle('file:moveTo', async (_, sourcePaths: string[], destDir: string) 
                     }
                 } else {
                     throw renameError
+                }
+            }
+
+            // Also move the sidecar file in .midlight/sidecars/ if it exists
+            if (sourcePath.endsWith('.md')) {
+                try {
+                    const sourceDir = path.dirname(sourcePath)
+                    const sourceWorkspace = await findWorkspaceRoot(sourceDir)
+                    const destWorkspace = await findWorkspaceRoot(destDir)
+
+                    if (sourceWorkspace && destWorkspace) {
+                        const sourceFileKey = path.relative(sourceWorkspace, sourcePath)
+                        const destFileKey = path.relative(destWorkspace, destPath)
+                        const sourceSidecarName = getSidecarFilename(sourceFileKey)
+                        const destSidecarName = getSidecarFilename(destFileKey)
+                        const sourceSidecarPath = path.join(sourceWorkspace, '.midlight', 'sidecars', sourceSidecarName)
+                        const destSidecarPath = path.join(destWorkspace, '.midlight', 'sidecars', destSidecarName)
+
+                        try {
+                            await fs.access(sourceSidecarPath)
+                            await fs.mkdir(path.dirname(destSidecarPath), { recursive: true })
+                            // Try rename first, fall back to copy+delete
+                            try {
+                                await fs.rename(sourceSidecarPath, destSidecarPath)
+                            } catch {
+                                await fs.copyFile(sourceSidecarPath, destSidecarPath)
+                                await fs.unlink(sourceSidecarPath)
+                            }
+                        } catch {
+                            // No sidecar file, that's fine
+                        }
+                    }
+                } catch {
+                    // Workspace not found, skip sidecar
                 }
             }
 

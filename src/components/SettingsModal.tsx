@@ -3,6 +3,7 @@ import { X, Palette, Settings as SettingsIcon, Bot, Check, Type, History } from 
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useTheme, Theme } from '../store/useTheme';
 import { useFileSystem } from '../store/useFileSystem';
+import { usePreferences } from '../store/usePreferences';
 import { useEffect } from 'react';
 import {
   useWorkspaceConfig,
@@ -201,6 +202,7 @@ export function SettingsModal() {
   const { theme, setTheme } = useTheme();
   const { rootDir } = useFileSystem();
   const { config, loadConfig, updateDefaults, updateEditor, updateVersioning } = useWorkspaceConfig();
+  const { showUnsupportedFiles, setShowUnsupportedFiles } = usePreferences();
 
   // Load config when modal opens and workspace exists
   useEffect(() => {
@@ -214,8 +216,8 @@ export function SettingsModal() {
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-4xl translate-x-[-50%] translate-y-[-50%] border bg-background shadow-xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-xl h-[600px] flex overflow-hidden">
+        <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
+        <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-4xl translate-x-[-50%] translate-y-[-50%] border bg-background shadow-xl sm:rounded-xl h-[600px] flex overflow-hidden">
           
           {/* Sidebar */}
           <div className="w-64 border-r bg-muted/30 flex flex-col">
@@ -295,8 +297,17 @@ export function SettingsModal() {
 
                 {activeTab === 'general' && (
                     <div className="space-y-8">
+                      <SettingSection title="File Browser">
+                        <SettingRow label="Show Unsupported Files" description="Display files that can't be opened or imported">
+                          <Toggle
+                            checked={showUnsupportedFiles}
+                            onChange={setShowUnsupportedFiles}
+                          />
+                        </SettingRow>
+                      </SettingSection>
+
                       {!hasWorkspace ? (
-                        <div className="flex flex-col items-center justify-center h-64 text-center space-y-4 text-muted-foreground border-2 border-dashed rounded-xl">
+                        <div className="flex flex-col items-center justify-center h-48 text-center space-y-4 text-muted-foreground border-2 border-dashed rounded-xl">
                           <SettingsIcon size={48} className="opacity-20" />
                           <p>Open a workspace to configure document defaults.</p>
                         </div>

@@ -1,6 +1,6 @@
 {
   "fileKey": "3 Lyrics - Jameson Daines.md",
-  "headId": "cp-d4lz42",
+  "headId": "cp-lmdn8j",
   "checkpoints": [
     {
       "id": "cp-123fnn",
@@ -148,6 +148,20 @@
       "sidecarHash": "4e517a1d937f0d21c1dda6d08c3aae6defb8b49dbd2992949f15a95090f0f9d9",
       "timestamp": "2025-12-08T01:29:53.667Z",
       "parentId": "cp-dna32c",
+      "type": "auto",
+      "stats": {
+        "wordCount": 242,
+        "charCount": 1452,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-lmdn8j",
+      "contentHash": "5a7d489688d795f18539a7f136bfdae262a3bc9c2e27d9772261dd19a1ac39f3",
+      "sidecarHash": "be5df2ff4a1ce7a12c49463bb83b1efd109f49a881393d5a589910f1253f1e99",
+      "timestamp": "2025-12-09T16:31:28.265Z",
+      "parentId": "cp-d4lz42",
       "type": "auto",
       "stats": {
         "wordCount": 242,

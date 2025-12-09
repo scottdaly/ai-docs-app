@@ -306,6 +306,8 @@ interface IElectronAPI {
   selectFile: () => Promise<string | null>;
   readDir: (path: string) => Promise<{ name: string; path: string; type: 'file' | 'directory' }[]>;
   readFile: (path: string) => Promise<string>;
+  fileExists: (path: string) => Promise<boolean>;
+  readImageAsDataUrl: (path: string) => Promise<string>;
   writeFile: (path: string, content: string) => Promise<void>;
   createFolder: (path: string) => Promise<void>;
   deleteFile: (path: string) => Promise<void>;

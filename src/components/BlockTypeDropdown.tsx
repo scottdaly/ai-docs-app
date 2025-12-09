@@ -117,6 +117,7 @@ const BLOCK_TYPES = [
 
 export function BlockTypeDropdown({ editor }: BlockTypeDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [, forceUpdate] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close on click outside
@@ -129,6 +130,17 @@ export function BlockTypeDropdown({ editor }: BlockTypeDropdownProps) {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Re-render when editor selection or content changes
+  useEffect(() => {
+    const handleUpdate = () => forceUpdate(n => n + 1);
+    editor.on('selectionUpdate', handleUpdate);
+    editor.on('transaction', handleUpdate);
+    return () => {
+      editor.off('selectionUpdate', handleUpdate);
+      editor.off('transaction', handleUpdate);
+    };
+  }, [editor]);
 
   const activeBlock = BLOCK_TYPES.find(block => block.isActive(editor)) || BLOCK_TYPES[0];
 

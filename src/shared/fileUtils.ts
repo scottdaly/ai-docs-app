@@ -1,12 +1,11 @@
 import { FileCategory } from './types';
 
 // Extensions that can be imported/converted to Midlight format
-const IMPORTABLE_EXTENSIONS = new Set(['.docx', '.rtf', '.html', '.odt']);
+const IMPORTABLE_EXTENSIONS = new Set(['.docx', '.rtf', '.odt', '.pdf']);
 
-// Extensions that can be previewed (images, PDFs)
+// Extensions that can be previewed (images only)
 const VIEWABLE_EXTENSIONS = new Set([
-  '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp', '.ico',
-  '.pdf'
+  '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp', '.ico'
 ]);
 
 // Hidden folders that should not appear in the file browser

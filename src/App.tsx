@@ -10,6 +10,7 @@ import { DropZone } from './components/DropZone'
 import { ImportDetectionDialog, DetectedSourceType } from './components/ImportDetectionDialog'
 import { RightSidebar, RightSidebarMode } from './components/RightSidebar'
 import { UpdateNotification } from './components/UpdateNotification'
+import { ImagePreview } from './components/ImagePreview'
 import { EditorHandle } from './components/Editor'
 import { useFileSystem } from './store/useFileSystem'
 import { useRecentWorkspaces } from './store/useRecentWorkspaces'
@@ -20,7 +21,8 @@ import { useEffect, useState, useRef } from 'react'
 import { htmlToTiptapJson } from './utils/htmlToTiptap'
 
 function App() {
-  const { restoreSession, loadDir, rootDir } = useFileSystem();
+  const { restoreSession, loadDir, rootDir, openFiles, activeFilePath } = useFileSystem();
+  const activeFile = openFiles.find(f => f.path === activeFilePath);
   const { setTheme } = useTheme();
   const { openSettings } = useSettingsStore();
   const { isExporting, setIsExporting } = useExportStore();
@@ -210,22 +212,31 @@ function App() {
             <div className="flex-1 flex flex-col min-w-0 py-2 pr-2 h-full">
               <div className="flex-1 flex flex-col min-w-0 bg-background rounded-xl shadow-sm overflow-hidden">
                 <TabBar />
-                <Editor
-                  ref={editorRef}
-                  rightPanelMode={rightPanelMode}
-                  onSetRightPanelMode={setRightPanelMode}
-                />
+                {activeFile?.category === 'viewable' ? (
+                  <ImagePreview
+                    filePath={activeFile.path}
+                    fileName={activeFile.name}
+                  />
+                ) : (
+                  <Editor
+                    ref={editorRef}
+                    rightPanelMode={rightPanelMode}
+                    onSetRightPanelMode={setRightPanelMode}
+                  />
+                )}
               </div>
             </div>
-            {/* Right Sidebar - AI, History, or Drafts - outside editor panel */}
-            <RightSidebar
-              mode={rightPanelMode}
-              onClose={() => setRightPanelMode(null)}
-              onRestoreContent={(content) => editorRef.current?.restoreContent(content)}
-              onSwitchToDraft={(content) => editorRef.current?.switchToDraft(content)}
-              onSwitchToMain={() => editorRef.current?.switchToMain()}
-              getCurrentContent={() => editorRef.current?.getCurrentContent()}
-            />
+            {/* Right Sidebar - AI, History, or Drafts - only show for markdown files */}
+            {activeFile?.category !== 'viewable' && (
+              <RightSidebar
+                mode={rightPanelMode}
+                onClose={() => setRightPanelMode(null)}
+                onRestoreContent={(content) => editorRef.current?.restoreContent(content)}
+                onSwitchToDraft={(content) => editorRef.current?.switchToDraft(content)}
+                onSwitchToMain={() => editorRef.current?.switchToMain()}
+                getCurrentContent={() => editorRef.current?.getCurrentContent()}
+              />
+            )}
           </div>
         ) : (
           // No workspace - show welcome screen

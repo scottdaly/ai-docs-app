@@ -1,6 +1,6 @@
 {
   "fileKey": "Wow.md",
-  "headId": "cp-cvy54m",
+  "headId": "cp-da688t",
   "checkpoints": [
     {
       "id": "cp-lxyxvq",
@@ -92,6 +92,20 @@
       "sidecarHash": "8fdede5413598c5be9049c1f90f21693cf947600c8d9eb72f72ee477bc0ce1e7",
       "timestamp": "2025-12-08T02:07:30.921Z",
       "parentId": "cp-fkh6rc",
+      "type": "auto",
+      "stats": {
+        "wordCount": 10,
+        "charCount": 62,
+        "changeSize": 0
+      },
+      "trigger": "interval"
+    },
+    {
+      "id": "cp-da688t",
+      "contentHash": "c8651720ab261fd8389ae69e551478f067e6e2eb17dd314f7b0fad3357ce8af1",
+      "sidecarHash": "045ee1dbe6b4ee9fc5ace3c6b47c3f9437d73d24e73551c8c8f14558b0e529dc",
+      "timestamp": "2025-12-09T16:31:21.426Z",
+      "parentId": "cp-cvy54m",
       "type": "auto",
       "stats": {
         "wordCount": 10,

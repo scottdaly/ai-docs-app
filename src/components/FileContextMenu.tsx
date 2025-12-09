@@ -19,6 +19,7 @@ import {
   Clipboard,
   ClipboardPaste,
   Scissors,
+  Code,
 } from 'lucide-react';
 
 interface FileContextMenuProps {
@@ -40,11 +41,12 @@ export function FileContextMenu({
   selectedPaths,
   onClearSelection,
 }: FileContextMenuProps) {
-  const { openFile, closeFile, loadDir, rootDir } = useFileSystem();
+  const { openFile, closeFile, loadDir, rootDir, reopenFileAs, openFiles } = useFileSystem();
   const { paths: clipboardPaths, operation: clipboardOperation, copy, cut, clear: clearClipboard, pushUndo } = useClipboardStore();
 
   const isFile = node.type === 'file';
   const isFolder = node.type === 'directory';
+  const isSvg = isFile && node.path.toLowerCase().endsWith('.svg');
 
   // Check if multiple items are selected AND current node is in the selection
   const hasMultipleSelection = selectedPaths && selectedPaths.size > 1 && selectedPaths.has(node.path);
@@ -56,6 +58,21 @@ export function FileContextMenu({
   const handleOpen = async () => {
     if (isFile) {
       await openFile(node);
+    }
+  };
+
+  const handleOpenAsCode = async () => {
+    if (!isFile) return;
+
+    // Check if file is already open
+    const alreadyOpen = openFiles.find(f => f.path === node.path);
+
+    if (alreadyOpen) {
+      // Use reopenFileAs to update the category and reload content
+      await reopenFileAs(node.path, 'compatible');
+    } else {
+      // Open the file as text/code by passing a modified node
+      await openFile({ ...node, category: 'compatible' });
     }
   };
 
@@ -249,6 +266,12 @@ export function FileContextMenu({
               Open
               <ContextMenuShortcut>Enter</ContextMenuShortcut>
             </ContextMenuItem>
+            {isSvg && (
+              <ContextMenuItem onClick={handleOpenAsCode}>
+                <Code className="mr-2 h-4 w-4" />
+                Open as Code
+              </ContextMenuItem>
+            )}
             <ContextMenuSeparator />
           </>
         )}

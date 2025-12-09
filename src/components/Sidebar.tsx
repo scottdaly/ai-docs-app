@@ -5,6 +5,7 @@ import { FolderIcon } from './icons/FolderIcon';
 import { useFileSystem } from '../store/useFileSystem';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useClipboardStore } from '../store/useClipboardStore';
+import { usePreferences } from '../store/usePreferences';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { FileNode } from '../shared/types';
 import { FileContextMenu } from './FileContextMenu';
@@ -35,15 +36,20 @@ interface FileTreeItemProps {
   expandedPaths: Set<string>;
   onClearSelection: () => void;
   onImportableClick?: (node: FileNode) => void;
+  showUnsupportedFiles: boolean;
+  pendingRenamePath?: string | null;
+  onPendingRenameHandled?: () => void;
 }
 
-function FileTreeItem({ node, level = 0, onCreateInFolder, selectedPaths, onSelect, onExpandedChange, expandedPaths, onClearSelection, onImportableClick }: FileTreeItemProps) {
+function FileTreeItem({ node, level = 0, onCreateInFolder, selectedPaths, onSelect, onExpandedChange, expandedPaths, onClearSelection, onImportableClick, showUnsupportedFiles, pendingRenamePath, onPendingRenameHandled }: FileTreeItemProps) {
   const isOpen = expandedPaths.has(node.path);
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(node.name);
+  const [renameError, setRenameError] = useState<string | null>(null);
   const renameInputRef = useRef<HTMLInputElement>(null);
   const isRenamingRef = useRef(false); // Track renaming state synchronously
-  const { loadSubDirectory, openFile, activeFilePath, renameFile, rootDir, loadDir } = useFileSystem();
+  const justStartedRenamingRef = useRef(false); // Ignore blurs right after starting rename
+  const { loadSubDirectory, openFile, activeFilePath, renameFile, rootDir, loadDir, files } = useFileSystem();
   const paddingLeft = `${level * 12 + 12}px`;
 
   const isActive = activeFilePath === node.path;
@@ -59,21 +65,32 @@ function FileTreeItem({ node, level = 0, onCreateInFolder, selectedPaths, onSele
       const timeoutId = setTimeout(() => {
         if (renameInputRef.current && isRenamingRef.current) {
           renameInputRef.current.focus();
-          // Select the name without extension for files
-          if (node.type === 'file') {
-            const nameWithoutExt = node.name.replace(/\.[^.]+$/, '');
-            renameInputRef.current.setSelectionRange(0, nameWithoutExt.length);
-          } else {
-            renameInputRef.current.select();
-          }
+          // Select all text (extension is already stripped)
+          renameInputRef.current.select();
           initialFocusDoneRef.current = true;
+          // NOTE: Don't clear justStartedRenamingRef here - clear it on first user interaction
         }
       }, 50);
       return () => clearTimeout(timeoutId);
     } else if (!isRenaming) {
       initialFocusDoneRef.current = false;
+      justStartedRenamingRef.current = false;
     }
-  }, [isRenaming, node.type, node.name]);
+  }, [isRenaming]);
+
+  // Auto-enter rename mode when this is the pending rename target
+  useEffect(() => {
+    if (pendingRenamePath === node.path && !isRenaming) {
+      isRenamingRef.current = true;
+      // Strip .md extension for files when showing rename input
+      const nameWithoutExt = node.type === 'file' && node.name.toLowerCase().endsWith('.md')
+        ? node.name.slice(0, -3)
+        : node.name;
+      setRenameValue(nameWithoutExt);
+      setIsRenaming(true);
+      onPendingRenameHandled?.();
+    }
+  }, [pendingRenamePath, node.path, isRenaming, node.name, node.type, onPendingRenameHandled]);
 
   const handleClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -91,7 +108,11 @@ function FileTreeItem({ node, level = 0, onCreateInFolder, selectedPaths, onSele
     } else {
         // Only open file on single click without modifier keys
         if (!e.shiftKey && !e.metaKey && !e.ctrlKey) {
-            // For importable files (docx, rtf, html), show import dialog instead
+            // Don't open unsupported files
+            if (node.category === 'unsupported') {
+                return;
+            }
+            // For importable files (docx, rtf, html, pdf), show import dialog instead
             if (node.category === 'importable' && onImportableClick) {
                 onImportableClick(node);
             } else {
@@ -103,21 +124,109 @@ function FileTreeItem({ node, level = 0, onCreateInFolder, selectedPaths, onSele
 
   const handleRename = () => {
     isRenamingRef.current = true;
-    setRenameValue(node.name);
+    justStartedRenamingRef.current = true; // Ignore blurs until focus is established
+    // Strip .md extension for files when showing rename input
+    const nameWithoutExt = node.type === 'file' && node.name.toLowerCase().endsWith('.md')
+      ? node.name.slice(0, -3)
+      : node.name;
+    setRenameValue(nameWithoutExt);
     setIsRenaming(true);
   };
 
+  // Helper to find sibling files in the same directory
+  const getSiblingNames = useCallback((): Set<string> => {
+    const parentPath = node.path.substring(0, node.path.lastIndexOf('/'));
+    const siblingNames = new Set<string>();
+
+    // Find the parent directory in the file tree
+    const findSiblings = (nodes: FileNode[], targetParentPath: string): FileNode[] | null => {
+      // Check if we're at root level
+      if (targetParentPath === rootDir) {
+        return nodes;
+      }
+
+      for (const n of nodes) {
+        if (n.path === targetParentPath && n.children) {
+          return n.children;
+        }
+        if (n.children) {
+          const found = findSiblings(n.children, targetParentPath);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+
+    const siblings = parentPath === rootDir ? files : findSiblings(files, parentPath);
+    if (siblings) {
+      siblings.forEach(s => {
+        if (s.path !== node.path) {
+          siblingNames.add(s.name.toLowerCase());
+        }
+      });
+    }
+
+    return siblingNames;
+  }, [node.path, files, rootDir]);
+
   const handleRenameSubmit = async () => {
     if (!isRenamingRef.current) return; // Already submitted
-    isRenamingRef.current = false;
 
-    if (renameValue.trim() && renameValue !== node.name) {
-      await renameFile(node.path, renameValue.trim());
+    const trimmedValue = renameValue.trim();
+
+    // Get the original name without extension for comparison
+    const originalNameWithoutExt = node.type === 'file' && node.name.toLowerCase().endsWith('.md')
+      ? node.name.slice(0, -3)
+      : node.name;
+
+    // If empty or unchanged, just close the rename input (keep original name)
+    if (!trimmedValue || trimmedValue === originalNameWithoutExt) {
+      isRenamingRef.current = false;
+      setIsRenaming(false);
+      setRenameError(null);
+      return;
     }
+
+    // Ensure .md extension for files
+    const finalName = node.type === 'file' && !trimmedValue.toLowerCase().endsWith('.md')
+      ? `${trimmedValue}.md`
+      : trimmedValue;
+
+    // Check for naming conflicts (case-insensitive)
+    const siblingNames = getSiblingNames();
+    if (siblingNames.has(finalName.toLowerCase())) {
+      setRenameError('A file with this name already exists');
+      // Keep input open so user can fix it
+      return;
+    }
+
+    isRenamingRef.current = false;
+    setRenameError(null);
+    await renameFile(node.path, trimmedValue);
     setIsRenaming(false);
   };
 
+  // Check if a name would conflict with siblings
+  const hasNamingConflict = useCallback((name: string): boolean => {
+    const finalName = node.type === 'file' && !name.toLowerCase().endsWith('.md')
+      ? `${name}.md`
+      : name;
+    const siblingNames = getSiblingNames();
+    return siblingNames.has(finalName.toLowerCase());
+  }, [node.type, getSiblingNames]);
+
   const handleBlur = (e: React.FocusEvent) => {
+    // Ignore blurs that happen right after starting rename (context menu closing)
+    // and refocus the input since blur already moved focus elsewhere
+    if (justStartedRenamingRef.current) {
+      setTimeout(() => {
+        if (renameInputRef.current && isRenamingRef.current) {
+          renameInputRef.current.focus();
+        }
+      }, 0);
+      return;
+    }
+
     // Check if focus is moving to the parent container (happens when context menu closes)
     // In that case, we should refocus the input instead of submitting
     const relatedTarget = e.relatedTarget as HTMLElement | null;
@@ -134,18 +243,52 @@ function FileTreeItem({ node, level = 0, onCreateInFolder, selectedPaths, onSele
     // Small delay to allow click events to process first
     setTimeout(() => {
       if (isRenamingRef.current) {
+        const trimmedValue = renameValue.trim();
+
+        // Get the original name without extension for comparison
+        const originalNameWithoutExt = node.type === 'file' && node.name.toLowerCase().endsWith('.md')
+          ? node.name.slice(0, -3)
+          : node.name;
+
+        // If there's a conflict on blur, just revert to original name
+        if (trimmedValue && trimmedValue !== originalNameWithoutExt && hasNamingConflict(trimmedValue)) {
+          isRenamingRef.current = false;
+          setIsRenaming(false);
+          setRenameError(null);
+          setRenameValue(originalNameWithoutExt);
+          return;
+        }
+
         handleRenameSubmit();
       }
     }, 100);
   };
 
   const handleRenameKeyDown = (e: React.KeyboardEvent) => {
+    // User is interacting, clear the "just started" protection
+    justStartedRenamingRef.current = false;
+
     if (e.key === 'Enter') {
       handleRenameSubmit();
     } else if (e.key === 'Escape') {
       isRenamingRef.current = false;
       setIsRenaming(false);
-      setRenameValue(node.name);
+      setRenameError(null);
+      // Reset to name without extension
+      const nameWithoutExt = node.type === 'file' && node.name.toLowerCase().endsWith('.md')
+        ? node.name.slice(0, -3)
+        : node.name;
+      setRenameValue(nameWithoutExt);
+    }
+  };
+
+  const handleRenameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // User is interacting, clear the "just started" protection
+    justStartedRenamingRef.current = false;
+    setRenameValue(e.target.value);
+    // Clear error when user starts typing
+    if (renameError) {
+      setRenameError(null);
     }
   };
 
@@ -224,16 +367,28 @@ function FileTreeItem({ node, level = 0, onCreateInFolder, selectedPaths, onSele
         )}
       </span>
       {isRenaming ? (
-        <input
-          ref={renameInputRef}
-          type="text"
-          value={renameValue}
-          onChange={(e) => setRenameValue(e.target.value)}
-          onBlur={handleBlur}
-          onKeyDown={handleRenameKeyDown}
-          onClick={(e) => e.stopPropagation()}
-          className="flex-1 min-w-0 bg-background border rounded px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-        />
+        <div className="flex-1 min-w-0 relative">
+          <input
+            ref={renameInputRef}
+            type="text"
+            value={renameValue}
+            onChange={handleRenameChange}
+            onBlur={handleBlur}
+            onKeyDown={handleRenameKeyDown}
+            onClick={(e) => e.stopPropagation()}
+            className={`w-full bg-background border rounded px-1 py-0.5 text-sm focus:outline-none focus:ring-1 ${
+              renameError
+                ? 'border-destructive focus:ring-destructive'
+                : 'border-border focus:ring-primary'
+            }`}
+            title={renameError || undefined}
+          />
+          {renameError && (
+            <div className="absolute left-0 top-full mt-1 px-2 py-1 text-xs bg-destructive text-destructive-foreground rounded shadow-lg z-50 whitespace-nowrap">
+              {renameError}
+            </div>
+          )}
+        </div>
       ) : (
         <span className="truncate">{displayText}</span>
       )}
@@ -254,7 +409,9 @@ function FileTreeItem({ node, level = 0, onCreateInFolder, selectedPaths, onSele
       </FileContextMenu>
       {isOpen && node.children && (
         <div>
-          {node.children.map((child) => (
+          {node.children
+            .filter((child) => showUnsupportedFiles || child.type === 'directory' || child.category !== 'unsupported')
+            .map((child) => (
             <FileTreeItem
               key={child.path}
               node={child}
@@ -266,6 +423,9 @@ function FileTreeItem({ node, level = 0, onCreateInFolder, selectedPaths, onSele
               expandedPaths={expandedPaths}
               onClearSelection={onClearSelection}
               onImportableClick={onImportableClick}
+              showUnsupportedFiles={showUnsupportedFiles}
+              pendingRenamePath={pendingRenamePath}
+              onPendingRenameHandled={onPendingRenameHandled}
             />
           ))}
         </div>
@@ -275,13 +435,10 @@ function FileTreeItem({ node, level = 0, onCreateInFolder, selectedPaths, onSele
 }
 
 export function Sidebar() {
-  const { files, rootDir, loadDir, loadSubDirectory, createFile, closeFile } = useFileSystem();
+  const { files, rootDir, loadDir, loadSubDirectory, createFile, closeFile, pendingRenamePath, clearPendingRenamePath } = useFileSystem();
   const { openSettings } = useSettingsStore();
   const { paths: clipboardPaths, operation: clipboardOperation, copy, cut, clear: clearClipboard, pushUndo, popUndo, peekUndo, canUndo } = useClipboardStore();
-  const [isCreating, setIsCreating] = useState(false);
-  const [newFileName, setNewFileName] = useState('');
-  const [createInFolder, setCreateInFolder] = useState<string | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const { showUnsupportedFiles } = usePreferences();
 
   // Undo confirmation dialog state
   const [undoDialogOpen, setUndoDialogOpen] = useState(false);
@@ -309,12 +466,6 @@ export function Sidebar() {
     setExpandedPaths(new Set());
     lastSelectedPathRef.current = null;
   }, [rootDir]);
-
-  useEffect(() => {
-    if (isCreating && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isCreating]);
 
   // Reload children of expanded folders when files change
   // This ensures expanded folders get fresh data after operations like paste/delete
@@ -392,8 +543,10 @@ export function Sidebar() {
     setImportError(null);
 
     try {
-      // Currently only supporting .docx files
-      if (importingFile.path.toLowerCase().endsWith('.docx')) {
+      const lowerPath = importingFile.path.toLowerCase();
+
+      // Handle DOCX files
+      if (lowerPath.endsWith('.docx')) {
         const result = await window.electronAPI.importDocxFromPath(importingFile.path);
 
         if (result.success && result.html && result.filename) {
@@ -417,8 +570,12 @@ export function Sidebar() {
           setIsImporting(false);
           setImportError(result.error || 'Unknown error');
         }
+      } else if (lowerPath.endsWith('.pdf')) {
+        // PDF import not yet supported
+        setIsImporting(false);
+        setImportError('PDF import is not yet supported. Coming soon!');
       } else {
-        // For other importable types (rtf, html), show a message
+        // For other importable types (rtf, html, odt), show a message
         setIsImporting(false);
         setImportError('Import not yet supported for this file type');
       }
@@ -619,53 +776,27 @@ export function Sidebar() {
     }
   };
 
-  const handleCreateDocument = async () => {
-    if (!newFileName.trim()) {
-      setIsCreating(false);
-      setCreateInFolder(null);
-      return;
-    }
-
+  // Create a new document and trigger inline rename
+  const handleCreateDocument = useCallback(async (folderPath?: string) => {
     const emptyDoc = {
       type: 'doc' as const,
       content: [{ type: 'paragraph', content: [] }],
     };
 
-    // If creating in a specific folder, build the full path
-    if (createInFolder && rootDir) {
-      const separator = rootDir.includes('\\') ? '\\' : '/';
-      const fileName = newFileName.trim().endsWith('.md') ? newFileName.trim() : `${newFileName.trim()}.md`;
-      const filePath = `${createInFolder}${separator}${fileName}`;
+    // Create file with triggerRename=true to auto-enter rename mode
+    await createFile('Untitled', emptyDoc, folderPath, true);
 
-      try {
-        await window.electronAPI.workspaceSaveDocument(rootDir, filePath, emptyDoc, 'create');
-        await loadDir(rootDir);
-      } catch (error) {
-        console.error('Failed to create file:', error);
-      }
-    } else {
-      await createFile(newFileName.trim(), emptyDoc);
+    // If creating in a folder, expand it to show the new file
+    if (folderPath && !expandedPaths.has(folderPath)) {
+      await loadSubDirectory(folderPath);
+      setExpandedPaths(prev => new Set([...prev, folderPath]));
     }
+  }, [createFile, expandedPaths, loadSubDirectory]);
 
-    setNewFileName('');
-    setIsCreating(false);
-    setCreateInFolder(null);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleCreateDocument();
-    } else if (e.key === 'Escape') {
-      setNewFileName('');
-      setIsCreating(false);
-      setCreateInFolder(null);
-    }
-  };
-
-  const handleCreateInFolder = (folderPath: string) => {
-    setCreateInFolder(folderPath);
-    setIsCreating(true);
-  };
+  // Handler for creating in a specific folder (from context menu)
+  const handleCreateInFolder = useCallback((folderPath: string) => {
+    handleCreateDocument(folderPath);
+  }, [handleCreateDocument]);
 
   return (
     <div className="w-64 h-full py-2 pl-2 flex-shrink-0">
@@ -681,10 +812,7 @@ export function Sidebar() {
            </button>
            {rootDir && (
              <button
-               onClick={() => {
-                 setCreateInFolder(null);
-                 setIsCreating(true);
-               }}
+               onClick={() => handleCreateDocument()}
                className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
                title="New Document"
              >
@@ -693,27 +821,6 @@ export function Sidebar() {
            )}
         </div>
 
-        {/* New file input */}
-        {isCreating && (
-          <div className="px-3 py-2 border-b">
-            {createInFolder && (
-              <div className="text-xs text-muted-foreground mb-1 truncate">
-                In: {createInFolder.split(/[/\\]/).pop()}
-              </div>
-            )}
-            <input
-              ref={inputRef}
-              type="text"
-              value={newFileName}
-              onChange={(e) => setNewFileName(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onBlur={handleCreateDocument}
-              placeholder="Document name..."
-              className="w-full text-sm px-2 py-1 border rounded bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
-        )}
-
         <div
           ref={fileTreeRef}
           className="flex-1 overflow-auto py-2 focus:outline-none"
@@ -721,7 +828,9 @@ export function Sidebar() {
           onKeyDown={handleFileTreeKeyDown}
           tabIndex={0}
         >
-          {files.map((file) => (
+          {files
+            .filter((file) => showUnsupportedFiles || file.type === 'directory' || file.category !== 'unsupported')
+            .map((file) => (
             <FileTreeItem
               key={file.path}
               node={file}
@@ -732,14 +841,17 @@ export function Sidebar() {
               expandedPaths={expandedPaths}
               onClearSelection={handleBackgroundClick}
               onImportableClick={handleImportableClick}
+              showUnsupportedFiles={showUnsupportedFiles}
+              pendingRenamePath={pendingRenamePath}
+              onPendingRenameHandled={clearPendingRenamePath}
             />
           ))}
-          {files.length === 0 && rootDir && !isCreating && (
+          {files.length === 0 && rootDir && (
               <div className="text-center text-muted-foreground text-xs mt-4">
                 Empty folder
                 <br />
                 <button
-                  onClick={() => setIsCreating(true)}
+                  onClick={() => handleCreateDocument()}
                   className="mt-2 text-primary hover:underline"
                 >
                   Create a document

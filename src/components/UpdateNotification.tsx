@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Download, AlertCircle, CheckCircle } from 'lucide-react';
+import { X, Download, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 
 interface UpdateState {
   status: 'idle' | 'checking' | 'available' | 'downloading' | 'ready' | 'not-available' | 'error';
@@ -17,6 +17,7 @@ export function UpdateNotification({ onCheckForUpdates }: UpdateNotificationProp
   const [updateState, setUpdateState] = useState<UpdateState>({ status: 'idle' });
   const [dismissed, setDismissed] = useState(false);
   const [showManualCheckResult, setShowManualCheckResult] = useState(false);
+  const [isRestarting, setIsRestarting] = useState(false);
 
   useEffect(() => {
     const api = window.electronAPI;
@@ -98,7 +99,11 @@ export function UpdateNotification({ onCheckForUpdates }: UpdateNotificationProp
   };
 
   const handleInstall = () => {
-    window.electronAPI?.quitAndInstall();
+    setIsRestarting(true);
+    // Small delay to ensure UI updates before app quits
+    setTimeout(() => {
+      window.electronAPI?.quitAndInstall();
+    }, 100);
   };
 
   const handleDismiss = () => {
@@ -200,21 +205,31 @@ export function UpdateNotification({ onCheckForUpdates }: UpdateNotificationProp
                 Version <span className="font-medium text-foreground">{updateState.version}</span> is ready to install.
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                The app will restart to complete the update.
+                {isRestarting ? 'Restarting...' : 'The app will restart to complete the update.'}
               </p>
               <div className="flex gap-2 mt-3">
                 <button
                   onClick={handleInstall}
-                  className="flex-1 px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm font-medium hover:bg-primary/90 transition-colors"
+                  disabled={isRestarting}
+                  className="flex-1 px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  Restart & Update
+                  {isRestarting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Restarting...
+                    </>
+                  ) : (
+                    'Restart & Update'
+                  )}
                 </button>
-                <button
-                  onClick={handleDismiss}
-                  className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
-                >
-                  Later
-                </button>
+                {!isRestarting && (
+                  <button
+                    onClick={handleDismiss}
+                    className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
+                  >
+                    Later
+                  </button>
+                )}
               </div>
             </>
           )}

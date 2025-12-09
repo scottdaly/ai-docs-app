@@ -13,6 +13,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   selectFile: () => ipcRenderer.invoke('select-file'),
   readDir: (path: string) => ipcRenderer.invoke('read-dir', path),
   readFile: (path: string) => ipcRenderer.invoke('read-file', path),
+  fileExists: (path: string) => ipcRenderer.invoke('file-exists', path),
+  readImageAsDataUrl: (path: string) => ipcRenderer.invoke('read-image-as-data-url', path),
   writeFile: (path: string, content: string) => ipcRenderer.invoke('write-file', path, content),
   createFolder: (path: string) => ipcRenderer.invoke('create-folder', path),
   deleteFile: (path: string) => ipcRenderer.invoke('delete-file', path),

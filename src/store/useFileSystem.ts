@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { FileNode } from '../shared/types';
+import { FileNode, FileCategory } from '../shared/types';
 
 // Tiptap document type
 interface TiptapDocument {
@@ -32,6 +32,9 @@ interface FileSystemState {
   // External change state
   externalChange: ExternalChange | null;
 
+  // Pending rename state (for new file creation flow)
+  pendingRenamePath: string | null;
+
   // Actions
   setRootDir: (path: string) => void;
   setFiles: (files: FileNode[]) => void;
@@ -45,8 +48,9 @@ interface FileSystemState {
   closeFile: (path: string) => void;
   selectFile: (path: string) => Promise<void>;
   saveFile: (json: TiptapDocument) => Promise<void>;
-  createFile: (filename: string, json: TiptapDocument) => Promise<string | null>;
+  createFile: (filename: string, json: TiptapDocument, folderPath?: string, triggerRename?: boolean) => Promise<string | null>;
   renameFile: (oldPath: string, newName: string) => Promise<string | null>;
+  reopenFileAs: (path: string, category: FileCategory) => Promise<void>;
 
   // Recovery actions
   loadFromRecovery: (filePath: string) => Promise<void>;
@@ -56,6 +60,10 @@ interface FileSystemState {
   setExternalChange: (change: ExternalChange | null) => void;
   reloadFromDisk: () => Promise<void>;
   keepCurrentVersion: () => void;
+
+  // Pending rename actions
+  setPendingRenamePath: (path: string | null) => void;
+  clearPendingRenamePath: () => void;
 
   restoreSession: () => Promise<void>;
 }
@@ -123,6 +131,7 @@ export const useFileSystem = create<FileSystemState>()(
       hasRecovery: false,
       recoveryTime: null,
       externalChange: null,
+      pendingRenamePath: null,
 
       setRootDir: (path) => set({ rootDir: path }),
       setFiles: (files) => set({ files }),
@@ -194,6 +203,25 @@ export const useFileSystem = create<FileSystemState>()(
         // If already active, do nothing
         if (activeFilePath === file.path) return;
 
+        // Don't open unsupported files
+        if (file.category === 'unsupported') return;
+
+        // Handle viewable files (images) - no content loading needed
+        if (file.category === 'viewable') {
+          if (alreadyOpen) {
+            set({ activeFilePath: file.path, editorContent: null, isDirty: false, hasRecovery: false });
+          } else {
+            set({
+              openFiles: [...openFiles, file],
+              activeFilePath: file.path,
+              editorContent: null,
+              isDirty: false,
+              hasRecovery: false,
+            });
+          }
+          return;
+        }
+
         // Only handle .md files with workspace API
         if (!file.path.endsWith('.md') || !rootDir) {
           // Fall back to raw file read for non-markdown files
@@ -263,8 +291,17 @@ export const useFileSystem = create<FileSystemState>()(
       },
 
       selectFile: async (path) => {
-        const { activeFilePath, rootDir } = get();
+        const { activeFilePath, rootDir, openFiles } = get();
         if (activeFilePath === path) return;
+
+        // Find the file in openFiles to check its category
+        const file = openFiles.find(f => f.path === path);
+
+        // Handle viewable files (images) - no content loading needed
+        if (file?.category === 'viewable') {
+          set({ activeFilePath: path, editorContent: null, isDirty: false, hasRecovery: false });
+          return;
+        }
 
         // Only handle .md files with workspace API
         if (!path.endsWith('.md') || !rootDir) {
@@ -311,8 +348,11 @@ export const useFileSystem = create<FileSystemState>()(
           if (newActive && rootDir) {
             set({ openFiles: newOpenFiles, activeFilePath: newActive.path });
 
-            // Load the new active file
-            if (newActive.path.endsWith('.md')) {
+            // Handle viewable files (images) - no content loading needed
+            if (newActive.category === 'viewable') {
+              set({ editorContent: null, isDirty: false, hasRecovery: false });
+            } else if (newActive.path.endsWith('.md')) {
+              // Load the new active file
               window.electronAPI.workspaceLoadDocument(rootDir, newActive.path).then(result => {
                 if (result.success && result.json) {
                   set({
@@ -363,7 +403,7 @@ export const useFileSystem = create<FileSystemState>()(
         }
       },
 
-      createFile: async (filename, json) => {
+      createFile: async (filename, json, folderPath?, triggerRename = false) => {
         const { rootDir, openFiles } = get();
         if (!rootDir) {
           console.error("No workspace open");
@@ -373,24 +413,19 @@ export const useFileSystem = create<FileSystemState>()(
         // Ensure filename ends with .md
         const finalFilename = filename.endsWith('.md') ? filename : `${filename}.md`;
 
-        // Build the full path (in root directory)
+        // Build the full path (in specified folder or root directory)
         const separator = rootDir.includes('\\') ? '\\' : '/';
-        let filePath = `${rootDir}${separator}${finalFilename}`;
+        const targetDir = folderPath || rootDir;
+        let filePath = `${targetDir}${separator}${finalFilename}`;
 
         // Check if file already exists and generate unique name if needed
         try {
           let counter = 1;
           let baseName = finalFilename.replace('.md', '');
-          while (true) {
-            try {
-              await window.electronAPI.readFile(filePath);
-              // File exists, try next number
-              filePath = `${rootDir}${separator}${baseName} (${counter}).md`;
-              counter++;
-            } catch {
-              // File doesn't exist, we can use this path
-              break;
-            }
+          while (await window.electronAPI.fileExists(filePath)) {
+            // File exists, try next number
+            filePath = `${targetDir}${separator}${baseName} ${counter}.md`;
+            counter++;
           }
 
           // Save the file using workspace API
@@ -410,7 +445,8 @@ export const useFileSystem = create<FileSystemState>()(
           const newFile: FileNode = {
             name: filePath.split(separator).pop() || finalFilename,
             path: filePath,
-            type: 'file'
+            type: 'file',
+            category: 'native', // New files are native Midlight files
           };
 
           // Add to open files and set as active
@@ -420,6 +456,7 @@ export const useFileSystem = create<FileSystemState>()(
             editorContent: json,
             isDirty: false,
             hasRecovery: false,
+            pendingRenamePath: triggerRename ? filePath : null,
           });
 
           // Refresh the file list
@@ -474,6 +511,51 @@ export const useFileSystem = create<FileSystemState>()(
         } catch (error) {
           console.error("Failed to rename file", error);
           return null;
+        }
+      },
+
+      reopenFileAs: async (path, category: FileCategory) => {
+        const { openFiles } = get();
+        const existingFile = openFiles.find(f => f.path === path);
+
+        if (!existingFile) {
+          // File not open, nothing to reopen
+          return;
+        }
+
+        // Update the file's category in openFiles
+        const updatedOpenFiles: FileNode[] = openFiles.map(f =>
+          f.path === path ? { ...f, category } : f
+        );
+
+        // Load content as text (for 'compatible' category)
+        if (category === 'compatible') {
+          try {
+            const content = await window.electronAPI.readFile(path);
+            const doc: TiptapDocument = {
+              type: 'doc',
+              content: [{ type: 'paragraph', content: [{ type: 'text', text: content }] }],
+            };
+
+            set({
+              openFiles: updatedOpenFiles,
+              activeFilePath: path,
+              editorContent: doc,
+              isDirty: false,
+              hasRecovery: false,
+            });
+          } catch (error) {
+            console.error("Failed to reopen file as code", error);
+          }
+        } else if (category === 'viewable') {
+          // Reopen as image
+          set({
+            openFiles: updatedOpenFiles,
+            activeFilePath: path,
+            editorContent: null,
+            isDirty: false,
+            hasRecovery: false,
+          });
         }
       },
 
@@ -544,8 +626,11 @@ export const useFileSystem = create<FileSystemState>()(
         set({ externalChange: null });
       },
 
+      setPendingRenamePath: (path) => set({ pendingRenamePath: path }),
+      clearPendingRenamePath: () => set({ pendingRenamePath: null }),
+
       restoreSession: async () => {
-        const { rootDir, activeFilePath } = get();
+        const { rootDir, activeFilePath, openFiles } = get();
 
         if (rootDir) {
           try {
@@ -558,7 +643,13 @@ export const useFileSystem = create<FileSystemState>()(
 
         if (activeFilePath && rootDir) {
           try {
-            if (activeFilePath.endsWith('.md')) {
+            // Find the file in openFiles to check its category
+            const file = openFiles.find(f => f.path === activeFilePath);
+
+            // Handle viewable files (images) - no content loading needed
+            if (file?.category === 'viewable') {
+              set({ editorContent: null });
+            } else if (activeFilePath.endsWith('.md')) {
               const result = await window.electronAPI.workspaceLoadDocument(rootDir, activeFilePath);
               if (result.success && result.json) {
                 set({

@@ -234,45 +234,52 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
     return unsubscribe;
   }, [activeFilePath, rootDir, setExternalChange]);
 
-  // Handle closing file when it's deleted externally
-  const handleCloseDeletedFile = () => {
-    setExternalChange(null);
-    if (activeFilePath) {
-      closeFile(activeFilePath);
-    }
-  };
-
-  if (!activeFilePath) {
-    return (
-      <div className="flex-1 flex items-center justify-center text-muted-foreground">
-        Select a file to edit
-      </div>
-    );
-  }
-
-  // Handle restoring content from history
-  const handleRestoreContent = (content: any) => {
-    if (editor && content) {
-      editor.commands.setContent(content);
-      setIsDirty(true);
-      // Refresh history after restore
-      if (rootDir && activeFilePath) {
-        loadCheckpoints(rootDir, activeFilePath);
-      }
-    }
-  };
-
-  // Handle switching to a draft
-  const handleSwitchToDraft = (content: any) => {
-    if (editor && content) {
-      queueMicrotask(() => {
+  // Expose methods to parent via ref - must be called before any early returns
+  useImperativeHandle(ref, () => ({
+    restoreContent: (content: any) => {
+      if (editor && content) {
         editor.commands.setContent(content);
-        lastSavedJsonRef.current = JSON.stringify(content);
-      });
-    }
-  };
+        setIsDirty(true);
+        // Refresh history after restore
+        if (rootDir && activeFilePath) {
+          loadCheckpoints(rootDir, activeFilePath);
+        }
+      }
+    },
+    switchToDraft: (content: any) => {
+      if (editor && content) {
+        queueMicrotask(() => {
+          editor.commands.setContent(content);
+          lastSavedJsonRef.current = JSON.stringify(content);
+        });
+      }
+    },
+    switchToMain: async () => {
+      closeDraft();
+      // Reload main document content
+      if (rootDir && activeFilePath) {
+        try {
+          const result = await window.electronAPI.workspaceLoadDocument(rootDir, activeFilePath);
+          if (result.success && result.json && editor) {
+            queueMicrotask(() => {
+              editor.commands.setContent(result.json);
+              lastSavedJsonRef.current = JSON.stringify(result.json);
+            });
+          }
+        } catch (error) {
+          console.error('Failed to reload main document:', error);
+        }
+      }
+    },
+    getCurrentContent: () => {
+      if (editor) {
+        return editor.getJSON();
+      }
+      return null;
+    },
+  }), [editor, rootDir, activeFilePath, activeDraftId, setIsDirty, loadCheckpoints, closeDraft]);
 
-  // Handle switching back to main document
+  // Handle switching back to main document (for button click)
   const handleSwitchToMain = async () => {
     closeDraft();
     // Reload main document content
@@ -291,21 +298,21 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
     }
   };
 
-  // Get current editor content (for creating drafts)
-  const getCurrentContent = () => {
-    if (editor) {
-      return editor.getJSON();
+  // Handle closing file when it's deleted externally
+  const handleCloseDeletedFile = () => {
+    setExternalChange(null);
+    if (activeFilePath) {
+      closeFile(activeFilePath);
     }
-    return null;
   };
 
-  // Expose methods to parent via ref
-  useImperativeHandle(ref, () => ({
-    restoreContent: handleRestoreContent,
-    switchToDraft: handleSwitchToDraft,
-    switchToMain: handleSwitchToMain,
-    getCurrentContent,
-  }), [editor, rootDir, activeFilePath, activeDraftId]);
+  if (!activeFilePath) {
+    return (
+      <div className="flex-1 flex items-center justify-center text-muted-foreground">
+        Select a file to edit
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 flex h-full overflow-hidden">
