@@ -68,11 +68,12 @@ function createWindow() {
       trafficLightPosition: { x: 15, y: 15 },
     }),
     // Windows: hidden titlebar with native overlay controls
+    // Colors match --secondary for light theme, updated dynamically via IPC
     ...(isWindows && {
       titleBarStyle: 'hidden',
       titleBarOverlay: {
-        color: '#ffffff',
-        symbolColor: '#000000',
+        color: '#f1f5f9',
+        symbolColor: '#0f172a',
         height: 40,
       },
     }),

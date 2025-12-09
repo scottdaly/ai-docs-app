@@ -1,6 +1,6 @@
 {
   "name": "midlight",
-  "version": "0.0.11",
+  "version": "0.0.14",
   "description": "A local-first, AI-native editor.",
   "main": "dist-electron/main.js",
   "build": {
@@ -118,6 +118,7 @@
     "zustand": "^4.4.6"
   },
   "devDependencies": {
+    "@electron/windows-sign": "^2.0.2",
     "@tailwindcss/typography": "^0.5.19",
     "@types/diff": "^7.0.2",
     "@types/node": "^20.10.0",
