@@ -1,10 +1,10 @@
 {
   "name": "midlight",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "A local-first, AI-native editor.",
   "main": "dist-electron/main.js",
   "build": {
-    "appId": "com.midlight.app",
+    "appId": "ai.midlight",
     "productName": "Midlight",
     "publish": {
       "provider": "generic",
@@ -26,7 +26,10 @@
       "icon": "build/icon.icns",
       "category": "public.app-category.productivity",
       "hardenedRuntime": true,
-      "gatekeeperAssess": false
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "notarize": true
     },
     "win": {
       "target": [
