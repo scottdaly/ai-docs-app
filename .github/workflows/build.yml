@@ -50,6 +50,19 @@ jobs:
         if: matrix.platform == 'win'
         run: npm run build -- --publish never
 
+      - name: Sign Windows app with Azure Trusted Signing
+        if: matrix.platform == 'win'
+        uses: azure/trusted-signing-action@v0.5.1
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          endpoint: ${{ secrets.AZURE_SIGNING_ENDPOINT }}
+          trusted-signing-account-name: ${{ secrets.AZURE_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ secrets.AZURE_CERTIFICATE_PROFILE }}
+          files-folder: release
+          files-folder-filter: exe
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
