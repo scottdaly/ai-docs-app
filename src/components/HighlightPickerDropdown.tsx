@@ -74,17 +74,6 @@ export function HighlightPickerDropdown({ editor }: HighlightPickerDropdownProps
     localStorage.setItem('recentHighlightColors', JSON.stringify(updated));
   };
 
-  const toggleHighlight = () => {
-    if (isHighlightActive) {
-      // Remove highlight
-      editor.chain().focus().unsetHighlight().run();
-    } else {
-      // Apply highlight with selected color
-      editor.chain().focus().setHighlight({ color: selectedColor }).run();
-      addToRecent(selectedColor);
-    }
-  };
-
   const handleColorChange = (newColor: string) => {
     setSelectedColor(newColor);
     // If highlight is already active, update it
@@ -107,29 +96,21 @@ export function HighlightPickerDropdown({ editor }: HighlightPickerDropdownProps
 
   return (
     <div className="relative inline-flex" ref={dropdownRef}>
-      {/* Main toggle button */}
-      <button
-        onClick={toggleHighlight}
-        className={`p-1.5 rounded-l hover:bg-accent hover:text-accent-foreground transition-colors relative ${
-          isHighlightActive ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
-        }`}
-        title="Toggle Highlight"
-      >
-        <Highlighter size={14} />
-        <div
-          className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-1 rounded-full"
-          style={{ backgroundColor: selectedColor }}
-        />
-      </button>
-
-      {/* Dropdown button */}
+      {/* Combined button with icon and dropdown */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`p-1.5 rounded-r border-l hover:bg-accent hover:text-accent-foreground transition-colors ${
-          isHighlightActive ? 'bg-accent text-accent-foreground border-accent-foreground/20' : 'text-muted-foreground border-border'
+        className={`p-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors relative flex items-center gap-0.5 ${
+          isHighlightActive ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
         }`}
-        title="Change Highlight Color"
+        title="Highlight"
       >
+        <div className="relative">
+          <Highlighter size={14} />
+          <div
+            className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-1 rounded-full"
+            style={{ backgroundColor: selectedColor }}
+          />
+        </div>
         <ChevronDown size={12} />
       </button>
 

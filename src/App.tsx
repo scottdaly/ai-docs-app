@@ -1,7 +1,6 @@
 import { TitleBar } from './components/TitleBar'
 import { Sidebar } from './components/Sidebar'
 import { Editor } from './components/Editor'
-import { TabBar } from './components/TabBar'
 import { SettingsModal } from './components/SettingsModal'
 import { ExportProgress } from './components/ExportProgress'
 import { ImportWizard } from './components/ImportWizard'
@@ -211,7 +210,6 @@ function App() {
             <Sidebar />
             <div className="flex-1 flex flex-col min-w-0 py-2 pr-2 h-full">
               <div className="flex-1 flex flex-col min-w-0 bg-background rounded-xl shadow-sm overflow-hidden">
-                <TabBar />
                 {activeFile?.category === 'viewable' ? (
                   <ImagePreview
                     filePath={activeFile.path}

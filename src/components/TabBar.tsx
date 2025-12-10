@@ -3,7 +3,11 @@ import { useFileSystem } from '../store/useFileSystem';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { FileNode } from '../shared/types';
 
-export function TabBar() {
+interface TabBarProps {
+  inTitleBar?: boolean;
+}
+
+export function TabBar({ inTitleBar = false }: TabBarProps) {
   const { openFiles, activeFilePath, selectFile, closeFile, createFile, openFile, renameFile, rootDir } = useFileSystem();
   const [renamingPath, setRenamingPath] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
@@ -116,20 +120,20 @@ export function TabBar() {
   const showScrollButtons = canScrollLeft || canScrollRight;
 
   return (
-    <div className="flex items-end w-full bg-muted/50 dark:bg-muted/30 pt-2">
+    <div className={`flex items-center w-full ${inTitleBar ? 'h-full' : 'bg-muted/50 dark:bg-muted/30 pt-2 items-end'}`}>
       {/* Scrollable tabs container */}
-      <div className="relative flex-1 min-w-0">
+      <div className="relative flex-1 min-w-0 h-full">
         {/* Left fade indicator */}
         {canScrollLeft && (
-          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-muted/80 to-transparent pointer-events-none z-10" />
+          <div className={`absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r ${inTitleBar ? 'from-secondary' : 'from-muted/80'} to-transparent pointer-events-none z-10`} />
         )}
         {/* Right fade indicator */}
         {canScrollRight && (
-          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-muted/80 to-transparent pointer-events-none z-10" />
+          <div className={`absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l ${inTitleBar ? 'from-secondary' : 'from-muted/80'} to-transparent pointer-events-none z-10`} />
         )}
         <div
           ref={scrollContainerRef}
-          className="flex items-end overflow-x-auto overflow-y-hidden scrollbar-hide"
+          className={`flex overflow-x-auto overflow-y-hidden scrollbar-hide h-full ${inTitleBar ? 'items-center' : 'items-end'}`}
         >
         {openFiles.map((file, index) => {
               const isActive = file.path === activeFilePath;
@@ -147,10 +151,10 @@ export function TabBar() {
               const showDivider = index > 0 && !isActive && !isPrevActive;
 
               return (
-                <div key={file.path} className="flex items-end">
+                <div key={file.path} className={`flex ${inTitleBar ? 'items-center h-full' : 'items-end'}`}>
                   {/* Divider between inactive tabs */}
                   {showDivider && (
-                    <div className="w-px h-5 bg-muted-foreground/30 mb-2" />
+                    <div className={`w-px bg-muted-foreground/30 ${inTitleBar ? 'h-4' : 'h-5 mb-2'}`} />
                   )}
                   <div
                     data-tab-path={file.path}
@@ -158,10 +162,16 @@ export function TabBar() {
                     onDoubleClick={() => handleDoubleClick(file)}
                     title={displayName}
                     className={`
-                      relative flex items-center min-w-[120px] max-w-[200px] h-9 px-3 text-sm select-none cursor-pointer group transition-all rounded-t-lg
-                      ${isActive
-                        ? 'bg-background text-foreground font-medium z-20 relative'
-                        : 'bg-transparent border-transparent text-muted-foreground hover:bg-black/10 dark:hover:bg-white/10 mb-0 border-b-0'
+                      relative flex items-center min-w-[120px] max-w-[200px] px-3 text-sm select-none cursor-pointer group transition-all
+                      ${inTitleBar
+                        ? `h-7 rounded-md ${isActive
+                            ? 'bg-background/90 text-foreground font-medium'
+                            : 'text-muted-foreground hover:bg-white/10'
+                          }`
+                        : `h-9 rounded-t-lg ${isActive
+                            ? 'bg-background text-foreground font-medium z-20 relative'
+                            : 'bg-transparent border-transparent text-muted-foreground hover:bg-black/10 dark:hover:bg-white/10 mb-0 border-b-0'
+                          }`
                       }
                     `}
                   >
@@ -229,13 +239,13 @@ export function TabBar() {
 
       {/* Scroll arrows - both on the right */}
       {showScrollButtons && (
-        <div className="flex items-center flex-shrink-0 h-9">
+        <div className={`flex items-center flex-shrink-0 ${inTitleBar ? 'h-full' : 'h-9'}`}>
           <button
             onClick={scrollLeft}
             disabled={!canScrollLeft}
             className={`p-1 rounded transition-colors ${
               canScrollLeft
-                ? 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                ? `text-muted-foreground hover:text-foreground ${inTitleBar ? 'hover:bg-white/10' : 'hover:bg-muted/60'}`
                 : 'text-muted-foreground/30 cursor-default'
             }`}
           >
@@ -246,7 +256,7 @@ export function TabBar() {
             disabled={!canScrollRight}
             className={`p-1 rounded transition-colors ${
               canScrollRight
-                ? 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                ? `text-muted-foreground hover:text-foreground ${inTitleBar ? 'hover:bg-white/10' : 'hover:bg-muted/60'}`
                 : 'text-muted-foreground/30 cursor-default'
             }`}
           >
@@ -256,21 +266,21 @@ export function TabBar() {
       )}
 
       {rootDir && (
-        <div className="flex items-center ml-1 flex-shrink-0 h-9">
+        <div className={`flex items-center ml-1 flex-shrink-0 ${inTitleBar ? 'h-full' : 'h-9'}`}>
           {/* Divider before + button */}
-          <div className="w-px h-5 bg-muted-foreground/30 mr-1" />
+          <div className={`w-px bg-muted-foreground/30 mr-1 ${inTitleBar ? 'h-4' : 'h-5'}`} />
           <button
             onClick={handleCreateDocument}
-            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+            className={`p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors ${inTitleBar ? 'hover:bg-white/10' : 'hover:bg-muted/60'}`}
             title="New Document"
           >
             <Plus size={16} />
           </button>
           {/* Divider between + and folder buttons */}
-          <div className="w-px h-5 bg-muted-foreground/30 mx-0.5" />
+          <div className={`w-px bg-muted-foreground/30 mx-0.5 ${inTitleBar ? 'h-4' : 'h-5'}`} />
           <button
             onClick={handleOpenFile}
-            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+            className={`p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors ${inTitleBar ? 'hover:bg-white/10' : 'hover:bg-muted/60'}`}
             title="Open File"
           >
             <FolderOpen size={16} />

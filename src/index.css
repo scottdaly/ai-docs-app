@@ -419,7 +419,7 @@
   position: absolute;
   top: -2px;
   width: 20px;
-  border-top: 1px solid black;
+  border-top: 2px solid hsl(var(--primary));
   animation: ProseMirror-cursor-blink 1.1s steps(2, start) infinite;
 }
 
@@ -433,12 +433,36 @@
   display: block;
 }
 
-/* Dark mode support for gapcursor */
-.dark .ProseMirror-gapcursor:after,
-.midnight .ProseMirror-gapcursor:after,
-.cyberpunk .ProseMirror-gapcursor:after,
-.forest .ProseMirror-gapcursor:after {
-    border-top-color: white;
+/* Horizontal rule wrapper styles */
+.ProseMirror .hr-wrapper {
+  padding: 0.75em 0;
+  margin: 0.75em 0;
+  cursor: pointer;
+}
+
+.ProseMirror .hr-wrapper hr {
+  border: none;
+  border-top: 1px solid hsl(var(--border));
+  margin: 0;
+  pointer-events: none;
+}
+
+/* Selected horizontal rule wrapper */
+.ProseMirror .hr-wrapper.ProseMirror-selectednode {
+  outline: none;
+}
+
+.ProseMirror .hr-wrapper.ProseMirror-selectednode hr {
+  border-top: 2px solid hsl(var(--primary));
+  outline: 2px solid hsl(var(--primary) / 0.3);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Node selection indicator for non-text nodes (images, etc) */
+.ProseMirror img.ProseMirror-selectednode {
+  outline: 2px solid hsl(var(--primary) / 0.5);
+  outline-offset: 2px;
 }
 
 /* Remove default vertical margins from images */

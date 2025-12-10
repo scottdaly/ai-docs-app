@@ -173,11 +173,17 @@ function FileTreeItem({ node, level = 0, onCreateInFolder, selectedPaths, onSele
     if (!isRenamingRef.current) return; // Already submitted
 
     const trimmedValue = renameValue.trim();
+    const isMarkdownFile = node.type === 'file' && node.name.toLowerCase().endsWith('.md');
+
+    // Get original extension for non-markdown files
+    const originalExt = node.type === 'file' && !isMarkdownFile
+      ? (node.name.includes('.') ? node.name.slice(node.name.lastIndexOf('.')) : '')
+      : '';
 
     // Get the original name without extension for comparison
-    const originalNameWithoutExt = node.type === 'file' && node.name.toLowerCase().endsWith('.md')
+    const originalNameWithoutExt = isMarkdownFile
       ? node.name.slice(0, -3)
-      : node.name;
+      : (originalExt ? node.name.slice(0, -originalExt.length) : node.name);
 
     // If empty or unchanged, just close the rename input (keep original name)
     if (!trimmedValue || trimmedValue === originalNameWithoutExt) {
@@ -187,10 +193,19 @@ function FileTreeItem({ node, level = 0, onCreateInFolder, selectedPaths, onSele
       return;
     }
 
-    // Ensure .md extension for files
-    const finalName = node.type === 'file' && !trimmedValue.toLowerCase().endsWith('.md')
-      ? `${trimmedValue}.md`
-      : trimmedValue;
+    // Determine final name with proper extension
+    let finalName: string;
+    if (isMarkdownFile) {
+      // For markdown files, ensure .md extension
+      finalName = trimmedValue.toLowerCase().endsWith('.md') ? trimmedValue : `${trimmedValue}.md`;
+    } else if (originalExt) {
+      // For other files with extensions, preserve original extension if user didn't provide one
+      const hasExtension = trimmedValue.includes('.');
+      finalName = hasExtension ? trimmedValue : `${trimmedValue}${originalExt}`;
+    } else {
+      // For files without extensions, use as-is
+      finalName = trimmedValue;
+    }
 
     // Check for naming conflicts (case-insensitive)
     const siblingNames = getSiblingNames();
@@ -202,18 +217,33 @@ function FileTreeItem({ node, level = 0, onCreateInFolder, selectedPaths, onSele
 
     isRenamingRef.current = false;
     setRenameError(null);
-    await renameFile(node.path, trimmedValue);
+    await renameFile(node.path, finalName);
     setIsRenaming(false);
   };
 
   // Check if a name would conflict with siblings
   const hasNamingConflict = useCallback((name: string): boolean => {
-    const finalName = node.type === 'file' && !name.toLowerCase().endsWith('.md')
-      ? `${name}.md`
-      : name;
+    const isMarkdownFile = node.type === 'file' && node.name.toLowerCase().endsWith('.md');
+
+    // Get original extension for non-markdown files
+    const originalExt = node.type === 'file' && !isMarkdownFile
+      ? (node.name.includes('.') ? node.name.slice(node.name.lastIndexOf('.')) : '')
+      : '';
+
+    // Determine final name with proper extension
+    let finalName: string;
+    if (isMarkdownFile) {
+      finalName = name.toLowerCase().endsWith('.md') ? name : `${name}.md`;
+    } else if (originalExt) {
+      const hasExtension = name.includes('.');
+      finalName = hasExtension ? name : `${name}${originalExt}`;
+    } else {
+      finalName = name;
+    }
+
     const siblingNames = getSiblingNames();
     return siblingNames.has(finalName.toLowerCase());
-  }, [node.type, getSiblingNames]);
+  }, [node.type, node.name, getSiblingNames]);
 
   const handleBlur = (e: React.FocusEvent) => {
     // Ignore blurs that happen right after starting rename (context menu closing)

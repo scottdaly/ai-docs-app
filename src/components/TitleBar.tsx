@@ -2,6 +2,7 @@ import { useTheme } from '../store/useTheme';
 import { useEffect } from 'react';
 import { getTitleBarOverlayColors } from '../utils/titleBarColors';
 import { WindowsMenu } from './WindowsMenu';
+import { TabBar } from './TabBar';
 import { cn } from '../lib/utils';
 
 // Platform detection (safe for SSR/non-Electron environments)
@@ -66,11 +67,9 @@ export function TitleBar() {
         </div>
       )}
 
-      {/* Centered title */}
-      <div className="flex-1 flex justify-center">
-        <span className="text-xs text-muted-foreground font-medium">
-          Midlight
-        </span>
+      {/* Tab bar in title bar */}
+      <div className="flex-1 min-w-0 app-region-no-drag">
+        <TabBar inTitleBar />
       </div>
     </div>
   );

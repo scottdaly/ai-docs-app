@@ -8,6 +8,10 @@ import { ResizableImage } from './extensions/ResizableImage';
 import { TextColor } from './extensions/TextColor';
 import { TextHighlight } from './extensions/TextHighlight';
 import { CustomCode } from './extensions/CustomCode';
+import { Underline } from './extensions/Underline';
+import Subscript from '@tiptap/extension-subscript';
+import Superscript from '@tiptap/extension-superscript';
+import { ClickableHorizontalRule } from './extensions/ClickableHorizontalRule';
 import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { useFileSystem } from '../store/useFileSystem';
 import { EditorToolbar } from './EditorToolbar';
@@ -73,9 +77,11 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
         },
         code: false,
         heading: {
-          levels: [1, 2, 3],
+          levels: [1, 2, 3, 4, 5],
         },
+        horizontalRule: false,
       }),
+      ClickableHorizontalRule,
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
@@ -92,6 +98,9 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
       ResizableImage.configure({
         allowBase64: true,
       }),
+      Underline,
+      Subscript,
+      Superscript,
     ],
 
     editorProps: {

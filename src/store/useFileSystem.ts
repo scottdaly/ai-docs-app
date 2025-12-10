@@ -477,8 +477,8 @@ export const useFileSystem = create<FileSystemState>()(
         }
 
         try {
-          // Ensure newName ends with .md
-          const finalName = newName.endsWith('.md') ? newName : `${newName}.md`;
+          // Use the provided name as-is (caller handles extension logic)
+          const finalName = newName;
 
           // Build new path in the same directory as the old file
           const separator = oldPath.includes('\\') ? '\\' : '/';

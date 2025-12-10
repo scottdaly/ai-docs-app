@@ -144,11 +144,11 @@ export function FontSizeDropdown({ editor }: FontSizeDropdownProps) {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1 h-8 px-2 text-sm font-medium rounded hover:bg-accent hover:text-accent-foreground transition-colors min-w-[70px] justify-between"
+        className="flex items-center gap-1 h-8 px-2 text-sm font-medium rounded hover:bg-accent hover:text-accent-foreground transition-colors w-[60px] justify-between"
         title="Font Size"
       >
-        <span className="truncate">{currentSize}</span>
-        <ChevronDown size={14} className="opacity-50" />
+        <span>{currentSize}</span>
+        <ChevronDown size={14} className="opacity-50 shrink-0" />
       </button>
 
       {isOpen && (
