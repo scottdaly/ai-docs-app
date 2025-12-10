@@ -188,6 +188,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   importNotion: (analysisJson: string, destPath: string, optionsJson: string) =>
     ipcRenderer.invoke('import:notion', analysisJson, destPath, optionsJson),
 
+  // Cancel active import operation
+  importCancel: () =>
+    ipcRenderer.invoke('import:cancel'),
+
   // Listen for import progress updates
   onImportProgress: (callback: (progress: any) => void) => {
     const subscription = (_: any, progress: any) => callback(progress);

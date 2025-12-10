@@ -18,6 +18,12 @@ import {
   NotionImportOptions,
   validatePath,
 } from './services'
+import {
+  validateAndParseJSON,
+  validateImportAnalysis,
+  validateImportOptions,
+  IMPORT_CONFIG,
+} from './services/importSecurity'
 import { initAutoUpdater, stopAutoUpdater } from './services/autoUpdateService'
 
 // Active file watchers by workspace root
@@ -1494,6 +1500,19 @@ ipcMain.handle('import:analyzeObsidian', async (_, vaultPath: string) => {
     }
 });
 
+// Track active import operations for cancellation
+let activeImportController: AbortController | null = null;
+
+// Cancel active import
+ipcMain.handle('import:cancel', async () => {
+    if (activeImportController) {
+        activeImportController.abort();
+        activeImportController = null;
+        return { success: true };
+    }
+    return { success: false, error: 'No active import to cancel' };
+});
+
 // Import from Obsidian vault
 ipcMain.handle('import:obsidian', async (_, analysisJson: string, destPath: string, optionsJson: string) => {
     // Validate destination path
@@ -1502,38 +1521,55 @@ ipcMain.handle('import:obsidian', async (_, analysisJson: string, destPath: stri
         return { success: false, error: destValidation.error };
     }
 
-    // Validate JSON inputs
-    if (!analysisJson || typeof analysisJson !== 'string') {
-        return { success: false, error: 'Invalid analysis data' };
+    // Parse and validate analysis JSON with size limit
+    const analysisParseResult = validateAndParseJSON<unknown>(analysisJson, IMPORT_CONFIG.MAX_JSON_INPUT_SIZE);
+    if (!analysisParseResult.success) {
+        return { success: false, error: `Invalid analysis data: ${analysisParseResult.error}` };
     }
-    if (!optionsJson || typeof optionsJson !== 'string') {
-        return { success: false, error: 'Invalid options data' };
+
+    // Validate analysis schema
+    const analysisValidation = validateImportAnalysis(analysisParseResult.data);
+    if (!analysisValidation.valid) {
+        return { success: false, error: `Invalid analysis structure: ${analysisValidation.error}` };
+    }
+
+    // Parse and validate options JSON
+    const optionsParseResult = validateAndParseJSON<unknown>(optionsJson, IMPORT_CONFIG.MAX_JSON_INPUT_SIZE);
+    if (!optionsParseResult.success) {
+        return { success: false, error: `Invalid options data: ${optionsParseResult.error}` };
+    }
+
+    // Validate options schema
+    const optionsValidation = validateImportOptions(optionsParseResult.data);
+    if (!optionsValidation.valid) {
+        return { success: false, error: `Invalid options structure: ${optionsValidation.error}` };
     }
 
     try {
-        const analysis = JSON.parse(analysisJson);
-        const options: ImportOptions = JSON.parse(optionsJson);
+        // Cast to expected types - structure has been validated above
+        const analysis = analysisValidation.data as unknown as Parameters<typeof importObsidianVault>[0];
+        const options = optionsValidation.data as ImportOptions;
 
-        // Validate analysis has source path and it exists
-        if (analysis.sourcePath) {
-            const sourceValidation = validatePath(analysis.sourcePath);
-            if (!sourceValidation.valid) {
-                return { success: false, error: 'Invalid source path in analysis' };
-            }
-        }
+        // Create abort controller for cancellation support
+        activeImportController = new AbortController();
+        const signal = activeImportController.signal;
 
         const result = await importObsidianVault(
             analysis,
             destPath,
-            options,
+            { ...options, signal },
             (progress: ImportProgress) => {
                 // Send progress updates to renderer
                 win?.webContents.send('import-progress', progress);
             }
         );
 
+        // Clear the controller after completion
+        activeImportController = null;
+
         return { success: true, result };
     } catch (error) {
+        activeImportController = null;
         console.error('Failed to import Obsidian vault:', error);
         return { success: false, error: String(error) };
     }
@@ -1564,38 +1600,55 @@ ipcMain.handle('import:notion', async (_, analysisJson: string, destPath: string
         return { success: false, error: destValidation.error };
     }
 
-    // Validate JSON inputs
-    if (!analysisJson || typeof analysisJson !== 'string') {
-        return { success: false, error: 'Invalid analysis data' };
+    // Parse and validate analysis JSON with size limit
+    const analysisParseResult = validateAndParseJSON<unknown>(analysisJson, IMPORT_CONFIG.MAX_JSON_INPUT_SIZE);
+    if (!analysisParseResult.success) {
+        return { success: false, error: `Invalid analysis data: ${analysisParseResult.error}` };
     }
-    if (!optionsJson || typeof optionsJson !== 'string') {
-        return { success: false, error: 'Invalid options data' };
+
+    // Validate analysis schema
+    const analysisValidation = validateImportAnalysis(analysisParseResult.data);
+    if (!analysisValidation.valid) {
+        return { success: false, error: `Invalid analysis structure: ${analysisValidation.error}` };
+    }
+
+    // Parse and validate options JSON
+    const optionsParseResult = validateAndParseJSON<unknown>(optionsJson, IMPORT_CONFIG.MAX_JSON_INPUT_SIZE);
+    if (!optionsParseResult.success) {
+        return { success: false, error: `Invalid options data: ${optionsParseResult.error}` };
+    }
+
+    // Validate options schema
+    const optionsValidation = validateImportOptions(optionsParseResult.data);
+    if (!optionsValidation.valid) {
+        return { success: false, error: `Invalid options structure: ${optionsValidation.error}` };
     }
 
     try {
-        const analysis = JSON.parse(analysisJson);
-        const options: NotionImportOptions = JSON.parse(optionsJson);
+        // Cast to expected types - structure has been validated above
+        const analysis = analysisValidation.data as unknown as Parameters<typeof importNotionExport>[0];
+        const options = optionsValidation.data as NotionImportOptions;
 
-        // Validate analysis has source path
-        if (analysis.sourcePath) {
-            const sourceValidation = validatePath(analysis.sourcePath);
-            if (!sourceValidation.valid) {
-                return { success: false, error: 'Invalid source path in analysis' };
-            }
-        }
+        // Create abort controller for cancellation support
+        activeImportController = new AbortController();
+        const signal = activeImportController.signal;
 
         const result = await importNotionExport(
             analysis,
             destPath,
-            options,
+            { ...options, signal },
             (progress: ImportProgress) => {
                 // Send progress updates to renderer
                 win?.webContents.send('import-progress', progress);
             }
         );
 
+        // Clear the controller after completion
+        activeImportController = null;
+
         return { success: true, result };
     } catch (error) {
+        activeImportController = null;
         console.error('Failed to import Notion export:', error);
         return { success: false, error: String(error) };
     }

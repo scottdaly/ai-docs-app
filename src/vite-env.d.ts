@@ -444,6 +444,9 @@ interface IElectronAPI {
   // Import from Notion export
   importNotion: (analysisJson: string, destPath: string, optionsJson: string) => Promise<ImportResultResponse>;
 
+  // Cancel active import
+  importCancel: () => Promise<{ success: boolean; error?: string }>;
+
   // --- Auto-Update APIs ---
 
   // Check for updates manually

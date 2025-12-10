@@ -1,6 +1,27 @@
 import fs from 'node:fs/promises';
 import { Stats } from 'node:fs';
 import path from 'node:path';
+import pLimit from 'p-limit';
+
+// Import security utilities
+import {
+  IMPORT_CONFIG,
+  sanitizeFilename,
+  sanitizeRelativePath as secureSanitizeRelativePath,
+  isPathSafe as secureIsPathSafe,
+  validatePath as secureValidatePath,
+  sanitizeCSVCell,
+  formatUserError,
+  isExternalUrl,
+  isDangerousScheme,
+} from './importSecurity';
+
+// Import transaction for atomic operations
+import { ImportTransaction, validateDiskSpace } from './importTransaction';
+
+// Re-export security functions for backward compatibility
+export { IMPORT_CONFIG } from './importSecurity';
+export { ImportTransaction, validateDiskSpace } from './importTransaction';
 
 // Types for import analysis and operations
 export type ImportSourceType = 'obsidian' | 'notion' | 'generic';
@@ -26,6 +47,9 @@ export interface ImportAnalysis {
 
   // File list for import
   filesToImport: ImportFileInfo[];
+
+  // Access warnings (files/folders that couldn't be read)
+  accessWarnings?: Array<{ path: string; message: string }>;
 }
 
 export interface ImportFileInfo {
@@ -48,6 +72,8 @@ export interface ImportOptions {
   preserveFolderStructure: boolean;
   skipEmptyPages: boolean;
   createMidlightFiles: boolean;
+  /** AbortSignal for cancellation support */
+  signal?: AbortSignal;
 }
 
 export interface ImportProgress {
@@ -67,7 +93,7 @@ export interface ImportError {
 export interface ImportWarning {
   file: string;
   message: string;
-  type: 'broken_link' | 'dataview_removed' | 'unsupported_feature';
+  type: 'broken_link' | 'dataview_removed' | 'unsupported_feature' | 'file_too_large';
 }
 
 export interface ImportResult {
@@ -83,14 +109,14 @@ export interface ImportResult {
 // Note: These patterns are designed to be resistant to ReDoS attacks
 const WIKI_LINK_REGEX = /(!?)\[\[([^\]|#^]+)(?:#([^\]|^]+))?(?:\^([^\]|]+))?(?:\|([^\]]+))?\]\]/g;
 const FRONT_MATTER_REGEX = /^---\n([\s\S]*?)\n---\n?/;
-// Fixed: Use [^\n]* instead of .* to prevent backtracking across lines
-const CALLOUT_REGEX = /^>\s*\[!(\w+)\]([+-])?(?:\s+([^\n]*))?\n((?:>[^\n]*\n?)*)/gm;
-// Fixed: Limit dataview block size to prevent ReDoS
-const DATAVIEW_REGEX = /```dataview\n[^`]{0,10000}?```/g;
-const DATAVIEW_INLINE_REGEX = /`=[^`]{0,1000}?`/g;
+// FIXED ReDoS: Added {0,500} limit to prevent catastrophic backtracking
+const CALLOUT_REGEX = /^>\s*\[!(\w+)\]([+-])?(?:\s+([^\n]*))?\n((?:>[^\n]*\n?){0,500})/gm;
+// FIXED ReDoS: Limit dataview block size to prevent catastrophic backtracking
+const DATAVIEW_REGEX = new RegExp(`\`\`\`dataview\\n[^\`]{0,${IMPORT_CONFIG.MAX_DATAVIEW_BLOCK_SIZE}}?\`\`\``, 'g');
+const DATAVIEW_INLINE_REGEX = new RegExp(`\`=[^\`]{0,${IMPORT_CONFIG.MAX_INLINE_DATAVIEW_SIZE}}?\``, 'g');
 
-// Maximum content size to process (10MB)
-const MAX_CONTENT_SIZE = 10 * 1024 * 1024;
+// Use centralized config for max content size
+const MAX_CONTENT_SIZE = IMPORT_CONFIG.MAX_CONTENT_SIZE;
 
 // Image extensions for attachment detection
 const IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp', '.ico']);
@@ -99,58 +125,29 @@ const ATTACHMENT_EXTENSIONS = new Set([...IMAGE_EXTENSIONS, '.pdf', '.mp3', '.mp
 /**
  * Sanitize a relative path to prevent path traversal attacks
  * Removes '..' segments, normalizes slashes, and ensures the path stays relative
+ * @deprecated Use secureSanitizeRelativePath from importSecurity.ts for enhanced protection
  */
 export function sanitizeRelativePath(relativePath: string): string {
-  // Normalize path separators
-  let sanitized = relativePath.replace(/\\/g, '/');
-
-  // Split into segments and filter out dangerous parts
-  const segments = sanitized.split('/').filter(segment => {
-    // Remove empty segments, current dir, and parent dir references
-    if (!segment || segment === '.' || segment === '..') {
-      return false;
-    }
-    // Remove segments that could be null bytes or other tricks
-    if (segment.includes('\0')) {
-      return false;
-    }
-    return true;
-  });
-
-  // Rejoin the path
-  return segments.join('/');
+  // Delegate to the enhanced secure version
+  return secureSanitizeRelativePath(relativePath);
 }
 
 /**
  * Validate that a destination path is safely within the target directory
+ * @deprecated Use secureIsPathSafe from importSecurity.ts for enhanced protection
  */
 export function isPathSafe(destPath: string, basePath: string): boolean {
-  const normalizedDest = path.normalize(path.resolve(destPath));
-  const normalizedBase = path.normalize(path.resolve(basePath));
-
-  // Check that the destination starts with the base path
-  return normalizedDest.startsWith(normalizedBase + path.sep) || normalizedDest === normalizedBase;
+  // Delegate to the enhanced secure version
+  return secureIsPathSafe(destPath, basePath);
 }
 
 /**
  * Validate and sanitize a user-provided path
+ * @deprecated Use secureValidatePath from importSecurity.ts for enhanced protection
  */
 export function validatePath(inputPath: string): { valid: boolean; error?: string } {
-  if (!inputPath || typeof inputPath !== 'string') {
-    return { valid: false, error: 'Path must be a non-empty string' };
-  }
-
-  // Check for null bytes
-  if (inputPath.includes('\0')) {
-    return { valid: false, error: 'Path contains invalid characters' };
-  }
-
-  // Check path length (Windows MAX_PATH is 260, but we'll be generous)
-  if (inputPath.length > 1000) {
-    return { valid: false, error: 'Path is too long' };
-  }
-
-  return { valid: true };
+  // Delegate to the enhanced secure version
+  return secureValidatePath(inputPath);
 }
 
 /**
@@ -181,22 +178,35 @@ export async function detectSourceType(folderPath: string): Promise<ImportSource
 }
 
 /**
- * Recursively get all files in a directory
- * Handles errors gracefully for individual files/directories
+ * Result from getAllFiles including any access errors encountered
+ */
+interface GetAllFilesResult {
+  files: { path: string; relativePath: string; stat: Stats }[];
+  accessErrors: { path: string; message: string }[];
+}
+
+/**
+ * Recursively get all files in a directory.
+ * Handles errors gracefully and collects them for reporting to user.
  */
 async function getAllFiles(
   dirPath: string,
   basePath: string,
-  skipFolders: Set<string> = new Set(['.obsidian', '.git', '.trash', 'node_modules'])
-): Promise<{ path: string; relativePath: string; stat: Stats }[]> {
-  const results: { path: string; relativePath: string; stat: Stats }[] = [];
+  skipFolders: Set<string> = new Set(['.obsidian', '.git', '.trash', 'node_modules']),
+  accessErrors: { path: string; message: string }[] = []
+): Promise<GetAllFilesResult> {
+  const files: { path: string; relativePath: string; stat: Stats }[] = [];
 
   let entries;
   try {
     entries = await fs.readdir(dirPath, { withFileTypes: true });
   } catch (error) {
-    console.warn(`Failed to read directory ${dirPath}:`, error);
-    return results;
+    const { message } = formatUserError(error);
+    accessErrors.push({
+      path: path.relative(basePath, dirPath) || dirPath,
+      message: `Cannot access directory: ${message}`
+    });
+    return { files, accessErrors };
   }
 
   for (const entry of entries) {
@@ -206,20 +216,24 @@ async function getAllFiles(
     try {
       if (entry.isDirectory()) {
         if (!skipFolders.has(entry.name) && !entry.name.startsWith('.')) {
-          const subFiles = await getAllFiles(fullPath, basePath, skipFolders);
-          results.push(...subFiles);
+          const subResult = await getAllFiles(fullPath, basePath, skipFolders, accessErrors);
+          files.push(...subResult.files);
         }
       } else {
         const stat = await fs.stat(fullPath);
-        results.push({ path: fullPath, relativePath, stat });
+        files.push({ path: fullPath, relativePath, stat });
       }
     } catch (error) {
-      // Log but continue - don't fail the whole operation for one bad file
-      console.warn(`Failed to process ${fullPath}:`, error);
+      // Collect error but continue - don't fail for one bad file
+      const { message } = formatUserError(error);
+      accessErrors.push({
+        path: relativePath,
+        message: `Cannot access file: ${message}`
+      });
     }
   }
 
-  return results;
+  return { files, accessErrors };
 }
 
 /**
@@ -284,11 +298,17 @@ export async function analyzeObsidianVault(vaultPath: string): Promise<ImportAna
     untitledPages: [],
     emptyPages: [],
     filesToImport: [],
+    accessWarnings: [],
   };
 
   try {
-    const allFiles = await getAllFiles(vaultPath, vaultPath);
+    const { files: allFiles, accessErrors } = await getAllFiles(vaultPath, vaultPath);
     analysis.totalFiles = allFiles.length;
+
+    // Add any access errors as warnings
+    if (accessErrors.length > 0) {
+      analysis.accessWarnings = accessErrors;
+    }
 
     // Count folders
     const folderSet = new Set<string>();
@@ -373,11 +393,12 @@ export async function analyzeObsidianVault(vaultPath: string): Promise<ImportAna
 }
 
 /**
- * Convert wiki-links to standard markdown links
+ * Convert wiki-links to standard markdown links.
+ * Uses FileMapIndex for O(1) case-insensitive lookups instead of O(n) iteration.
  */
 export function convertWikiLinks(
   content: string,
-  fileMap: Map<string, string> // maps original names to new relative paths
+  fileMap: FileMapIndex // maps original names to new relative paths with case-insensitive support
 ): { content: string; convertedCount: number; brokenLinks: string[] } {
   // Skip processing for very large content
   if (content.length > MAX_CONTENT_SIZE) {
@@ -398,19 +419,13 @@ export function convertWikiLinks(
     const ext = path.extname(target).toLowerCase();
     const isImage = IMAGE_EXTENSIONS.has(ext) || (ext === '' && isEmbed);
 
-    // Try to find the target in the file map
-    let targetPath: string | undefined = fileMap.get(target) || fileMap.get(target + '.md');
-
-    if (!targetPath) {
-      // Try case-insensitive search
-      for (const [key, value] of fileMap.entries()) {
-        if (key.toLowerCase() === target.toLowerCase() ||
-            key.toLowerCase() === (target + '.md').toLowerCase()) {
-          targetPath = value;
-          break;
-        }
-      }
-    }
+    // Try to find the target in the file map - O(1) lookups
+    // First try exact match, then case-insensitive
+    let targetPath: string | undefined =
+      fileMap.exact.get(target) ||
+      fileMap.exact.get(target + '.md') ||
+      fileMap.lowercase.get(target.toLowerCase()) ||
+      fileMap.lowercase.get((target + '.md').toLowerCase());
 
     // If no targetPath found, create a fallback path
     const resolvedPath: string = targetPath || (target.includes('.') ? target : target + '.md');
@@ -593,31 +608,52 @@ export function parseFrontMatter(content: string): {
 }
 
 /**
- * Build a file map for wiki-link resolution
+ * File map with both exact and case-insensitive lookups.
+ * The exact map provides O(1) lookup for case-sensitive matches.
+ * The lowercase map provides O(1) lookup for case-insensitive matches.
  */
-export function buildFileMap(files: ImportFileInfo[]): Map<string, string> {
-  const fileMap = new Map<string, string>();
+export interface FileMapIndex {
+  exact: Map<string, string>;
+  lowercase: Map<string, string>;
+}
+
+/**
+ * Build a file map for wiki-link resolution with case-insensitive support.
+ * Returns both exact and lowercase maps for O(1) lookups in both modes.
+ */
+export function buildFileMap(files: ImportFileInfo[]): FileMapIndex {
+  const exact = new Map<string, string>();
+  const lowercase = new Map<string, string>();
 
   for (const file of files) {
     if (file.type === 'markdown' || file.type === 'attachment') {
       // Map by filename without extension
       const nameWithoutExt = file.name.replace(/\.[^.]+$/, '');
-      fileMap.set(nameWithoutExt, file.relativePath);
+      exact.set(nameWithoutExt, file.relativePath);
+      lowercase.set(nameWithoutExt.toLowerCase(), file.relativePath);
 
       // Also map by full filename
-      fileMap.set(file.name, file.relativePath);
+      exact.set(file.name, file.relativePath);
+      lowercase.set(file.name.toLowerCase(), file.relativePath);
 
       // Map by relative path without extension
       const relativeWithoutExt = file.relativePath.replace(/\.[^.]+$/, '');
-      fileMap.set(relativeWithoutExt, file.relativePath);
+      exact.set(relativeWithoutExt, file.relativePath);
+      lowercase.set(relativeWithoutExt.toLowerCase(), file.relativePath);
     }
   }
 
-  return fileMap;
+  return { exact, lowercase };
 }
 
 /**
  * Import files from an Obsidian vault
+ *
+ * Features:
+ * - Atomic operations with rollback on failure
+ * - Cancellation support via AbortSignal
+ * - Parallel file processing for better performance
+ * - Enhanced error handling with user-friendly messages
  */
 export async function importObsidianVault(
   analysis: ImportAnalysis,
@@ -643,192 +679,247 @@ export async function importObsidianVault(
   const totalSteps = markdownFiles.length + (options.copyAttachments ? attachmentFiles.length : 0);
   let currentStep = 0;
 
-  // Phase 1: Convert and copy markdown files
-  onProgress({
-    phase: 'converting',
-    current: 0,
-    total: markdownFiles.length,
-    currentFile: '',
-    errors: [],
-    warnings: [],
-  });
+  // Throttled progress reporting to reduce IPC overhead
+  let lastProgressTime = 0;
 
-  for (const file of markdownFiles) {
-    currentStep++;
-
-    // Skip empty pages if option is set
-    if (options.skipEmptyPages && analysis.emptyPages.includes(file.relativePath)) {
-      continue;
-    }
-
-    onProgress({
-      phase: 'converting',
-      current: currentStep,
-      total: totalSteps,
-      currentFile: file.relativePath,
-      errors: result.errors,
-      warnings: result.warnings,
-    });
-
-    try {
-      let content = await fs.readFile(file.sourcePath, 'utf-8');
-      let metadata: Record<string, any> = {};
-
-      // Parse and optionally store front-matter
-      if (options.importFrontMatter) {
-        const { frontMatter, content: contentWithoutFM } = parseFrontMatter(content);
-        if (frontMatter) {
-          metadata = { ...metadata, frontMatter };
-          content = contentWithoutFM;
-        }
-      }
-
-      // Convert wiki-links
-      if (options.convertWikiLinks && file.hasWikiLinks) {
-        const { content: converted, convertedCount, brokenLinks } = convertWikiLinks(content, fileMap);
-        content = converted;
-        result.linksConverted += convertedCount;
-
-        for (const broken of brokenLinks) {
-          result.warnings.push({
-            file: file.relativePath,
-            message: `Broken link: [[${broken}]]`,
-            type: 'broken_link',
-          });
-        }
-      }
-
-      // Convert callouts
-      if (options.convertCallouts && file.hasCallouts) {
-        const { content: converted } = convertCallouts(content);
-        content = converted;
-      }
-
-      // Remove dataview blocks
-      if (file.hasDataview) {
-        const { content: converted, removedCount } = removeDataview(content);
-        content = converted;
-
-        if (removedCount > 0) {
-          result.warnings.push({
-            file: file.relativePath,
-            message: `${removedCount} Dataview block(s) removed`,
-            type: 'dataview_removed',
-          });
-        }
-      }
-
-      // Determine destination path with sanitization
-      const sanitizedRelativePath = sanitizeRelativePath(file.relativePath);
-      const sanitizedName = path.basename(file.name); // Ensure no path traversal in filename
-      const destFilePath = options.preserveFolderStructure
-        ? path.join(destPath, sanitizedRelativePath)
-        : path.join(destPath, sanitizedName);
-
-      // Validate the destination is within the target directory
-      if (!isPathSafe(destFilePath, destPath)) {
-        result.errors.push({
-          file: file.relativePath,
-          message: 'Invalid file path - path traversal detected',
-        });
-        continue;
-      }
-
-      // Create destination directory if needed
-      const destDir = path.dirname(destFilePath);
-      await fs.mkdir(destDir, { recursive: true });
-
-      // Write the converted markdown file
-      await fs.writeFile(destFilePath, content, 'utf-8');
-
-      // Create .md.midlight file if option is set
-      if (options.createMidlightFiles) {
-        const midlightPath = destFilePath + '.midlight';
-        const midlightContent = JSON.stringify({
-          version: 1,
-          created: new Date().toISOString(),
-          importedFrom: 'obsidian',
-          originalPath: file.relativePath,
-          metadata,
-        }, null, 2);
-        await fs.writeFile(midlightPath, midlightContent, 'utf-8');
-      }
-
-      result.filesImported++;
-    } catch (error) {
-      result.errors.push({
-        file: file.relativePath,
-        message: String(error),
-      });
-    }
-  }
-
-  // Phase 2: Copy attachments
-  if (options.copyAttachments) {
-    onProgress({
-      phase: 'copying',
-      current: currentStep,
-      total: totalSteps,
-      currentFile: '',
-      errors: result.errors,
-      warnings: result.warnings,
-    });
-
-    for (const file of attachmentFiles) {
-      currentStep++;
-
+  const reportProgress = (phase: ImportProgress['phase'], currentFile: string, force = false) => {
+    const now = Date.now();
+    if (force || now - lastProgressTime >= IMPORT_CONFIG.PROGRESS_THROTTLE_MS) {
+      lastProgressTime = now;
       onProgress({
-        phase: 'copying',
+        phase,
         current: currentStep,
         total: totalSteps,
-        currentFile: file.relativePath,
-        errors: result.errors,
-        warnings: result.warnings,
+        currentFile,
+        // Clone arrays to prevent mutation issues
+        errors: [...result.errors],
+        warnings: [...result.warnings],
       });
-
-      try {
-        // Sanitize paths for attachments too
-        const sanitizedRelativePath = sanitizeRelativePath(file.relativePath);
-        const sanitizedName = path.basename(file.name);
-        const destFilePath = options.preserveFolderStructure
-          ? path.join(destPath, sanitizedRelativePath)
-          : path.join(destPath, 'attachments', sanitizedName);
-
-        // Validate the destination is within the target directory
-        if (!isPathSafe(destFilePath, destPath)) {
-          result.errors.push({
-            file: file.relativePath,
-            message: 'Invalid file path - path traversal detected',
-          });
-          continue;
-        }
-
-        const destDir = path.dirname(destFilePath);
-        await fs.mkdir(destDir, { recursive: true });
-
-        await fs.copyFile(file.sourcePath, destFilePath);
-        result.attachmentsCopied++;
-      } catch (error) {
-        result.errors.push({
-          file: file.relativePath,
-          message: String(error),
-        });
-      }
     }
+  };
+
+  // Check for cancellation
+  const checkCancelled = () => {
+    if (options.signal?.aborted) {
+      throw new Error('Import cancelled by user');
+    }
+  };
+
+  // Pre-flight disk space check
+  const totalSize = analysis.filesToImport.reduce((sum, f) => sum + f.size, 0);
+  const spaceCheck = await validateDiskSpace(destPath, totalSize);
+  if (!spaceCheck.valid) {
+    result.errors.push({ file: '', message: spaceCheck.error || 'Insufficient disk space' });
+    result.success = false;
+    return result;
   }
 
-  // Phase 3: Finalize
-  onProgress({
-    phase: 'complete',
-    current: totalSteps,
-    total: totalSteps,
-    currentFile: '',
-    errors: result.errors,
-    warnings: result.warnings,
-  });
+  // Create transaction for atomic operations
+  const transaction = new ImportTransaction(destPath);
 
-  result.success = result.errors.length === 0;
-  return result;
+  try {
+    await transaction.initialize();
+    checkCancelled();
+
+    // Phase 1: Convert and copy markdown files
+    reportProgress('converting', '', true);
+
+    // Process markdown files with concurrency limit
+    const limit = pLimit(IMPORT_CONFIG.PARALLEL_BATCH_SIZE);
+    const mdProcessingErrors: Array<{ file: string; error: unknown }> = [];
+
+    const mdTasks = markdownFiles.map(file => limit(async () => {
+      checkCancelled();
+      currentStep++;
+
+      // Skip empty pages if option is set
+      if (options.skipEmptyPages && analysis.emptyPages.includes(file.relativePath)) {
+        return;
+      }
+
+      reportProgress('converting', file.relativePath);
+
+      try {
+        // Check file size before reading to prevent memory exhaustion
+        if (file.size > IMPORT_CONFIG.MAX_CONTENT_SIZE) {
+          result.warnings.push({
+            file: file.relativePath,
+            message: `File too large (${Math.round(file.size / 1024 / 1024)}MB) - copying without conversion`,
+            type: 'file_too_large',
+          });
+          // Copy file as-is without processing
+          const sanitizedRelPath = sanitizeRelativePath(file.relativePath);
+          const safeName = sanitizeFilename(file.name);
+          const relativeDestPath = options.preserveFolderStructure ? sanitizedRelPath : safeName;
+          await transaction.stageCopy(file.sourcePath, relativeDestPath);
+          result.filesImported++;
+          return;
+        }
+
+        let content = await fs.readFile(file.sourcePath, 'utf-8');
+        let metadata: Record<string, unknown> = {};
+
+        // Parse and optionally store front-matter
+        if (options.importFrontMatter) {
+          const { frontMatter, content: contentWithoutFM } = parseFrontMatter(content);
+          if (frontMatter) {
+            metadata = { ...metadata, frontMatter };
+            content = contentWithoutFM;
+          }
+        }
+
+        // Convert wiki-links
+        if (options.convertWikiLinks && file.hasWikiLinks) {
+          const { content: converted, convertedCount, brokenLinks } = convertWikiLinks(content, fileMap);
+          content = converted;
+          result.linksConverted += convertedCount;
+
+          for (const broken of brokenLinks) {
+            result.warnings.push({
+              file: file.relativePath,
+              message: `Broken link: [[${broken}]]`,
+              type: 'broken_link',
+            });
+          }
+        }
+
+        // Convert callouts
+        if (options.convertCallouts && file.hasCallouts) {
+          const { content: converted } = convertCallouts(content);
+          content = converted;
+        }
+
+        // Remove dataview blocks
+        if (file.hasDataview) {
+          const { content: converted, removedCount } = removeDataview(content);
+          content = converted;
+
+          if (removedCount > 0) {
+            result.warnings.push({
+              file: file.relativePath,
+              message: `${removedCount} Dataview block(s) removed`,
+              type: 'dataview_removed',
+            });
+          }
+        }
+
+        // Determine destination path with sanitization
+        const sanitizedRelPath = sanitizeRelativePath(file.relativePath);
+        const safeName = sanitizeFilename(file.name);
+        const relativeDestPath = options.preserveFolderStructure
+          ? sanitizedRelPath
+          : safeName;
+
+        // Stage the converted markdown file
+        await transaction.stageFile(relativeDestPath, content);
+
+        // Stage .md.midlight file if option is set
+        if (options.createMidlightFiles) {
+          const midlightContent = JSON.stringify({
+            version: 1,
+            created: new Date().toISOString(),
+            importedFrom: 'obsidian',
+            originalPath: file.relativePath,
+            metadata,
+          }, null, 2);
+          await transaction.stageFile(relativeDestPath + '.midlight', midlightContent);
+        }
+
+        result.filesImported++;
+      } catch (error) {
+        mdProcessingErrors.push({ file: file.relativePath, error });
+      }
+    }));
+
+    await Promise.all(mdTasks);
+
+    // Add any processing errors to result
+    for (const { file, error } of mdProcessingErrors) {
+      const { message } = formatUserError(error);
+      result.errors.push({ file, message });
+    }
+
+    checkCancelled();
+
+    // Phase 2: Copy attachments
+    if (options.copyAttachments) {
+      reportProgress('copying', '', true);
+
+      const attachmentErrors: Array<{ file: string; error: unknown }> = [];
+
+      const attachmentTasks = attachmentFiles.map(file => limit(async () => {
+        checkCancelled();
+        currentStep++;
+
+        reportProgress('copying', file.relativePath);
+
+        try {
+          // Sanitize paths for attachments too
+          const sanitizedRelPath = sanitizeRelativePath(file.relativePath);
+          const safeName = sanitizeFilename(file.name);
+          const relativeDestPath = options.preserveFolderStructure
+            ? sanitizedRelPath
+            : path.join('attachments', safeName);
+
+          // Stage the attachment copy
+          await transaction.stageCopy(file.sourcePath, relativeDestPath);
+
+          // Verify large file copies
+          if (file.size > IMPORT_CONFIG.MAX_LARGE_FILE_CHECKSUM) {
+            const stagingPath = path.join(transaction.getStagingDir(), relativeDestPath);
+            const verified = await transaction.verifyCopy(file.sourcePath, stagingPath);
+            if (!verified) {
+              throw new Error('File copy verification failed - checksum mismatch');
+            }
+          }
+
+          result.attachmentsCopied++;
+        } catch (error) {
+          attachmentErrors.push({ file: file.relativePath, error });
+        }
+      }));
+
+      await Promise.all(attachmentTasks);
+
+      // Add attachment errors to result
+      for (const { file, error } of attachmentErrors) {
+        const { message } = formatUserError(error);
+        result.errors.push({ file, message });
+      }
+    }
+
+    checkCancelled();
+
+    // Phase 3: Commit transaction (move files from staging to final location)
+    reportProgress('finalizing', 'Committing files...', true);
+    await transaction.commit();
+
+    // Phase 4: Complete
+    reportProgress('complete', '', true);
+
+    result.success = result.errors.length === 0;
+    return result;
+
+  } catch (error) {
+    // Rollback on any error
+    try {
+      await transaction.rollback();
+    } catch (rollbackError) {
+      console.error('Failed to rollback transaction:', rollbackError);
+    }
+
+    // Check if it was a cancellation
+    if (options.signal?.aborted) {
+      result.errors.push({ file: '', message: 'Import cancelled by user' });
+    } else {
+      const { message } = formatUserError(error);
+      result.errors.push({ file: '', message });
+    }
+
+    result.success = false;
+    reportProgress('complete', '', true);
+    return result;
+  }
 }
 
 // ============================================
@@ -917,8 +1008,8 @@ export function csvToMarkdownTable(csvContent: string): string {
   const headers = rows[0];
   const dataRows = rows.slice(1);
 
-  // Build header row
-  let table = '| ' + headers.join(' | ') + ' |\n';
+  // Build header row (sanitize for formula injection)
+  let table = '| ' + headers.map(h => sanitizeCSVCell(h)).join(' | ') + ' |\n';
 
   // Build separator row
   table += '| ' + headers.map(() => '---').join(' | ') + ' |\n';
@@ -929,7 +1020,8 @@ export function csvToMarkdownTable(csvContent: string): string {
     while (row.length < headers.length) {
       row.push('');
     }
-    table += '| ' + row.map(cell => cell.replace(/\|/g, '\\|')).join(' | ') + ' |\n';
+    // Use sanitizeCSVCell for formula injection protection
+    table += '| ' + row.map(cell => sanitizeCSVCell(cell)).join(' | ') + ' |\n';
   }
 
   return table;
@@ -967,7 +1059,8 @@ function parseCSVLine(line: string): string[] {
 }
 
 /**
- * Rebuild internal links in content after filenames have been changed
+ * Rebuild internal links in content after filenames have been changed.
+ * Also validates URL schemes to prevent XSS attacks.
  */
 export function rebuildNotionLinks(
   content: string,
@@ -980,11 +1073,24 @@ export function rebuildNotionLinks(
 
   const updatedContent = content.replace(linkRegex, (match, text, href) => {
     // Decode the href to get the original filename
-    const decoded = decodeURIComponent(href);
+    let decoded: string;
+    try {
+      decoded = decodeURIComponent(href);
+    } catch {
+      // Invalid URL encoding, keep original
+      return match;
+    }
 
-    // Check if this is an internal link (relative path)
-    if (decoded.startsWith('http://') || decoded.startsWith('https://') || decoded.startsWith('mailto:')) {
-      return match; // External link, don't modify
+    // First check for dangerous schemes (javascript:, data:, vbscript:, file:)
+    // This must come before the external URL check
+    if (isDangerousScheme(decoded)) {
+      // Replace dangerous links with safe placeholder
+      return `[${text}](#dangerous-link-removed)`;
+    }
+
+    // Check if this is a safe external URL (http:, https:, mailto:)
+    if (isExternalUrl(decoded)) {
+      return match; // Safe external link, don't modify
     }
 
     // Extract just the filename from the path
@@ -1027,11 +1133,17 @@ export async function analyzeNotionExport(exportPath: string): Promise<NotionAna
     filesToImport: [],
     csvDatabases: 0,
     filesWithUUIDs: 0,
+    accessWarnings: [],
   };
 
   try {
-    const allFiles = await getAllFiles(exportPath, exportPath, new Set(['.git', 'node_modules']));
+    const { files: allFiles, accessErrors } = await getAllFiles(exportPath, exportPath, new Set(['.git', 'node_modules']));
     analysis.totalFiles = allFiles.length;
+
+    // Add any access errors as warnings
+    if (accessErrors.length > 0) {
+      analysis.accessWarnings = accessErrors;
+    }
 
     // Count folders
     const folderSet = new Set<string>();
@@ -1123,6 +1235,12 @@ export async function analyzeNotionExport(exportPath: string): Promise<NotionAna
 
 /**
  * Import files from a Notion export
+ *
+ * Features:
+ * - Atomic operations with rollback on failure
+ * - Cancellation support via AbortSignal
+ * - Parallel file processing for better performance
+ * - Enhanced error handling with user-friendly messages
  */
 export async function importNotionExport(
   analysis: NotionAnalysis,
@@ -1153,284 +1271,303 @@ export async function importNotionExport(
   const totalSteps = markdownFiles.length + csvFiles.length + (options.copyAttachments ? attachmentFiles.length : 0);
   let currentStep = 0;
 
-  // Phase 1: Convert and copy markdown files
-  onProgress({
-    phase: 'converting',
-    current: 0,
-    total: markdownFiles.length,
-    currentFile: '',
-    errors: [],
-    warnings: [],
-  });
+  // Throttled progress reporting to reduce IPC overhead
+  let lastProgressTime = 0;
 
-  // Track file paths for link rebuilding
-  const importedFiles: { path: string; content: string }[] = [];
-
-  for (const file of markdownFiles) {
-    currentStep++;
-
-    // Skip empty pages if option is set
-    if (options.skipEmptyPages && analysis.emptyPages.includes(file.relativePath)) {
-      continue;
-    }
-
-    onProgress({
-      phase: 'converting',
-      current: currentStep,
-      total: totalSteps,
-      currentFile: file.relativePath,
-      errors: result.errors,
-      warnings: result.warnings,
-    });
-
-    try {
-      let content = await fs.readFile(file.sourcePath, 'utf-8');
-      let metadata: Record<string, any> = {};
-
-      // Parse front-matter if option is set
-      if (options.importFrontMatter) {
-        const { frontMatter, content: contentWithoutFM } = parseFrontMatter(content);
-        if (frontMatter) {
-          metadata = { ...metadata, frontMatter };
-          content = contentWithoutFM;
-        }
-      }
-
-      // Determine new filename
-      const newFilename = options.removeUUIDs
-        ? (filenameMap.get(file.name) || file.name)
-        : file.name;
-
-      // Handle "Untitled" pages
-      if (options.untitledHandling === 'number') {
-        // Already handled by conflict resolution in buildNotionFilenameMap
-      }
-
-      // Determine destination path
-      const sanitizedRelativePath = sanitizeRelativePath(
-        options.preserveFolderStructure
-          ? path.join(path.dirname(file.relativePath), newFilename)
-          : newFilename
-      );
-      const destFilePath = path.join(destPath, sanitizedRelativePath);
-
-      // Validate path safety
-      if (!isPathSafe(destFilePath, destPath)) {
-        result.errors.push({
-          file: file.relativePath,
-          message: 'Invalid file path - path traversal detected',
-        });
-        continue;
-      }
-
-      // Create destination directory
-      const destDir = path.dirname(destFilePath);
-      await fs.mkdir(destDir, { recursive: true });
-
-      // Write the markdown file
-      await fs.writeFile(destFilePath, content, 'utf-8');
-
-      // Track for link rebuilding
-      importedFiles.push({ path: destFilePath, content });
-
-      // Create .md.midlight file if option is set
-      if (options.createMidlightFiles) {
-        const midlightPath = destFilePath + '.midlight';
-        const midlightContent = JSON.stringify({
-          version: 1,
-          created: new Date().toISOString(),
-          importedFrom: 'notion',
-          originalPath: file.relativePath,
-          metadata,
-        }, null, 2);
-        await fs.writeFile(midlightPath, midlightContent, 'utf-8');
-      }
-
-      result.filesImported++;
-    } catch (error) {
-      result.errors.push({
-        file: file.relativePath,
-        message: String(error),
-      });
-    }
-  }
-
-  // Phase 1.5: Convert CSV databases to markdown tables
-  if (options.convertCSVToTables) {
-    for (const file of csvFiles) {
-      currentStep++;
-
+  const reportProgress = (phase: ImportProgress['phase'], currentFile: string, force = false) => {
+    const now = Date.now();
+    if (force || now - lastProgressTime >= IMPORT_CONFIG.PROGRESS_THROTTLE_MS) {
+      lastProgressTime = now;
       onProgress({
-        phase: 'converting',
+        phase,
         current: currentStep,
         total: totalSteps,
-        currentFile: file.relativePath,
-        errors: result.errors,
-        warnings: result.warnings,
+        currentFile,
+        // Clone arrays to prevent mutation issues
+        errors: [...result.errors],
+        warnings: [...result.warnings],
       });
+    }
+  };
+
+  // Check for cancellation
+  const checkCancelled = () => {
+    if (options.signal?.aborted) {
+      throw new Error('Import cancelled by user');
+    }
+  };
+
+  // Pre-flight disk space check
+  const totalSize = analysis.filesToImport.reduce((sum, f) => sum + f.size, 0);
+  const spaceCheck = await validateDiskSpace(destPath, totalSize);
+  if (!spaceCheck.valid) {
+    result.errors.push({ file: '', message: spaceCheck.error || 'Insufficient disk space' });
+    result.success = false;
+    return result;
+  }
+
+  // Create transaction for atomic operations
+  const transaction = new ImportTransaction(destPath);
+
+  // Track staged file paths for link rebuilding
+  const stagedFiles: Array<{ relativePath: string; content: string }> = [];
+
+  try {
+    await transaction.initialize();
+    checkCancelled();
+
+    // Process markdown files with concurrency limit
+    const limit = pLimit(IMPORT_CONFIG.PARALLEL_BATCH_SIZE);
+    const processingErrors: Array<{ file: string; error: unknown }> = [];
+
+    // Phase 1: Convert and stage markdown files
+    reportProgress('converting', '', true);
+
+    const mdTasks = markdownFiles.map(file => limit(async () => {
+      checkCancelled();
+      currentStep++;
+
+      // Skip empty pages if option is set
+      if (options.skipEmptyPages && analysis.emptyPages.includes(file.relativePath)) {
+        return;
+      }
+
+      reportProgress('converting', file.relativePath);
 
       try {
-        const csvContent = await fs.readFile(file.sourcePath, 'utf-8');
-        const tableContent = csvToMarkdownTable(csvContent);
-
-        // Determine new filename (change .csv to .md)
-        let newFilename = file.name.replace(/\.csv$/i, '.md');
-        if (options.removeUUIDs) {
-          newFilename = filenameMap.get(file.name)?.replace(/\.csv$/i, '.md') || newFilename;
-        }
+        // Determine new filename (needed for both large file copy and normal processing)
+        const newFilename = options.removeUUIDs
+          ? sanitizeFilename(filenameMap.get(file.name) || file.name)
+          : sanitizeFilename(file.name);
 
         // Determine destination path
-        const sanitizedRelativePath = sanitizeRelativePath(
+        const relativePath = sanitizeRelativePath(
           options.preserveFolderStructure
             ? path.join(path.dirname(file.relativePath), newFilename)
             : newFilename
         );
-        const destFilePath = path.join(destPath, sanitizedRelativePath);
 
-        // Validate path safety
-        if (!isPathSafe(destFilePath, destPath)) {
-          result.errors.push({
+        // Check file size before reading to prevent memory exhaustion
+        if (file.size > IMPORT_CONFIG.MAX_CONTENT_SIZE) {
+          result.warnings.push({
             file: file.relativePath,
-            message: 'Invalid file path - path traversal detected',
+            message: `File too large (${Math.round(file.size / 1024 / 1024)}MB) - copying without conversion`,
+            type: 'file_too_large',
           });
-          continue;
+          // Copy file as-is without processing
+          await transaction.stageCopy(file.sourcePath, relativePath);
+          result.filesImported++;
+          return;
         }
 
-        // Create destination directory
-        const destDir = path.dirname(destFilePath);
-        await fs.mkdir(destDir, { recursive: true });
+        let content = await fs.readFile(file.sourcePath, 'utf-8');
+        let metadata: Record<string, unknown> = {};
 
-        // Add a header to the table
-        const dbName = path.basename(newFilename, '.md');
-        const markdownContent = `# ${dbName}\n\n${tableContent}`;
+        // Parse front-matter if option is set
+        if (options.importFrontMatter) {
+          const { frontMatter, content: contentWithoutFM } = parseFrontMatter(content);
+          if (frontMatter) {
+            metadata = { ...metadata, frontMatter };
+            content = contentWithoutFM;
+          }
+        }
 
-        // Write the markdown file
-        await fs.writeFile(destFilePath, markdownContent, 'utf-8');
+        // Stage the markdown file
+        await transaction.stageFile(relativePath, content);
 
-        // Create .md.midlight file if option is set
+        // Track for link rebuilding
+        stagedFiles.push({ relativePath, content });
+
+        // Stage .md.midlight file if option is set
         if (options.createMidlightFiles) {
-          const midlightPath = destFilePath + '.midlight';
           const midlightContent = JSON.stringify({
             version: 1,
             created: new Date().toISOString(),
             importedFrom: 'notion',
             originalPath: file.relativePath,
-            convertedFrom: 'csv',
+            metadata,
           }, null, 2);
-          await fs.writeFile(midlightPath, midlightContent, 'utf-8');
+          await transaction.stageFile(relativePath + '.midlight', midlightContent);
         }
 
         result.filesImported++;
       } catch (error) {
-        result.errors.push({
-          file: file.relativePath,
-          message: String(error),
-        });
+        processingErrors.push({ file: file.relativePath, error });
+      }
+    }));
+
+    await Promise.all(mdTasks);
+    checkCancelled();
+
+    // Phase 1.5: Convert CSV databases to markdown tables
+    if (options.convertCSVToTables) {
+      const csvTasks = csvFiles.map(file => limit(async () => {
+        checkCancelled();
+        currentStep++;
+
+        reportProgress('converting', file.relativePath);
+
+        try {
+          const csvContent = await fs.readFile(file.sourcePath, 'utf-8');
+          const tableContent = csvToMarkdownTable(csvContent);
+
+          // Determine new filename (change .csv to .md)
+          let newFilename = file.name.replace(/\.csv$/i, '.md');
+          if (options.removeUUIDs) {
+            newFilename = filenameMap.get(file.name)?.replace(/\.csv$/i, '.md') || newFilename;
+          }
+          newFilename = sanitizeFilename(newFilename);
+
+          // Determine destination path
+          const relativePath = sanitizeRelativePath(
+            options.preserveFolderStructure
+              ? path.join(path.dirname(file.relativePath), newFilename)
+              : newFilename
+          );
+
+          // Add a header to the table
+          const dbName = path.basename(newFilename, '.md');
+          const markdownContent = `# ${dbName}\n\n${tableContent}`;
+
+          // Stage the markdown file
+          await transaction.stageFile(relativePath, markdownContent);
+
+          // Stage .md.midlight file if option is set
+          if (options.createMidlightFiles) {
+            const midlightContent = JSON.stringify({
+              version: 1,
+              created: new Date().toISOString(),
+              importedFrom: 'notion',
+              originalPath: file.relativePath,
+              convertedFrom: 'csv',
+            }, null, 2);
+            await transaction.stageFile(relativePath + '.midlight', midlightContent);
+          }
+
+          result.filesImported++;
+        } catch (error) {
+          processingErrors.push({ file: file.relativePath, error });
+        }
+      }));
+
+      await Promise.all(csvTasks);
+    }
+
+    checkCancelled();
+
+    // Add any processing errors to result
+    for (const { file, error } of processingErrors) {
+      const { message } = formatUserError(error);
+      result.errors.push({ file, message });
+    }
+
+    // Phase 2: Copy attachments
+    if (options.copyAttachments) {
+      reportProgress('copying', '', true);
+
+      const attachmentErrors: Array<{ file: string; error: unknown }> = [];
+
+      const attachmentTasks = attachmentFiles.map(file => limit(async () => {
+        checkCancelled();
+        currentStep++;
+
+        reportProgress('copying', file.relativePath);
+
+        try {
+          // Determine new filename
+          const newFilename = options.removeUUIDs
+            ? sanitizeFilename(filenameMap.get(file.name) || file.name)
+            : sanitizeFilename(file.name);
+
+          const relativePath = sanitizeRelativePath(
+            options.preserveFolderStructure
+              ? path.join(path.dirname(file.relativePath), newFilename)
+              : path.join('attachments', newFilename)
+          );
+
+          // Stage the attachment copy
+          await transaction.stageCopy(file.sourcePath, relativePath);
+
+          // Verify large file copies
+          if (file.size > IMPORT_CONFIG.MAX_LARGE_FILE_CHECKSUM) {
+            const stagingPath = path.join(transaction.getStagingDir(), relativePath);
+            const verified = await transaction.verifyCopy(file.sourcePath, stagingPath);
+            if (!verified) {
+              throw new Error('File copy verification failed - checksum mismatch');
+            }
+          }
+
+          result.attachmentsCopied++;
+        } catch (error) {
+          attachmentErrors.push({ file: file.relativePath, error });
+        }
+      }));
+
+      await Promise.all(attachmentTasks);
+
+      // Add attachment errors to result
+      for (const { file, error } of attachmentErrors) {
+        const { message } = formatUserError(error);
+        result.errors.push({ file, message });
       }
     }
-  }
 
-  // Phase 2: Copy attachments
-  if (options.copyAttachments) {
-    onProgress({
-      phase: 'copying',
-      current: currentStep,
-      total: totalSteps,
-      currentFile: '',
-      errors: result.errors,
-      warnings: result.warnings,
-    });
+    checkCancelled();
 
-    for (const file of attachmentFiles) {
-      currentStep++;
+    // Phase 3: Rebuild internal links if UUIDs were removed
+    if (options.removeUUIDs && stagedFiles.length > 0) {
+      reportProgress('finalizing', 'Rebuilding links...', true);
 
-      onProgress({
-        phase: 'copying',
-        current: currentStep,
-        total: totalSteps,
-        currentFile: file.relativePath,
-        errors: result.errors,
-        warnings: result.warnings,
-      });
+      for (const { relativePath, content } of stagedFiles) {
+        try {
+          const { content: updatedContent, linksUpdated } = rebuildNotionLinks(content, filenameMap);
 
-      try {
-        // Determine new filename
-        const newFilename = options.removeUUIDs
-          ? (filenameMap.get(file.name) || file.name)
-          : file.name;
-
-        const sanitizedRelativePath = sanitizeRelativePath(
-          options.preserveFolderStructure
-            ? path.join(path.dirname(file.relativePath), newFilename)
-            : path.join('attachments', newFilename)
-        );
-        const destFilePath = path.join(destPath, sanitizedRelativePath);
-
-        // Validate path safety
-        if (!isPathSafe(destFilePath, destPath)) {
-          result.errors.push({
-            file: file.relativePath,
-            message: 'Invalid file path - path traversal detected',
+          if (linksUpdated > 0) {
+            // Re-stage the file with updated links
+            await transaction.stageFile(relativePath, updatedContent);
+            result.linksConverted += linksUpdated;
+          }
+        } catch (error) {
+          const stagingPath = path.join(transaction.getStagingDir(), relativePath);
+          result.warnings.push({
+            file: stagingPath,
+            message: `Failed to rebuild links: ${formatUserError(error).message}`,
+            type: 'broken_link',
           });
-          continue;
         }
-
-        // Create destination directory
-        const destDir = path.dirname(destFilePath);
-        await fs.mkdir(destDir, { recursive: true });
-
-        // Copy the file
-        await fs.copyFile(file.sourcePath, destFilePath);
-        result.attachmentsCopied++;
-      } catch (error) {
-        result.errors.push({
-          file: file.relativePath,
-          message: String(error),
-        });
       }
     }
-  }
 
-  // Phase 3: Rebuild internal links if UUIDs were removed
-  if (options.removeUUIDs && importedFiles.length > 0) {
-    onProgress({
-      phase: 'finalizing',
-      current: currentStep,
-      total: totalSteps,
-      currentFile: 'Rebuilding links...',
-      errors: result.errors,
-      warnings: result.warnings,
-    });
+    checkCancelled();
 
-    for (const file of importedFiles) {
-      try {
-        const content = await fs.readFile(file.path, 'utf-8');
-        const { content: updatedContent, linksUpdated } = rebuildNotionLinks(content, filenameMap);
+    // Phase 4: Commit transaction (move files from staging to final location)
+    reportProgress('finalizing', 'Committing files...', true);
+    await transaction.commit();
 
-        if (linksUpdated > 0) {
-          await fs.writeFile(file.path, updatedContent, 'utf-8');
-          result.linksConverted += linksUpdated;
-        }
-      } catch (error) {
-        result.warnings.push({
-          file: file.path,
-          message: `Failed to rebuild links: ${String(error)}`,
-          type: 'broken_link',
-        });
-      }
+    // Phase 5: Complete
+    reportProgress('complete', '', true);
+
+    result.success = result.errors.length === 0;
+    return result;
+
+  } catch (error) {
+    // Rollback on any error
+    try {
+      await transaction.rollback();
+    } catch (rollbackError) {
+      console.error('Failed to rollback transaction:', rollbackError);
     }
+
+    // Check if it was a cancellation
+    if (options.signal?.aborted) {
+      result.errors.push({ file: '', message: 'Import cancelled by user' });
+    } else {
+      const { message } = formatUserError(error);
+      result.errors.push({ file: '', message });
+    }
+
+    result.success = false;
+    reportProgress('complete', '', true);
+    return result;
   }
-
-  // Phase 4: Complete
-  onProgress({
-    phase: 'complete',
-    current: totalSteps,
-    total: totalSteps,
-    currentFile: '',
-    errors: result.errors,
-    warnings: result.warnings,
-  });
-
-  result.success = result.errors.length === 0;
-  return result;
 }

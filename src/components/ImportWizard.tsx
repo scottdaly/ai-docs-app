@@ -67,6 +67,8 @@ export function ImportWizard({
   const [progress, setProgress] = useState<ImportProgress | null>(null);
   const [result, setResult] = useState<ImportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isStartingImport, setIsStartingImport] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   // Import options (includes Notion-specific options)
   const [options, setOptions] = useState<NotionOptionsExtended>({
@@ -93,6 +95,8 @@ export function ImportWizard({
       setProgress(null);
       setResult(null);
       setError(null);
+      setIsStartingImport(false);
+      setIsCancelling(false);
     }
   }, [open]);
 
@@ -166,10 +170,15 @@ export function ImportWizard({
   };
 
   const handleStartImport = async () => {
-    if (!analysis || !destinationPath) return;
+    if (!analysis || !destinationPath || isStartingImport) return;
+
+    setIsStartingImport(true);
+    setError(null);
+
+    // Small delay to ensure UI updates before potentially blocking IPC call
+    await new Promise(resolve => setTimeout(resolve, 50));
 
     setStep('importing');
-    setError(null);
 
     try {
       let importResult;
@@ -197,6 +206,8 @@ export function ImportWizard({
     } catch (err) {
       setError(String(err));
       setStep('complete');
+    } finally {
+      setIsStartingImport(false);
     }
   };
 
@@ -207,10 +218,28 @@ export function ImportWizard({
     }
   };
 
+  const handleCancelImport = async () => {
+    if (isCancelling) return;
+    setIsCancelling(true);
+    try {
+      await window.electronAPI.importCancel();
+    } catch (err) {
+      console.error('Failed to cancel import:', err);
+    }
+    // Don't reset isCancelling - the import will complete (with cancellation message)
+    // and move to the complete step
+  };
+
   const sourceLabel = sourceType === 'obsidian' ? 'Obsidian Vault' : 'Notion Export';
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(newOpen) => {
+        // Prevent closing while import is in progress
+        if (!newOpen && (isStartingImport || step === 'importing')) {
+          return;
+        }
+        onOpenChange(newOpen);
+      }}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -390,12 +419,13 @@ export function ImportWizard({
               <Loader2 size={48} className="animate-spin text-primary" />
               <div className="text-center">
                 <div className="font-medium">
-                  {progress?.phase === 'converting' && 'Converting files...'}
-                  {progress?.phase === 'copying' && 'Copying attachments...'}
-                  {progress?.phase === 'finalizing' && 'Finalizing...'}
-                  {!progress && 'Starting import...'}
+                  {isCancelling && 'Cancelling...'}
+                  {!isCancelling && progress?.phase === 'converting' && 'Converting files...'}
+                  {!isCancelling && progress?.phase === 'copying' && 'Copying attachments...'}
+                  {!isCancelling && progress?.phase === 'finalizing' && 'Finalizing...'}
+                  {!isCancelling && !progress && 'Starting import...'}
                 </div>
-                {progress && (
+                {progress && !isCancelling && (
                   <div className="text-sm text-muted-foreground mt-1">
                     {progress.current} / {progress.total}
                   </div>
@@ -403,7 +433,7 @@ export function ImportWizard({
               </div>
             </div>
 
-            {progress && progress.currentFile && (
+            {progress && progress.currentFile && !isCancelling && (
               <div className="text-xs text-muted-foreground text-center truncate px-4">
                 {progress.currentFile}
               </div>
@@ -418,6 +448,25 @@ export function ImportWizard({
                 />
               </div>
             )}
+
+            {/* Cancel button */}
+            <div className="flex justify-center pt-2">
+              <Button
+                variant="outline"
+                onClick={handleCancelImport}
+                disabled={isCancelling}
+                size="sm"
+              >
+                {isCancelling ? (
+                  <>
+                    <Loader2 size={14} className="mr-2 animate-spin" />
+                    Cancelling...
+                  </>
+                ) : (
+                  'Cancel Import'
+                )}
+              </Button>
+            </div>
           </div>
         )}
 
@@ -487,13 +536,22 @@ export function ImportWizard({
 
           {step === 'analyze' && (
             <>
-              <Button variant="outline" onClick={() => setStep('select')}>
+              <Button variant="outline" onClick={() => setStep('select')} disabled={isStartingImport}>
                 Back
               </Button>
               {quickImport ? (
-                <Button onClick={handleStartImport}>
-                  Start Import
-                  <ChevronRight size={16} className="ml-1" />
+                <Button onClick={handleStartImport} disabled={isStartingImport}>
+                  {isStartingImport ? (
+                    <>
+                      <Loader2 size={16} className="mr-2 animate-spin" />
+                      Starting...
+                    </>
+                  ) : (
+                    <>
+                      Start Import
+                      <ChevronRight size={16} className="ml-1" />
+                    </>
+                  )}
                 </Button>
               ) : (
                 <Button onClick={() => setStep('options')}>
@@ -506,12 +564,21 @@ export function ImportWizard({
 
           {step === 'options' && (
             <>
-              <Button variant="outline" onClick={() => setStep('analyze')}>
+              <Button variant="outline" onClick={() => setStep('analyze')} disabled={isStartingImport}>
                 Back
               </Button>
-              <Button onClick={handleStartImport}>
-                Start Import
-                <ChevronRight size={16} className="ml-1" />
+              <Button onClick={handleStartImport} disabled={isStartingImport}>
+                {isStartingImport ? (
+                  <>
+                    <Loader2 size={16} className="mr-2 animate-spin" />
+                    Starting...
+                  </>
+                ) : (
+                  <>
+                    Start Import
+                    <ChevronRight size={16} className="ml-1" />
+                  </>
+                )}
               </Button>
             </>
           )}

@@ -120,9 +120,9 @@ export function TabBar({ inTitleBar = false }: TabBarProps) {
   const showScrollButtons = canScrollLeft || canScrollRight;
 
   return (
-    <div className={`flex items-center w-full ${inTitleBar ? 'h-full' : 'bg-muted/50 dark:bg-muted/30 pt-2 items-end'}`}>
+    <div className={`flex w-full ${inTitleBar ? 'h-full items-center' : 'bg-muted/50 dark:bg-muted/30 pt-2 items-end'}`}>
       {/* Scrollable tabs container */}
-      <div className="relative flex-1 min-w-0 h-full">
+      <div className={`relative flex-1 min-w-0 ${inTitleBar ? 'flex items-center' : 'h-full'}`}>
         {/* Left fade indicator */}
         {canScrollLeft && (
           <div className={`absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r ${inTitleBar ? 'from-secondary' : 'from-muted/80'} to-transparent pointer-events-none z-10`} />
@@ -133,7 +133,7 @@ export function TabBar({ inTitleBar = false }: TabBarProps) {
         )}
         <div
           ref={scrollContainerRef}
-          className={`flex overflow-x-auto overflow-y-hidden scrollbar-hide h-full ${inTitleBar ? 'items-center' : 'items-end'}`}
+          className={`flex overflow-x-auto overflow-y-hidden scrollbar-hide ${inTitleBar ? 'items-center' : 'h-full items-end'}`}
         >
         {openFiles.map((file, index) => {
               const isActive = file.path === activeFilePath;
@@ -151,7 +151,7 @@ export function TabBar({ inTitleBar = false }: TabBarProps) {
               const showDivider = index > 0 && !isActive && !isPrevActive;
 
               return (
-                <div key={file.path} className={`flex ${inTitleBar ? 'items-center h-full' : 'items-end'}`}>
+                <div key={file.path} className={`flex ${inTitleBar ? 'items-center' : 'items-end'}`}>
                   {/* Divider between inactive tabs */}
                   {showDivider && (
                     <div className={`w-px bg-muted-foreground/30 ${inTitleBar ? 'h-4' : 'h-5 mb-2'}`} />
@@ -164,7 +164,7 @@ export function TabBar({ inTitleBar = false }: TabBarProps) {
                     className={`
                       relative flex items-center min-w-[120px] max-w-[200px] px-3 text-sm select-none cursor-pointer group transition-all
                       ${inTitleBar
-                        ? `h-7 rounded-md ${isActive
+                        ? `h-8 rounded-md ${isActive
                             ? 'bg-background/90 text-foreground font-medium'
                             : 'text-muted-foreground hover:bg-white/10'
                           }`

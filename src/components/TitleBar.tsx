@@ -68,7 +68,7 @@ export function TitleBar() {
       )}
 
       {/* Tab bar in title bar */}
-      <div className="flex-1 min-w-0 app-region-no-drag">
+      <div className="flex-1 min-w-0 h-full app-region-no-drag">
         <TabBar inTitleBar />
       </div>
     </div>

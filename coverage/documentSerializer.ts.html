@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">70.68% </span>
+                <span class="strong">71.05% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>135/191</span>
+                <span class='fraction'>135/190</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50.35% </span>
+                <span class="strong">51.09% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>70/139</span>
+                <span class='fraction'>70/137</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">69.89% </span>
+                <span class="strong">70.27% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>130/186</span>
+                <span class='fraction'>130/185</span>
             </div>
         
             
@@ -590,10 +590,7 @@
 <a name='L525'></a><a href='#L525'>525</a>
 <a name='L526'></a><a href='#L526'>526</a>
 <a name='L527'></a><a href='#L527'>527</a>
-<a name='L528'></a><a href='#L528'>528</a>
-<a name='L529'></a><a href='#L529'>529</a>
-<a name='L530'></a><a href='#L530'>530</a>
-<a name='L531'></a><a href='#L531'>531</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L528'></a><a href='#L528'>528</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1030,25 +1027,22 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -1559,46 +1553,43 @@ export class DocumentSerializer {
       case 'customCode':
         return { type: 'code' };
 &nbsp;
-      case 'textColor':
-        <span class="missing-if-branch" title="else path not taken" >E</span>if (mark.attrs?.color) {
-          return { type: 'color', value: mark.attrs.color };
-        }
-<span class="cstat-no" title="statement not covered" >        return null;</span>
-&nbsp;
-<span class="branch-7 cbranch-no" title="branch not covered" >      case 'textHighlight':</span>
-<span class="branch-8 cbranch-no" title="branch not covered" >      case 'highlight':</span>
+<span class="branch-6 cbranch-no" title="branch not covered" >      case 'highlight':</span>
 <span class="cstat-no" title="statement not covered" >        if (mark.attrs?.color) {</span>
 <span class="cstat-no" title="statement not covered" >          return { type: 'highlight', value: mark.attrs.color };</span>
         }
 <span class="cstat-no" title="statement not covered" >        return null;</span>
 &nbsp;
-<span class="branch-9 cbranch-no" title="branch not covered" >      case 'fontSize':</span>
+<span class="branch-7 cbranch-no" title="branch not covered" >      case 'fontSize':</span>
 <span class="cstat-no" title="statement not covered" >        if (mark.attrs?.fontSize) {</span>
 <span class="cstat-no" title="statement not covered" >          return { type: 'fontSize', value: mark.attrs.fontSize };</span>
         }
 <span class="cstat-no" title="statement not covered" >        return null;</span>
 &nbsp;
-<span class="branch-10 cbranch-no" title="branch not covered" >      case 'textStyle':</span>
-        // textStyle can contain fontFamily
+      case 'textStyle':
+        // textStyle can contain color and/or fontFamily
+        // Color takes precedence if both are present
+        <span class="missing-if-branch" title="else path not taken" >E</span>if (mark.attrs?.color) {
+          return { type: 'color', value: mark.attrs.color };
+        }
 <span class="cstat-no" title="statement not covered" >        if (mark.attrs?.fontFamily) {</span>
 <span class="cstat-no" title="statement not covered" >          return { type: 'fontFamily', value: mark.attrs.fontFamily };</span>
         }
 <span class="cstat-no" title="statement not covered" >        return null;</span>
 &nbsp;
-<span class="branch-11 cbranch-no" title="branch not covered" >      case 'link':</span>
+<span class="branch-9 cbranch-no" title="branch not covered" >      case 'link':</span>
 <span class="cstat-no" title="statement not covered" >        return {</span>
           type: 'link',
           href: mark.attrs?.href || '',
           title: mark.attrs?.title,
         };
 &nbsp;
-<span class="branch-12 cbranch-no" title="branch not covered" >      case 'superscript':</span>
+<span class="branch-10 cbranch-no" title="branch not covered" >      case 'superscript':</span>
 <span class="cstat-no" title="statement not covered" >        return { type: 'superscript' };</span>
 &nbsp;
-<span class="branch-13 cbranch-no" title="branch not covered" >      case 'subscript':</span>
+<span class="branch-11 cbranch-no" title="branch not covered" >      case 'subscript':</span>
 <span class="cstat-no" title="statement not covered" >        return { type: 'subscript' };</span>
 &nbsp;
-<span class="branch-14 cbranch-no" title="branch not covered" >      default:</span>
+<span class="branch-12 cbranch-no" title="branch not covered" >      default:</span>
 <span class="cstat-no" title="statement not covered" >        return null;</span>
     }
   }
@@ -1660,7 +1651,7 @@ export class DocumentSerializer {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-06T01:06:10.001Z
+                at 2025-12-10T21:44:34.412Z
             </div>
         <script src="prettify.js"></script>
         <script>
