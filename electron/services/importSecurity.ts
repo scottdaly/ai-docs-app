@@ -7,6 +7,7 @@
  */
 
 import path from 'path';
+import yaml from 'js-yaml';
 
 // ============================================
 // CONFIGURATION CONSTANTS
@@ -37,6 +38,12 @@ export const IMPORT_CONFIG = {
 
   // JSON input limits
   MAX_JSON_INPUT_SIZE: 10 * 1024 * 1024, // 10MB max for JSON inputs
+
+  // YAML safety limits (bomb protection)
+  MAX_YAML_SIZE: 1024 * 1024,           // 1MB max YAML size
+  MAX_YAML_ALIASES: 100,                 // Max alias references (prevents billion laughs)
+  MAX_YAML_DEPTH: 50,                    // Max nesting depth
+  MAX_YAML_KEYS: 10000,                  // Max keys in a single document
 } as const;
 
 // ============================================
@@ -619,4 +626,187 @@ export function getFileCategory(filename: string): 'markdown' | 'image' | 'attac
   if (ALLOWED_EXTENSIONS.DATA.has(ext)) return 'data';
 
   return 'unknown';
+}
+
+// ============================================
+// SAFE YAML PARSING (Bomb Protection)
+// ============================================
+
+/**
+ * Result of safe YAML parsing
+ */
+export interface SafeYamlResult<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+/**
+ * Counts keys recursively in a parsed YAML object
+ */
+function countKeys(obj: unknown, depth = 0): { keys: number; maxDepth: number } {
+  if (depth > IMPORT_CONFIG.MAX_YAML_DEPTH) {
+    return { keys: 0, maxDepth: depth };
+  }
+
+  if (obj === null || typeof obj !== 'object') {
+    return { keys: 0, maxDepth: depth };
+  }
+
+  let keys = 0;
+  let maxDepth = depth;
+
+  if (Array.isArray(obj)) {
+    for (const item of obj) {
+      const result = countKeys(item, depth + 1);
+      keys += result.keys;
+      maxDepth = Math.max(maxDepth, result.maxDepth);
+    }
+  } else {
+    const entries = Object.entries(obj);
+    keys = entries.length;
+    for (const [, value] of entries) {
+      const result = countKeys(value, depth + 1);
+      keys += result.keys;
+      maxDepth = Math.max(maxDepth, result.maxDepth);
+    }
+  }
+
+  return { keys, maxDepth };
+}
+
+/**
+ * Safely parses YAML with protection against:
+ * - Billion laughs attack (exponential entity expansion)
+ * - Deep nesting attacks
+ * - Large document attacks
+ * - Alias abuse
+ *
+ * Uses js-yaml in safe mode (no custom types, no function execution)
+ *
+ * @param yamlString - The YAML string to parse
+ * @param maxSize - Maximum allowed size (default: IMPORT_CONFIG.MAX_YAML_SIZE)
+ * @returns SafeYamlResult with parsed data or error message
+ */
+export function safeParseYaml<T = Record<string, unknown>>(
+  yamlString: string,
+  maxSize: number = IMPORT_CONFIG.MAX_YAML_SIZE
+): SafeYamlResult<T> {
+  // Size check
+  if (!yamlString || typeof yamlString !== 'string') {
+    return { success: false, error: 'Invalid input: expected a string' };
+  }
+
+  if (yamlString.length > maxSize) {
+    return {
+      success: false,
+      error: `YAML content too large (${Math.round(yamlString.length / 1024)}KB exceeds ${Math.round(maxSize / 1024)}KB limit)`,
+    };
+  }
+
+  // Check for excessive aliases (potential bomb)
+  // Count alias definitions (*name) and references (&name)
+  const aliasMatches = yamlString.match(/[&*][a-zA-Z_][a-zA-Z0-9_]*/g) || [];
+  if (aliasMatches.length > IMPORT_CONFIG.MAX_YAML_ALIASES * 2) {
+    return {
+      success: false,
+      error: `Too many YAML aliases (${aliasMatches.length} exceeds limit of ${IMPORT_CONFIG.MAX_YAML_ALIASES * 2})`,
+    };
+  }
+
+  try {
+    // Parse with js-yaml in safe mode
+    // YAML_SCHEMA (formerly DEFAULT_SAFE_SCHEMA) only allows standard YAML types
+    // No !!js/function, !!python/object, etc.
+    const parsed = yaml.load(yamlString, {
+      schema: yaml.CORE_SCHEMA, // Most restrictive - only JSON-compatible types
+      json: true,               // Duplicate keys will throw
+    });
+
+    // Post-parse validation
+    if (parsed !== null && typeof parsed === 'object') {
+      const { keys, maxDepth } = countKeys(parsed);
+
+      if (maxDepth > IMPORT_CONFIG.MAX_YAML_DEPTH) {
+        return {
+          success: false,
+          error: `YAML nesting too deep (depth ${maxDepth} exceeds limit of ${IMPORT_CONFIG.MAX_YAML_DEPTH})`,
+        };
+      }
+
+      if (keys > IMPORT_CONFIG.MAX_YAML_KEYS) {
+        return {
+          success: false,
+          error: `Too many keys in YAML (${keys} exceeds limit of ${IMPORT_CONFIG.MAX_YAML_KEYS})`,
+        };
+      }
+    }
+
+    return { success: true, data: parsed as T };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown YAML parsing error';
+    return { success: false, error: `Invalid YAML: ${message}` };
+  }
+}
+
+/**
+ * Parses YAML front-matter from markdown content safely.
+ *
+ * Extracts content between --- markers and parses it as YAML
+ * with full bomb protection.
+ *
+ * @param content - Full markdown content with potential front-matter
+ * @returns Object with parsed frontMatter and remaining content
+ */
+export function safeParseFrontMatter(content: string): {
+  frontMatter: Record<string, unknown> | null;
+  content: string;
+  error?: string;
+} {
+  if (!content || typeof content !== 'string') {
+    return { frontMatter: null, content: content || '' };
+  }
+
+  // Quick check - front-matter must start at beginning
+  if (!content.startsWith('---')) {
+    return { frontMatter: null, content };
+  }
+
+  // Find the closing ---
+  const endMatch = content.indexOf('\n---', 3);
+  if (endMatch === -1) {
+    return { frontMatter: null, content };
+  }
+
+  // Extract YAML content (between the --- markers)
+  const yamlContent = content.slice(4, endMatch).trim();
+
+  // Empty front-matter
+  if (!yamlContent) {
+    const remainingContent = content.slice(endMatch + 4);
+    return { frontMatter: {}, content: remainingContent };
+  }
+
+  // Parse the YAML safely
+  const result = safeParseYaml<Record<string, unknown>>(yamlContent);
+
+  if (!result.success) {
+    return {
+      frontMatter: null,
+      content,
+      error: result.error,
+    };
+  }
+
+  // Ensure we got an object (not a scalar or array)
+  if (result.data === null || typeof result.data !== 'object' || Array.isArray(result.data)) {
+    return {
+      frontMatter: null,
+      content,
+      error: 'Front-matter must be a YAML object (key-value pairs)',
+    };
+  }
+
+  const remainingContent = content.slice(endMatch + 4);
+  return { frontMatter: result.data, content: remainingContent };
 }

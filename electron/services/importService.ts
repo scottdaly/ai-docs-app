@@ -14,6 +14,7 @@ import {
   formatUserError,
   isExternalUrl,
   isDangerousScheme,
+  safeParseFrontMatter,
 } from './importSecurity';
 
 // Import transaction for atomic operations
@@ -524,10 +525,19 @@ export function removeDataview(content: string): { content: string; removedCount
 }
 
 /**
- * Parse front-matter from markdown content
+ * Parse front-matter from markdown content.
+ *
+ * Uses safe YAML parsing with protection against:
+ * - YAML bombs (billion laughs attack)
+ * - Deep nesting attacks
+ * - Excessive alias expansion
+ * - Oversized documents
+ *
+ * @param content - Full markdown content with potential front-matter
+ * @returns Object with parsed frontMatter and remaining content
  */
 export function parseFrontMatter(content: string): {
-  frontMatter: Record<string, any> | null;
+  frontMatter: Record<string, unknown> | null;
   content: string;
 } {
   // Skip processing for very large content
@@ -536,75 +546,17 @@ export function parseFrontMatter(content: string): {
     return { frontMatter: null, content };
   }
 
-  const match = content.match(FRONT_MATTER_REGEX);
+  // Use the safe parser from importSecurity
+  const result = safeParseFrontMatter(content);
 
-  if (!match) {
-    return { frontMatter: null, content };
+  if (result.error) {
+    console.warn('Front-matter parsing warning:', result.error);
   }
 
-  try {
-    // Simple YAML parsing (for basic key: value pairs)
-    const yamlContent = match[1];
-    const frontMatter: Record<string, any> = {};
-
-    const lines = yamlContent.split('\n');
-    let currentKey = '';
-    let currentValue: any = '';
-    let inArray = false;
-
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed) continue;
-
-      // Check for array item
-      if (trimmed.startsWith('- ')) {
-        if (inArray && currentKey) {
-          if (!Array.isArray(frontMatter[currentKey])) {
-            frontMatter[currentKey] = [];
-          }
-          frontMatter[currentKey].push(trimmed.slice(2).trim());
-        }
-        continue;
-      }
-
-      // Check for key: value
-      const colonIndex = trimmed.indexOf(':');
-      if (colonIndex > 0) {
-        // Save previous key if exists
-        if (currentKey && !inArray) {
-          frontMatter[currentKey] = currentValue;
-        }
-
-        currentKey = trimmed.slice(0, colonIndex).trim();
-        const value = trimmed.slice(colonIndex + 1).trim();
-
-        if (value === '') {
-          // Could be start of array or multi-line
-          inArray = true;
-          frontMatter[currentKey] = [];
-        } else if (value.startsWith('[') && value.endsWith(']')) {
-          // Inline array
-          frontMatter[currentKey] = value.slice(1, -1).split(',').map(s => s.trim());
-          inArray = false;
-        } else {
-          frontMatter[currentKey] = value;
-          inArray = false;
-        }
-        currentValue = value;
-      }
-    }
-
-    // Save last key
-    if (currentKey && !inArray && !frontMatter[currentKey]) {
-      frontMatter[currentKey] = currentValue;
-    }
-
-    const contentWithoutFrontMatter = content.slice(match[0].length);
-    return { frontMatter, content: contentWithoutFrontMatter };
-  } catch (error) {
-    console.error('Failed to parse front-matter:', error);
-    return { frontMatter: null, content };
-  }
+  return {
+    frontMatter: result.frontMatter,
+    content: result.content,
+  };
 }
 
 /**

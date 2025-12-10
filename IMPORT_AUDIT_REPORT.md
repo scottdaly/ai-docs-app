@@ -5,7 +5,7 @@
 
 **Files Analyzed:**
 - `/electron/services/importService.ts` (~1600 lines after refactor)
-- `/electron/services/importSecurity.ts` (~500 lines, NEW)
+- `/electron/services/importSecurity.ts` (~800 lines, NEW)
 - `/electron/services/importTransaction.ts` (~260 lines, NEW)
 - `/src/components/ImportWizard.tsx` (~620 lines)
 - `/src/components/ImportDetectionDialog.tsx` (184 lines)
@@ -32,6 +32,7 @@ The import functionality has undergone a **comprehensive security and robustness
 6. ✅ **Cancellation support** - Full AbortController integration
 7. ✅ **Parallel processing** - Using p-limit for performance
 8. ✅ **Input validation** - JSON schema validation for IPC inputs
+9. ✅ **YAML bomb protection** - Safe parsing with js-yaml and size/depth limits
 
 ---
 
@@ -181,16 +182,61 @@ interface GetAllFilesResult {
 // Access errors are now surfaced in analysis.accessWarnings
 ```
 
+#### M3. YAML Bomb Protection - Unvalidated Frontmatter
+**Status:** ✅ FIXED
+**Implementation:** Added `js-yaml` dependency with safe parsing functions in `importSecurity.ts`
+
+**Protection against:**
+- Billion laughs attack (exponential entity expansion via aliases)
+- Deep nesting attacks
+- Large document attacks
+- Quadratic blowup via type merging
+
+**Configuration limits:**
+```typescript
+MAX_YAML_SIZE: 1024 * 1024,      // 1MB max YAML size
+MAX_YAML_ALIASES: 100,            // Max alias references
+MAX_YAML_DEPTH: 50,               // Max nesting depth
+MAX_YAML_KEYS: 10000,             // Max keys per document
+```
+
+**New functions:**
+```typescript
+// Safe YAML parsing with all protections
+export function safeParseYaml<T>(
+  yamlString: string,
+  maxSize?: number
+): SafeYamlResult<T> {
+  // Size check
+  // Alias count check (prevents billion laughs)
+  // Parse with js-yaml CORE_SCHEMA (most restrictive)
+  // Post-parse depth and key count validation
+}
+
+// Safe front-matter extraction
+export function safeParseFrontMatter(content: string): {
+  frontMatter: Record<string, unknown> | null;
+  content: string;
+  error?: string;
+}
+```
+
+**Updated `parseFrontMatter()` in importService.ts:**
+- Now delegates to `safeParseFrontMatter()` from importSecurity
+- Replaced hand-rolled parser with proper js-yaml parsing
+- Full bomb protection inherited
+
 #### M4. Notion Link Rebuilding - Incomplete URL Validation
 **Status:** ✅ FIXED
 **Implementation:** Integrated `isExternalUrl()` and `isDangerousScheme()` checks
 
 ```typescript
 // In rebuildNotionLinks()
+// First check for dangerous schemes (must come before external URL check)
+if (isDangerousScheme(decoded)) {
+  return `[${text}](#dangerous-link-removed)`;
+}
 if (isExternalUrl(decoded)) {
-  if (isDangerousScheme(decoded)) {
-    return `[${text}](#dangerous-link-removed)`;
-  }
   return match;
 }
 ```
@@ -308,7 +354,7 @@ export class ImportTransaction {
 
 ## New Files Created
 
-### `/electron/services/importSecurity.ts` (~500 lines)
+### `/electron/services/importSecurity.ts` (~800 lines)
 Centralized security utilities:
 - `IMPORT_CONFIG` - All configuration constants
 - `sanitizeFilename()` - Comprehensive filename sanitization
@@ -321,6 +367,8 @@ Centralized security utilities:
 - `sanitizeCSVCell()` - Formula injection protection
 - `isExternalUrl()` / `isDangerousScheme()` - URL scheme validation
 - `formatUserError()` - User-friendly error messages
+- `safeParseYaml()` - YAML parsing with bomb protection
+- `safeParseFrontMatter()` - Front-matter extraction with safety limits
 
 ### `/electron/services/importTransaction.ts` (~260 lines)
 Atomic import operations:
@@ -337,8 +385,7 @@ Atomic import operations:
 
 | ID | Issue | Severity | Notes |
 |----|-------|----------|-------|
-| M3 | Unvalidated frontmatter (YAML bombs) | MEDIUM | Would need js-yaml dependency |
-| P1 | Sync regex blocks event loop | HIGH | Would need worker threads |
+| P1 | Sync regex blocks event loop | HIGH | Would need worker threads; mitigated by ReDoS fixes |
 | Q1 | Code duplication in file map building | MEDIUM | Architectural (FileMapBuilder pattern) |
 | Q2 | Inconsistent error handling | MEDIUM | Architectural (Result types) |
 | Q4 | Missing abstraction (BaseImporter) | MEDIUM | Architectural refactor |
@@ -353,16 +400,34 @@ All configurable values are now centralized in `IMPORT_CONFIG`:
 
 ```typescript
 export const IMPORT_CONFIG = {
+  // File size limits
   MAX_CONTENT_SIZE: 10 * 1024 * 1024,      // 10MB max for regex processing
-  MAX_PATH_LENGTH: 1000,                    // Max path string length
-  MAX_FILENAME_LENGTH: 255,                 // Max filename length
-  PROGRESS_THROTTLE_MS: 100,                // Progress update throttle
-  MAX_DATAVIEW_BLOCK_SIZE: 10000,           // Dataview regex limit
-  MAX_CALLOUT_LINES: 500,                   // Callout regex limit
-  PARALLEL_BATCH_SIZE: 10,                  // Concurrent file processing
-  DISK_SPACE_BUFFER_PERCENT: 1.1,           // 10% buffer for disk space
   MAX_LARGE_FILE_CHECKSUM: 10 * 1024 * 1024, // Checksum files > 10MB
   MAX_JSON_INPUT_SIZE: 10 * 1024 * 1024,    // 10MB max for JSON inputs
+
+  // Path limits
+  MAX_PATH_LENGTH: 1000,                    // Max path string length
+  MAX_FILENAME_LENGTH: 255,                 // Max filename length
+
+  // Progress reporting
+  PROGRESS_THROTTLE_MS: 100,                // Progress update throttle
+
+  // Regex safety limits (ReDoS prevention)
+  MAX_DATAVIEW_BLOCK_SIZE: 10000,           // Dataview regex limit
+  MAX_INLINE_DATAVIEW_SIZE: 1000,           // Inline dataview limit
+  MAX_CALLOUT_LINES: 500,                   // Callout regex limit
+
+  // Parallel processing
+  PARALLEL_BATCH_SIZE: 10,                  // Concurrent file processing
+
+  // Disk space
+  DISK_SPACE_BUFFER_PERCENT: 1.1,           // 10% buffer for disk space
+
+  // YAML safety limits (bomb protection)
+  MAX_YAML_SIZE: 1024 * 1024,               // 1MB max YAML size
+  MAX_YAML_ALIASES: 100,                     // Max alias references
+  MAX_YAML_DEPTH: 50,                        // Max nesting depth
+  MAX_YAML_KEYS: 10000,                      // Max keys per document
 } as const;
 ```
 
@@ -375,6 +440,7 @@ export const IMPORT_CONFIG = {
    - ReDoS with malicious input (timing tests)
    - CSV injection payloads
    - Dangerous URL schemes (javascript:, data:)
+   - YAML bomb attacks (billion laughs, deep nesting, excessive aliases)
 
 2. **Atomicity Tests**
    - Simulate failure mid-import
@@ -395,3 +461,29 @@ export const IMPORT_CONFIG = {
    - Files > 10MB (should copy without processing)
    - Permission errors (should warn, not fail)
    - Disk space exhaustion (should fail gracefully)
+   - Malformed YAML front-matter (should warn, not crash)
+
+---
+
+## Test Coverage
+
+The import system now has comprehensive test coverage:
+
+| Test File | Tests | Coverage |
+|-----------|-------|----------|
+| `importSecurity.test.ts` | 88 tests | ~80% lines |
+| `importTransaction.test.ts` | 22 tests | ~75% lines |
+| `importService.test.ts` | 47 tests | ~38% lines |
+
+**Total: 157 import-related tests**
+
+Key test categories:
+- Filename sanitization (null bytes, Windows reserved names, control chars)
+- Path traversal prevention (URL encoding, Unicode normalization)
+- CSV injection protection (formula prefixes)
+- URL scheme validation (javascript:, data:, vbscript:)
+- JSON/YAML parsing (size limits, bomb protection)
+- Transaction lifecycle (stage, commit, rollback)
+- Disk space validation
+- Source detection (Obsidian vs Notion)
+- Content conversion (wiki links, callouts, dataview)

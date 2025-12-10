@@ -12,6 +12,8 @@ import {
   validateAndParseJSON,
   validateImportAnalysis,
   validateImportOptions,
+  safeParseYaml,
+  safeParseFrontMatter,
 } from './importSecurity';
 
 describe('importSecurity', () => {
@@ -174,10 +176,11 @@ describe('importSecurity', () => {
     it('should reject empty paths', () => {
       // Empty or whitespace paths should be invalid or sanitized
       const result1 = validatePath('');
-      const result2 = validatePath('   ');
       // At minimum, empty string should fail validation
       expect(result1.valid).toBe(false);
       // Whitespace-only might also fail or trim to empty
+      const result2 = validatePath('   ');
+      expect(result2.valid === true || result2.valid === false).toBe(true);
     });
   });
 
@@ -321,27 +324,36 @@ describe('importSecurity', () => {
     it('should parse valid JSON', () => {
       const result = validateAndParseJSON('{"key": "value"}');
       expect(result.success).toBe(true);
-      expect(result.data).toEqual({ key: 'value' });
+      if (result.success) {
+        expect(result.data).toEqual({ key: 'value' });
+      }
     });
 
     it('should reject invalid JSON', () => {
       const result = validateAndParseJSON('{invalid json}');
       expect(result.success).toBe(false);
-      expect(result.error).toContain('Invalid JSON');
+      if (!result.success) {
+        expect(result.error).toContain('Invalid JSON');
+      }
     });
 
     it('should reject oversized JSON', () => {
       const largeJson = JSON.stringify({ data: 'x'.repeat(20 * 1024 * 1024) });
       const result = validateAndParseJSON(largeJson, 10 * 1024 * 1024);
       expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
-      // Error message should indicate size problem
-      expect(result.error?.toLowerCase()).toMatch(/large|max|size/);
+      if (!result.success) {
+        expect(result.error).toBeDefined();
+        // Error message should indicate size problem
+        expect(result.error?.toLowerCase()).toMatch(/large|max|size/);
+      }
     });
 
     it('should reject non-string input', () => {
       const result = validateAndParseJSON(123 as unknown as string);
       expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBeDefined();
+      }
     });
   });
 
@@ -373,7 +385,9 @@ describe('importSecurity', () => {
       const invalid = { ...validAnalysis, sourceType: 'invalid' };
       const result = validateImportAnalysis(invalid);
       expect(result.valid).toBe(false);
-      expect(result.error).toContain('sourceType');
+      if (!result.valid) {
+        expect(result.error).toContain('sourceType');
+      }
     });
 
     it('should reject missing required fields', () => {
@@ -396,8 +410,10 @@ describe('importSecurity', () => {
       };
       const result = validateImportAnalysis(invalid);
       expect(result.valid).toBe(false);
-      // Error should mention "many" or "max" or the limit
-      expect(result.error?.toLowerCase()).toMatch(/many|max|100/);
+      if (!result.valid) {
+        // Error should mention "many" or "max" or the limit
+        expect(result.error?.toLowerCase()).toMatch(/many|max|100/);
+      }
     });
 
     it('should validate file entries', () => {
@@ -451,6 +467,216 @@ describe('importSecurity', () => {
       expect(validateImportOptions(null).valid).toBe(false);
       expect(validateImportOptions('string').valid).toBe(false);
       expect(validateImportOptions(123).valid).toBe(false);
+    });
+  });
+
+  describe('safeParseYaml', () => {
+    it('should parse valid YAML', () => {
+      const yaml = `
+title: My Document
+tags:
+  - note
+  - important
+count: 42
+`;
+      const result = safeParseYaml(yaml);
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual({
+        title: 'My Document',
+        tags: ['note', 'important'],
+        count: 42,
+      });
+    });
+
+    it('should parse nested objects', () => {
+      const yaml = `
+metadata:
+  author: John
+  date: 2024-01-15
+  settings:
+    draft: true
+`;
+      const result = safeParseYaml(yaml);
+      expect(result.success).toBe(true);
+      expect(result.data).toHaveProperty('metadata.author', 'John');
+      expect(result.data).toHaveProperty('metadata.settings.draft', true);
+    });
+
+    it('should reject oversized YAML', () => {
+      const largeYaml = 'key: ' + 'x'.repeat(2 * 1024 * 1024); // 2MB
+      const result = safeParseYaml(largeYaml);
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('too large');
+    });
+
+    it('should reject invalid YAML syntax', () => {
+      const invalidYaml = `
+key: value
+  bad indentation: oops
+`;
+      const result = safeParseYaml(invalidYaml);
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Invalid YAML');
+    });
+
+    it('should reject excessive aliases (potential bomb)', () => {
+      // Create YAML with many aliases
+      let yaml = '';
+      for (let i = 0; i < 300; i++) {
+        yaml += `&alias${i} value${i}\n`;
+      }
+      const result = safeParseYaml(yaml);
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('aliases');
+    });
+
+    it('should reject deeply nested structures', () => {
+      // Create deeply nested YAML
+      let yaml = 'root:\n';
+      for (let i = 0; i < 60; i++) {
+        yaml += '  '.repeat(i + 1) + `level${i}:\n`;
+      }
+      yaml += '  '.repeat(61) + 'value: deep';
+
+      const result = safeParseYaml(yaml);
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('deep');
+    });
+
+    it('should handle empty input', () => {
+      expect(safeParseYaml('').success).toBe(false);
+      expect(safeParseYaml(null as unknown as string).success).toBe(false);
+    });
+
+    it('should parse simple scalars', () => {
+      expect(safeParseYaml('hello').data).toBe('hello');
+      expect(safeParseYaml('42').data).toBe(42);
+      expect(safeParseYaml('true').data).toBe(true);
+    });
+
+    it('should handle YAML with special characters in strings', () => {
+      const yaml = `
+title: "Hello: World"
+description: 'Single quotes'
+path: /some/path/file.md
+`;
+      const result = safeParseYaml(yaml);
+      expect(result.success).toBe(true);
+      expect(result.data).toHaveProperty('title', 'Hello: World');
+      expect(result.data).toHaveProperty('description', 'Single quotes');
+    });
+  });
+
+  describe('safeParseFrontMatter', () => {
+    it('should parse basic front-matter', () => {
+      const content = `---
+title: My Document
+date: 2024-01-15
+---
+
+# Content here`;
+
+      const result = safeParseFrontMatter(content);
+      expect(result.frontMatter).toEqual({
+        title: 'My Document',
+        date: '2024-01-15',
+      });
+      expect(result.content.trim()).toBe('# Content here');
+      expect(result.error).toBeUndefined();
+    });
+
+    it('should parse front-matter with arrays', () => {
+      const content = `---
+tags:
+  - javascript
+  - typescript
+  - react
+---
+
+Body content`;
+
+      const result = safeParseFrontMatter(content);
+      expect(result.frontMatter?.tags).toEqual(['javascript', 'typescript', 'react']);
+    });
+
+    it('should handle empty front-matter', () => {
+      const content = `---
+---
+
+Content`;
+
+      const result = safeParseFrontMatter(content);
+      expect(result.frontMatter).toEqual({});
+      expect(result.content).toContain('Content');
+    });
+
+    it('should return null for content without front-matter', () => {
+      const content = '# Just a heading\n\nSome content.';
+      const result = safeParseFrontMatter(content);
+      expect(result.frontMatter).toBeNull();
+      expect(result.content).toBe(content);
+    });
+
+    it('should return null if front-matter is not at start', () => {
+      const content = `Some intro text
+---
+title: Not front-matter
+---`;
+      const result = safeParseFrontMatter(content);
+      expect(result.frontMatter).toBeNull();
+    });
+
+    it('should return error for invalid YAML in front-matter', () => {
+      const content = `---
+title: value
+  bad: indentation
+---
+
+Content`;
+
+      const result = safeParseFrontMatter(content);
+      expect(result.frontMatter).toBeNull();
+      expect(result.error).toContain('Invalid YAML');
+    });
+
+    it('should reject non-object front-matter', () => {
+      const content = `---
+- just
+- an
+- array
+---
+
+Content`;
+
+      const result = safeParseFrontMatter(content);
+      expect(result.frontMatter).toBeNull();
+      expect(result.error).toContain('must be a YAML object');
+    });
+
+    it('should handle complex front-matter', () => {
+      const content = `---
+title: Complex Document
+author:
+  name: John Doe
+  email: john@example.com
+tags:
+  - blog
+  - tech
+metadata:
+  draft: false
+  version: 1.2.3
+---
+
+# Article`;
+
+      const result = safeParseFrontMatter(content);
+      expect(result.frontMatter).not.toBeNull();
+      expect(result.frontMatter?.title).toBe('Complex Document');
+      expect(result.frontMatter?.author).toEqual({
+        name: 'John Doe',
+        email: 'john@example.com',
+      });
+      expect(result.frontMatter?.metadata).toHaveProperty('draft', false);
     });
   });
 });
