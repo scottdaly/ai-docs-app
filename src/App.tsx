@@ -16,8 +16,71 @@ import { useRecentWorkspaces } from './store/useRecentWorkspaces'
 import { useTheme, Theme } from './store/useTheme'
 import { useSettingsStore } from './store/useSettingsStore'
 import { useExportStore } from './store/useExportStore'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, Component, ErrorInfo, ReactNode } from 'react'
 import { htmlToTiptapJson } from './utils/htmlToTiptap'
+
+// Global error handlers - report uncaught errors from renderer process
+if (typeof window !== 'undefined') {
+  window.onerror = (message, _source, _lineno, _colno, error) => {
+    window.electronAPI?.reportRendererError?.({
+      type: 'window_error',
+      message: String(message),
+      stack: error?.stack,
+    });
+  };
+
+  window.onunhandledrejection = (event) => {
+    window.electronAPI?.reportRendererError?.({
+      type: 'unhandled_promise',
+      message: event.reason?.message || String(event.reason),
+      stack: event.reason?.stack,
+    });
+  };
+}
+
+// Error Boundary - catches React component errors
+class ErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  state = { hasError: false, error: null as Error | null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('React error boundary caught:', error, errorInfo);
+    window.electronAPI?.reportRendererError?.({
+      type: 'react_error',
+      message: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack || undefined,
+    });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex items-center justify-center h-screen bg-background text-foreground">
+          <div className="text-center p-8 max-w-md">
+            <h1 className="text-xl font-semibold mb-4">Something went wrong</h1>
+            <p className="text-muted-foreground mb-6">
+              An unexpected error occurred. Please reload the application.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+            >
+              Reload Application
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function App() {
   const { restoreSession, loadDir, rootDir, openFiles, activeFilePath } = useFileSystem();
@@ -279,4 +342,11 @@ function App() {
   )
 }
 
-export default App
+// Wrap App with ErrorBoundary for production error catching
+export default function AppWithErrorBoundary() {
+  return (
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  );
+}

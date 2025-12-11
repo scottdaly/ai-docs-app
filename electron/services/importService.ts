@@ -20,6 +20,9 @@ import {
 // Import transaction for atomic operations
 import { ImportTransaction, validateDiskSpace } from './importTransaction';
 
+// Error reporting
+import { reportImportError } from './errorReportingService';
+
 // Re-export security functions for backward compatibility
 export { IMPORT_CONFIG } from './importSecurity';
 export { ImportTransaction, validateDiskSpace } from './importTransaction';
@@ -661,6 +664,11 @@ export async function importObsidianVault(
   const totalSize = analysis.filesToImport.reduce((sum, f) => sum + f.size, 0);
   const spaceCheck = await validateDiskSpace(destPath, totalSize);
   if (!spaceCheck.valid) {
+    reportImportError('disk_space', spaceCheck.error || 'Insufficient disk space', {
+      sourceType: 'obsidian',
+      fileCount: analysis.totalFiles,
+      phase: 'analyzing',
+    });
     result.errors.push({ file: '', message: spaceCheck.error || 'Insufficient disk space' });
     result.success = false;
     return result;
@@ -673,7 +681,7 @@ export async function importObsidianVault(
     await transaction.initialize();
     checkCancelled();
 
-    // Phase 1: Convert and copy markdown files
+    // Phase 1: Convert and copy markdown files (Obsidian)
     reportProgress('converting', '', true);
 
     // Process markdown files with concurrency limit
@@ -858,19 +866,44 @@ export async function importObsidianVault(
       await transaction.rollback();
     } catch (rollbackError) {
       console.error('Failed to rollback transaction:', rollbackError);
+      reportImportError('rollback', 'Transaction rollback failed', {
+        sourceType: 'obsidian',
+        fileCount: analysis.totalFiles,
+        phase: 'finalizing',
+      });
     }
 
     // Check if it was a cancellation
     if (options.signal?.aborted) {
+      reportImportError('cancelled', 'Import cancelled by user', {
+        sourceType: 'obsidian',
+        fileCount: result.filesImported,
+        phase: 'converting',
+      });
       result.errors.push({ file: '', message: 'Import cancelled by user' });
     } else {
       const { message } = formatUserError(error);
+      reportImportError('unknown', message, {
+        sourceType: 'obsidian',
+        fileCount: analysis.totalFiles,
+        phase: 'converting',
+      });
       result.errors.push({ file: '', message });
     }
 
     result.success = false;
     reportProgress('complete', '', true);
     return result;
+  }
+
+  // Report aggregate import errors if any
+  if (result.errors.length > 0) {
+    reportImportError('file_read', `Import completed with ${result.errors.length} errors`, {
+      sourceType: 'obsidian',
+      fileCount: result.filesImported,
+      errorCount: result.errors.length,
+      phase: 'complete',
+    });
   }
 }
 
@@ -1253,6 +1286,11 @@ export async function importNotionExport(
   const totalSize = analysis.filesToImport.reduce((sum, f) => sum + f.size, 0);
   const spaceCheck = await validateDiskSpace(destPath, totalSize);
   if (!spaceCheck.valid) {
+    reportImportError('disk_space', spaceCheck.error || 'Insufficient disk space', {
+      sourceType: 'notion',
+      fileCount: analysis.totalFiles,
+      phase: 'analyzing',
+    });
     result.errors.push({ file: '', message: spaceCheck.error || 'Insufficient disk space' });
     result.success = false;
     return result;
@@ -1508,18 +1546,43 @@ export async function importNotionExport(
       await transaction.rollback();
     } catch (rollbackError) {
       console.error('Failed to rollback transaction:', rollbackError);
+      reportImportError('rollback', 'Transaction rollback failed', {
+        sourceType: 'notion',
+        fileCount: analysis.totalFiles,
+        phase: 'finalizing',
+      });
     }
 
     // Check if it was a cancellation
     if (options.signal?.aborted) {
+      reportImportError('cancelled', 'Import cancelled by user', {
+        sourceType: 'notion',
+        fileCount: result.filesImported,
+        phase: 'converting',
+      });
       result.errors.push({ file: '', message: 'Import cancelled by user' });
     } else {
       const { message } = formatUserError(error);
+      reportImportError('unknown', message, {
+        sourceType: 'notion',
+        fileCount: analysis.totalFiles,
+        phase: 'converting',
+      });
       result.errors.push({ file: '', message });
     }
 
     result.success = false;
     reportProgress('complete', '', true);
     return result;
+  }
+
+  // Report aggregate import errors if any
+  if (result.errors.length > 0) {
+    reportImportError('file_read', `Import completed with ${result.errors.length} errors`, {
+      sourceType: 'notion',
+      fileCount: result.filesImported,
+      errorCount: result.errors.length,
+      phase: 'complete',
+    });
   }
 }

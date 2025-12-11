@@ -7,6 +7,8 @@ interface UpdateState {
   progress?: number;
   releaseNotes?: string;
   error?: string;
+  errorType?: 'checksum' | 'network' | 'unknown';
+  retryCount?: number;
 }
 
 interface UpdateNotificationProps {
@@ -60,10 +62,30 @@ export function UpdateNotification({ onCheckForUpdates }: UpdateNotificationProp
         });
       }),
       api.onUpdateError?.((data) => {
-        setUpdateState({
+        // Categorize the error for better UX
+        let errorType: 'checksum' | 'network' | 'unknown' = 'unknown';
+        let userMessage = data.message;
+
+        if (data.message?.includes('sha512 checksum mismatch')) {
+          errorType = 'checksum';
+          userMessage = 'Download verification failed. The update file may be corrupted or incomplete.';
+        } else if (
+          data.message?.includes('ENOTFOUND') ||
+          data.message?.includes('ETIMEDOUT') ||
+          data.message?.includes('ECONNREFUSED') ||
+          data.message?.includes('network')
+        ) {
+          errorType = 'network';
+          userMessage = 'Network error. Please check your internet connection.';
+        }
+
+        setUpdateState((prev) => ({
           status: 'error',
-          error: data.message,
-        });
+          error: userMessage,
+          errorType,
+          version: prev.version,
+          retryCount: (prev.retryCount || 0) + (prev.status === 'error' ? 0 : 1),
+        }));
       }),
     ];
 
@@ -94,8 +116,23 @@ export function UpdateNotification({ onCheckForUpdates }: UpdateNotificationProp
   }, [onCheckForUpdates]);
 
   const handleDownload = async () => {
-    setUpdateState((prev) => ({ ...prev, status: 'downloading', progress: 0 }));
+    setUpdateState((prev) => ({ ...prev, status: 'downloading', progress: 0, retryCount: prev.retryCount }));
     await window.electronAPI?.downloadUpdate();
+  };
+
+  const handleRetry = async () => {
+    // For checksum errors, try checking for updates again (might get fresh metadata)
+    if (updateState.errorType === 'checksum') {
+      setUpdateState((prev) => ({
+        status: 'checking',
+        version: prev.version,
+        retryCount: (prev.retryCount || 0),
+      }));
+      await window.electronAPI?.checkForUpdates();
+    } else {
+      // For network errors, retry the download directly
+      handleDownload();
+    }
   };
 
   const handleInstall = () => {
@@ -239,12 +276,35 @@ export function UpdateNotification({ onCheckForUpdates }: UpdateNotificationProp
               <p className="text-sm text-destructive">
                 {updateState.error || 'Failed to check for updates.'}
               </p>
-              <button
-                onClick={handleDismiss}
-                className="mt-2 text-sm text-muted-foreground hover:text-foreground"
-              >
-                Dismiss
-              </button>
+              {updateState.errorType === 'checksum' && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  This can happen if the update was recently published. Try again in a few minutes.
+                </p>
+              )}
+              <div className="flex flex-col gap-2 mt-3">
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleRetry}
+                    className="flex-1 px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm font-medium hover:bg-primary/90 transition-colors"
+                  >
+                    Try Again
+                  </button>
+                  <button
+                    onClick={handleDismiss}
+                    className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+                <a
+                  href="https://midlight.ai/download"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-center text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Or download manually from midlight.ai
+                </a>
+              </div>
             </>
           )}
         </div>

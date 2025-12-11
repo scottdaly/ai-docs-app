@@ -447,6 +447,19 @@ interface IElectronAPI {
   // Cancel active import
   importCancel: () => Promise<{ success: boolean; error?: string }>;
 
+  // --- Error Reporting ---
+
+  // Set error reporting enabled/disabled (opt-out)
+  setErrorReportingEnabled: (enabled: boolean) => Promise<{ success: boolean }>;
+
+  // Report renderer errors (for React error boundaries and global handlers)
+  reportRendererError: (errorData: {
+    type: string;
+    message: string;
+    stack?: string;
+    componentStack?: string;
+  }) => Promise<{ success: boolean }>;
+
   // --- Auto-Update APIs ---
 
   // Check for updates manually

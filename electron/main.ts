@@ -25,6 +25,21 @@ import {
   IMPORT_CONFIG,
 } from './services/importSecurity'
 import { initAutoUpdater, stopAutoUpdater } from './services/autoUpdateService'
+import { reportError } from './services/errorReportingService'
+
+// Global error handlers - catch crashes and unhandled errors
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught exception:', error);
+  reportError('crash', 'uncaught_exception', error.message, {
+    stack: error.stack?.substring(0, 500) || 'no stack',
+  });
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled rejection:', reason);
+  const message = reason instanceof Error ? reason.message : String(reason);
+  reportError('uncaught', 'unhandled_rejection', message);
+});
 
 // Active file watchers by workspace root
 const fileWatchers: Map<string, FileWatcher> = new Map();
@@ -96,7 +111,18 @@ function createWindow() {
   } else {
     win.loadFile(path.join(process.env.DIST || '', 'index.html'))
   }
-  
+
+  // Renderer crash detection
+  win.webContents.on('render-process-gone', (_event, details) => {
+    reportError('crash', 'renderer_crash', details.reason, {
+      exitCode: details.exitCode,
+    });
+  });
+
+  win.webContents.on('unresponsive', () => {
+    reportError('crash', 'renderer_unresponsive', 'Renderer became unresponsive');
+  });
+
   createMenu(win);
 }
 
@@ -269,6 +295,24 @@ ipcMain.handle('update-titlebar-overlay', (_event, colors: { color: string; symb
       height: 40,
     });
   }
+});
+
+// Report renderer errors (forwarded from React error boundaries and window.onerror)
+ipcMain.handle('report-renderer-error', async (_, errorData: {
+  type: string;
+  message: string;
+  stack?: string;
+  componentStack?: string;
+}) => {
+  const context: Record<string, string | number | boolean> = {};
+  if (errorData.stack) {
+    context.stack = errorData.stack.substring(0, 300);
+  }
+  if (errorData.componentStack) {
+    context.componentStack = errorData.componentStack.substring(0, 200);
+  }
+  reportError('uncaught', `renderer_${errorData.type}`, errorData.message, context);
+  return { success: true };
 });
 
 ipcMain.handle('select-directory', async () => {

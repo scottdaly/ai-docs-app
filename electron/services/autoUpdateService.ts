@@ -1,5 +1,6 @@
 import { autoUpdater, UpdateInfo } from 'electron-updater';
 import { BrowserWindow, ipcMain } from 'electron';
+import { reportUpdateError, setErrorReportingEnabled } from './errorReportingService';
 
 // Configure auto-updater settings
 autoUpdater.autoDownload = false;
@@ -64,6 +65,29 @@ export function initAutoUpdater(mainWindow: BrowserWindow): void {
   // Event: Error
   autoUpdater.on('error', (error) => {
     console.error('Auto-updater error:', error);
+
+    // Categorize the error for reporting
+    let errorType: 'checksum' | 'network' | 'download' | 'install' | 'unknown' = 'unknown';
+    if (error.message?.includes('sha512 checksum mismatch')) {
+      errorType = 'checksum';
+    } else if (
+      error.message?.includes('ENOTFOUND') ||
+      error.message?.includes('ETIMEDOUT') ||
+      error.message?.includes('ECONNREFUSED') ||
+      error.message?.includes('net::')
+    ) {
+      errorType = 'network';
+    } else if (error.message?.includes('download')) {
+      errorType = 'download';
+    } else if (error.message?.includes('install') || error.message?.includes('EPERM')) {
+      errorType = 'install';
+    }
+
+    // Report the error (if user has opted in)
+    reportUpdateError(errorType, error.message, {
+      currentVersion: autoUpdater.currentVersion?.version,
+    });
+
     mainWindow.webContents.send('update-error', {
       message: error.message,
     });
@@ -97,6 +121,12 @@ export function initAutoUpdater(mainWindow: BrowserWindow): void {
   // IPC: Get current version
   ipcMain.handle('get-app-version', () => {
     return autoUpdater.currentVersion.version;
+  });
+
+  // IPC: Set error reporting enabled/disabled
+  ipcMain.handle('set-error-reporting-enabled', (_event, enabled: boolean) => {
+    setErrorReportingEnabled(enabled);
+    return { success: true };
   });
 }
 

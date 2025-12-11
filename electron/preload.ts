@@ -192,6 +192,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
   importCancel: () =>
     ipcRenderer.invoke('import:cancel'),
 
+  // Error reporting preference
+  setErrorReportingEnabled: (enabled: boolean) =>
+    ipcRenderer.invoke('set-error-reporting-enabled', enabled),
+
+  // Report renderer errors (for React error boundaries and global handlers)
+  reportRendererError: (errorData: {
+    type: string;
+    message: string;
+    stack?: string;
+    componentStack?: string;
+  }) => ipcRenderer.invoke('report-renderer-error', errorData),
+
   // Listen for import progress updates
   onImportProgress: (callback: (progress: any) => void) => {
     const subscription = (_: any, progress: any) => callback(progress);

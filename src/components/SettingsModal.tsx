@@ -202,7 +202,7 @@ export function SettingsModal() {
   const { theme, setTheme } = useTheme();
   const { rootDir } = useFileSystem();
   const { config, loadConfig, updateDefaults, updateEditor, updateVersioning } = useWorkspaceConfig();
-  const { showUnsupportedFiles, setShowUnsupportedFiles } = usePreferences();
+  const { showUnsupportedFiles, setShowUnsupportedFiles, errorReportingEnabled, setErrorReportingEnabled } = usePreferences();
 
   // Load config when modal opens and workspace exists
   useEffect(() => {
@@ -304,6 +304,22 @@ export function SettingsModal() {
                             onChange={setShowUnsupportedFiles}
                           />
                         </SettingRow>
+                      </SettingSection>
+
+                      <SettingSection title="Privacy">
+                        <SettingRow
+                          label="Send Error Reports"
+                          description="Help improve Midlight by sending anonymous error reports when something goes wrong"
+                        >
+                          <Toggle
+                            checked={errorReportingEnabled}
+                            onChange={setErrorReportingEnabled}
+                          />
+                        </SettingRow>
+                        <p className="text-xs text-muted-foreground pt-2 pb-1">
+                          Error reports include only technical details needed to diagnose issues.
+                          No personal data, file contents, or identifying information is collected.
+                        </p>
                       </SettingSection>
 
                       {!hasWorkspace ? (

@@ -63,6 +63,44 @@ jobs:
           files-folder: release
           files-folder-filter: exe
 
+      - name: Regenerate checksums after Windows signing
+        if: matrix.platform == 'win'
+        shell: pwsh
+        run: |
+          # Find the exe file
+          $exeFile = Get-ChildItem -Path release -Filter "*.exe" | Select-Object -First 1
+          if ($exeFile) {
+            Write-Host "Regenerating checksum for: $($exeFile.Name)"
+
+            # Compute new SHA512 hash
+            $hash = Get-FileHash -Path $exeFile.FullName -Algorithm SHA512
+            $base64Hash = [Convert]::ToBase64String([byte[]]::new(64))
+            $bytes = [byte[]]::new(64)
+            for ($i = 0; $i -lt 64; $i++) {
+              $bytes[$i] = [Convert]::ToByte($hash.Hash.Substring($i * 2, 2), 16)
+            }
+            $base64Hash = [Convert]::ToBase64String($bytes)
+
+            # Get file size
+            $fileSize = $exeFile.Length
+
+            Write-Host "New SHA512: $base64Hash"
+            Write-Host "File size: $fileSize"
+
+            # Update latest.yml
+            $latestYml = "release/latest.yml"
+            if (Test-Path $latestYml) {
+              $content = Get-Content $latestYml -Raw
+              # Replace sha512 value (matches the pattern after "sha512: ")
+              $content = $content -replace '(sha512:\s*)[A-Za-z0-9+/=]+', "`$1$base64Hash"
+              # Replace size value
+              $content = $content -replace '(size:\s*)\d+', "`$1$fileSize"
+              Set-Content -Path $latestYml -Value $content -NoNewline
+              Write-Host "Updated $latestYml"
+              Get-Content $latestYml
+            }
+          }
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
