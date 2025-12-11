@@ -74,7 +74,6 @@ jobs:
 
             # Compute new SHA512 hash
             $hash = Get-FileHash -Path $exeFile.FullName -Algorithm SHA512
-            $base64Hash = [Convert]::ToBase64String([byte[]]::new(64))
             $bytes = [byte[]]::new(64)
             for ($i = 0; $i -lt 64; $i++) {
               $bytes[$i] = [Convert]::ToByte($hash.Hash.Substring($i * 2, 2), 16)
@@ -90,13 +89,22 @@ jobs:
             # Update latest.yml
             $latestYml = "release/latest.yml"
             if (Test-Path $latestYml) {
+              Write-Host "Original latest.yml:"
+              Get-Content $latestYml
+
               $content = Get-Content $latestYml -Raw
-              # Replace sha512 value (matches the pattern after "sha512: ")
-              $content = $content -replace '(sha512:\s*)[A-Za-z0-9+/=]+', "`$1$base64Hash"
-              # Replace size value
-              $content = $content -replace '(size:\s*)\d+', "`$1$fileSize"
+
+              # Replace sha512 values - use single quotes to avoid PowerShell variable interpolation issues
+              # The $$1 escapes the $1 capture group reference in PowerShell
+              $content = $content -replace 'sha512:\s*[A-Za-z0-9+/=]+', "sha512: $base64Hash"
+
+              # Replace size values
+              $content = $content -replace 'size:\s*\d+', "size: $fileSize"
+
               Set-Content -Path $latestYml -Value $content -NoNewline
-              Write-Host "Updated $latestYml"
+
+              Write-Host ""
+              Write-Host "Updated latest.yml:"
               Get-Content $latestYml
             }
           }
