@@ -12,7 +12,6 @@ import { Underline } from './extensions/Underline';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
 import { ClickableHorizontalRule } from './extensions/ClickableHorizontalRule';
-import { PageSplitting } from './extensions/PageSplitting';
 import { useEffect, useRef, useImperativeHandle, forwardRef, useState, useCallback } from 'react';
 import { useFileSystem } from '../store/useFileSystem';
 import { usePreferences } from '../store/usePreferences';
