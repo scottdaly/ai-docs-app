@@ -202,7 +202,7 @@ export function SettingsModal() {
   const { theme, setTheme } = useTheme();
   const { rootDir } = useFileSystem();
   const { config, loadConfig, updateDefaults, updateEditor, updateVersioning } = useWorkspaceConfig();
-  const { showUnsupportedFiles, setShowUnsupportedFiles, errorReportingEnabled, setErrorReportingEnabled } = usePreferences();
+  const { showUnsupportedFiles, setShowUnsupportedFiles, errorReportingEnabled, setErrorReportingEnabled, pageMode, setPageMode, showPageNumbers, setShowPageNumbers } = usePreferences();
 
   // Load config when modal opens and workspace exists
   useEffect(() => {
@@ -373,10 +373,52 @@ export function SettingsModal() {
 
                 {activeTab === 'editor' && (
                     <div className="space-y-8">
+                      {/* Page Mode - Global setting, doesn't require workspace */}
+                      <SettingSection title="Page Layout">
+                        <SettingRow label="Page Mode" description="How the document is displayed in the editor">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => setPageMode('continuous')}
+                              className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
+                                pageMode === 'continuous'
+                                  ? 'bg-primary text-primary-foreground border-primary'
+                                  : 'bg-background border-border hover:bg-accent'
+                              }`}
+                            >
+                              Continuous
+                            </button>
+                            <button
+                              onClick={() => setPageMode('paginated')}
+                              className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
+                                pageMode === 'paginated'
+                                  ? 'bg-primary text-primary-foreground border-primary'
+                                  : 'bg-background border-border hover:bg-accent'
+                              }`}
+                            >
+                              Pages
+                            </button>
+                          </div>
+                        </SettingRow>
+                        <p className="text-xs text-muted-foreground pt-2 pb-1">
+                          {pageMode === 'continuous'
+                            ? 'Document flows as one long page. Good for drafting and notes.'
+                            : 'Document shows visual page breaks like Word or Google Docs. Good for print-ready documents.'
+                          }
+                        </p>
+                        {pageMode === 'paginated' && (
+                          <SettingRow label="Show Page Numbers" description="Display page numbers at the bottom of each page">
+                            <Toggle
+                              checked={showPageNumbers}
+                              onChange={setShowPageNumbers}
+                            />
+                          </SettingRow>
+                        )}
+                      </SettingSection>
+
                       {!hasWorkspace ? (
-                        <div className="flex flex-col items-center justify-center h-64 text-center space-y-4 text-muted-foreground border-2 border-dashed rounded-xl">
+                        <div className="flex flex-col items-center justify-center h-48 text-center space-y-4 text-muted-foreground border-2 border-dashed rounded-xl">
                           <Type size={48} className="opacity-20" />
-                          <p>Open a workspace to configure editor settings.</p>
+                          <p>Open a workspace to configure additional editor settings.</p>
                         </div>
                       ) : (
                         <>

@@ -46,6 +46,9 @@
     --folder-icon-back-dark: 205 35% 62%;
     --folder-icon-front: 190 85% 82%;
     --folder-icon-front-dark: 208 52% 71%;
+
+    /* Canvas (editor background) */
+    --canvas: 210 40% 94%;
   }
 
   .dark {
@@ -65,8 +68,8 @@
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
+    --border: 240 4% 22%;
+    --input: 240 4% 22%;
     --ring: 240 4.9% 83.9%;
 
     --selection-background: 0 0% 35%;
@@ -88,6 +91,9 @@
     --folder-icon-back-dark: 215 40% 32%;
     --folder-icon-front: 200 55% 52%;
     --folder-icon-front-dark: 210 45% 40%;
+
+    /* Canvas (editor background) */
+    --canvas: 240 5% 12%;
   }
 
   .midnight {
@@ -130,6 +136,9 @@
     --folder-icon-back-dark: 215 48% 35%;
     --folder-icon-front: 200 60% 55%;
     --folder-icon-front-dark: 210 50% 42%;
+
+    /* Canvas (editor background) */
+    --canvas: 222 47% 9%;
   }
 
   .sepia {
@@ -173,6 +182,9 @@
     --folder-icon-back-dark: 32 48% 58%;
     --folder-icon-front: 42 65% 78%;
     --folder-icon-front-dark: 35 52% 65%;
+
+    /* Canvas (editor background) */
+    --canvas: 40 18% 88%;
   }
 
   .forest {
@@ -215,6 +227,9 @@
     --folder-icon-back-dark: 155 45% 30%;
     --folder-icon-front: 140 55% 50%;
     --folder-icon-front-dark: 150 48% 38%;
+
+    /* Canvas (editor background) */
+    --canvas: 150 20% 9%;
   }
 
   .cyberpunk {
@@ -257,6 +272,9 @@
     --folder-icon-back-dark: 290 55% 42%;
     --folder-icon-front: 180 85% 58%;
     --folder-icon-front-dark: 300 60% 50%;
+
+    /* Canvas (editor background) */
+    --canvas: 265 40% 7%;
   }
 
   .coffee {
@@ -299,6 +317,9 @@
     --folder-icon-back-dark: 26 45% 50%;
     --folder-icon-front: 34 58% 72%;
     --folder-icon-front-dark: 28 48% 58%;
+
+    /* Canvas (editor background) */
+    --canvas: 30 18% 88%;
   }
 }
 
@@ -674,6 +695,73 @@
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Chrome, Safari and Opera */
+}
+
+/* ========================================
+   Editor Page Mode Styles
+   ======================================== */
+
+/* Shared page dimensions */
+:root {
+  --page-width: 816px;
+  --page-height: 1056px;
+  --page-padding: 48px;
+  --page-gap: 32px;
+}
+
+/* ----------------------------------------
+   CONTINUOUS MODE - Single infinite document
+   ---------------------------------------- */
+.editor-continuous {
+  contain: layout style paint;
+}
+
+.editor-continuous .ProseMirror {
+  /* ProseMirror fills the container - styling is on the wrapper */
+  outline: none;
+  max-width: none;
+  width: 100%;
+  contain: layout style paint;
+}
+
+/* ----------------------------------------
+   PAGINATED MODE - True page splitting
+   ---------------------------------------- */
+
+/* Main paginated editor container */
+.paginated-editor-container {
+  min-width: fit-content;
+}
+
+/* Individual page styling */
+.page-container {
+  position: relative;
+  border-radius: 2px;
+}
+
+/* Editor content inside first page */
+.paginated-editor-content .ProseMirror {
+  outline: none;
+  width: calc(var(--page-width) - var(--page-padding) * 2);
+  min-height: calc(var(--page-height) - var(--page-padding) * 2);
+  max-width: none;
+}
+
+/* Cloned content for subsequent pages */
+.cloned-content .ProseMirror,
+.cloned-content .editor-clone {
+  outline: none;
+  width: calc(var(--page-width) - var(--page-padding) * 2);
+  max-width: none;
+}
+
+/* Ensure editor clone inherits proper styling */
+.editor-clone {
+  /* Inherit prose styles */
+}
+
+.editor-clone.ProseMirror {
+  outline: none;
 }
 
 

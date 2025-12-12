@@ -1,6 +1,7 @@
 import { TitleBar } from './components/TitleBar'
 import { Sidebar } from './components/Sidebar'
 import { Editor } from './components/Editor'
+import { EditorToolbar } from './components/EditorToolbar'
 import { SettingsModal } from './components/SettingsModal'
 import { ExportProgress } from './components/ExportProgress'
 import { ImportWizard } from './components/ImportWizard'
@@ -16,8 +17,9 @@ import { useRecentWorkspaces } from './store/useRecentWorkspaces'
 import { useTheme, Theme } from './store/useTheme'
 import { useSettingsStore } from './store/useSettingsStore'
 import { useExportStore } from './store/useExportStore'
-import { useEffect, useState, useRef, Component, ErrorInfo, ReactNode } from 'react'
+import { useEffect, useState, useRef, useCallback, Component, ErrorInfo, ReactNode } from 'react'
 import { htmlToTiptapJson } from './utils/htmlToTiptap'
+import { Editor as TiptapEditor } from '@tiptap/react'
 
 // Global error handlers - report uncaught errors from renderer process
 if (typeof window !== 'undefined') {
@@ -107,6 +109,14 @@ function App() {
 
   // Editor ref for accessing editor methods from RightSidebar
   const editorRef = useRef<EditorHandle>(null);
+
+  // Editor instance for toolbar (lifted from Editor component)
+  const [editor, setEditor] = useState<TiptapEditor | null>(null);
+
+  // Stable callback for editor ready
+  const handleEditorReady = useCallback((e: TiptapEditor | null) => {
+    setEditor(e);
+  }, []);
 
   // Shared handler for menu actions (used by both native menu and WindowsMenu)
   const handleMenuAction = async (action: string) => {
@@ -269,10 +279,19 @@ function App() {
         <TitleBar />
         {rootDir ? (
           // Workspace is open - show normal layout
-          <div className="flex-1 flex overflow-hidden bg-secondary gap-2">
-            <Sidebar />
-            <div className="flex-1 flex flex-col min-w-0 py-2 pr-2 h-full">
-              <div className="flex-1 flex flex-col min-w-0 bg-background rounded-xl shadow-sm overflow-hidden">
+          <>
+            {/* Top toolbar - only show when not viewing images */}
+            {activeFile?.category !== 'viewable' && (
+              <EditorToolbar
+                editor={editor}
+                rightPanelMode={rightPanelMode}
+                onSetRightPanelMode={setRightPanelMode}
+              />
+            )}
+            {/* Main content area - no gaps, sidebars attached */}
+            <div className="flex-1 flex overflow-hidden">
+              <Sidebar />
+              <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 {activeFile?.category === 'viewable' ? (
                   <ImagePreview
                     filePath={activeFile.path}
@@ -281,24 +300,23 @@ function App() {
                 ) : (
                   <Editor
                     ref={editorRef}
-                    rightPanelMode={rightPanelMode}
-                    onSetRightPanelMode={setRightPanelMode}
+                    onEditorReady={handleEditorReady}
                   />
                 )}
               </div>
+              {/* Right Sidebar - AI, History, or Drafts - only show for markdown files */}
+              {activeFile?.category !== 'viewable' && (
+                <RightSidebar
+                  mode={rightPanelMode}
+                  onClose={() => setRightPanelMode(null)}
+                  onRestoreContent={(content) => editorRef.current?.restoreContent(content)}
+                  onSwitchToDraft={(content) => editorRef.current?.switchToDraft(content)}
+                  onSwitchToMain={() => editorRef.current?.switchToMain()}
+                  getCurrentContent={() => editorRef.current?.getCurrentContent()}
+                />
+              )}
             </div>
-            {/* Right Sidebar - AI, History, or Drafts - only show for markdown files */}
-            {activeFile?.category !== 'viewable' && (
-              <RightSidebar
-                mode={rightPanelMode}
-                onClose={() => setRightPanelMode(null)}
-                onRestoreContent={(content) => editorRef.current?.restoreContent(content)}
-                onSwitchToDraft={(content) => editorRef.current?.switchToDraft(content)}
-                onSwitchToMain={() => editorRef.current?.switchToMain()}
-                getCurrentContent={() => editorRef.current?.getCurrentContent()}
-              />
-            )}
-          </div>
+          </>
         ) : (
           // No workspace - show welcome screen
           <WelcomeScreen

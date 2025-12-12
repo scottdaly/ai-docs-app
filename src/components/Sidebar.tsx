@@ -829,8 +829,8 @@ export function Sidebar() {
   }, [handleCreateDocument]);
 
   return (
-    <div className="w-64 h-full py-2 pl-2 flex-shrink-0">
-      <div className="flex flex-col h-full bg-background rounded-xl shadow-sm overflow-hidden">
+    <div className="w-64 h-full flex-shrink-0 border-r border-border">
+      <div className="flex flex-col h-full bg-background overflow-hidden">
         <div className="p-3 flex items-center gap-2">
            <button
              onClick={handleOpenFolder}

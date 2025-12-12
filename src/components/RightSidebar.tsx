@@ -37,8 +37,8 @@ export function RightSidebar({
   if (!mode) return null;
 
   return (
-    <div className="w-80 flex-shrink-0 flex flex-col py-2 pr-2 h-full overflow-hidden">
-      <div className="flex flex-col h-full bg-background rounded-xl shadow-sm overflow-hidden">
+    <div className="w-80 flex-shrink-0 flex flex-col h-full overflow-hidden border-l border-border">
+      <div className="flex flex-col h-full bg-background overflow-hidden">
         {mode === 'ai' && <AIChatPanel onClose={onClose} />}
         {mode === 'history' && onRestoreContent && (
           <HistoryPanelContent onClose={onClose} onRestoreContent={onRestoreContent} />

@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+export type PageMode = 'continuous' | 'paginated';
+
 interface PreferencesState {
   showUnsupportedFiles: boolean;
   setShowUnsupportedFiles: (show: boolean) => void;
@@ -8,6 +10,14 @@ interface PreferencesState {
   // Error reporting (opt-in, disabled by default)
   errorReportingEnabled: boolean;
   setErrorReportingEnabled: (enabled: boolean) => void;
+
+  // Page mode: continuous (infinite scroll) or paginated (page breaks like Word/Docs)
+  pageMode: PageMode;
+  setPageMode: (mode: PageMode) => void;
+
+  // Show page numbers in paginated mode
+  showPageNumbers: boolean;
+  setShowPageNumbers: (show: boolean) => void;
 }
 
 export const usePreferences = create<PreferencesState>()(
@@ -23,6 +33,14 @@ export const usePreferences = create<PreferencesState>()(
         // Sync with main process
         window.electronAPI?.setErrorReportingEnabled?.(enabled);
       },
+
+      // Page mode: paginated by default (like Word/Docs)
+      pageMode: 'paginated',
+      setPageMode: (mode) => set({ pageMode: mode }),
+
+      // Show page numbers: disabled by default
+      showPageNumbers: false,
+      setShowPageNumbers: (show) => set({ showPageNumbers: show }),
     }),
     {
       name: 'midlight-preferences',
