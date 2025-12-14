@@ -84,16 +84,19 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
     };
   }, [cleanupStream]);
 
-  // Check auth and fetch models on mount (only if authenticated)
+  // Check auth status on mount
   useEffect(() => {
-    const init = async () => {
-      const authed = await checkAuth();
-      if (authed) {
-        fetchAvailableModels();
-      }
-    };
-    init();
-  }, [checkAuth, fetchAvailableModels]);
+    checkAuth();
+  }, [checkAuth]);
+
+  // Fetch models when authenticated
+  useEffect(() => {
+    console.log('[RightSidebar] isAuthenticated changed:', isAuthenticated);
+    if (isAuthenticated) {
+      console.log('[RightSidebar] Fetching available models...');
+      fetchAvailableModels();
+    }
+  }, [isAuthenticated, fetchAvailableModels]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
