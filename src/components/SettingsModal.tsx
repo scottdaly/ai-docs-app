@@ -459,21 +459,21 @@ export function SettingsModal() {
                         </div>
                       ) : (
                         <>
-                          <SettingSection title="Automatic Checkpoints">
-                            <SettingRow label="Enable Auto Checkpoints" description="Automatically create version checkpoints">
+                          <SettingSection title="Auto-Save History">
+                            <SettingRow label="Enable Auto-Save History" description="Keep background snapshots for crash recovery">
                               <Toggle
                                 checked={config.versioning.enabled}
                                 onChange={(v) => updateVersioning({ enabled: v })}
                               />
                             </SettingRow>
-                            <SettingRow label="Checkpoint Interval" description="Minimum time between automatic checkpoints">
+                            <SettingRow label="Snapshot Interval" description="Time between background snapshots">
                               <Select
                                 value={config.versioning.checkpointIntervalMs}
                                 onChange={(v) => updateVersioning({ checkpointIntervalMs: parseInt(v) })}
                                 options={CHECKPOINT_INTERVAL_OPTIONS}
                               />
                             </SettingRow>
-                            <SettingRow label="Minimum Changes" description="Minimum character changes to trigger a checkpoint">
+                            <SettingRow label="Minimum Changes" description="Minimum changes to trigger a snapshot">
                               <Select
                                 value={config.versioning.minChangeChars}
                                 onChange={(v) => updateVersioning({ minChangeChars: parseInt(v) })}
@@ -483,14 +483,14 @@ export function SettingsModal() {
                           </SettingSection>
 
                           <SettingSection title="Storage Limits">
-                            <SettingRow label="Max Checkpoints" description="Maximum checkpoints to keep per file">
+                            <SettingRow label="Max Snapshots" description="Maximum background snapshots per file">
                               <Select
                                 value={config.versioning.maxCheckpointsPerFile}
                                 onChange={(v) => updateVersioning({ maxCheckpointsPerFile: parseInt(v) })}
                                 options={MAX_CHECKPOINTS_OPTIONS}
                               />
                             </SettingRow>
-                            <SettingRow label="Retention Period" description="How long to keep automatic checkpoints">
+                            <SettingRow label="Retention Period" description="How long to keep background snapshots">
                               <Select
                                 value={config.versioning.retentionDays}
                                 onChange={(v) => updateVersioning({ retentionDays: parseInt(v) })}
@@ -500,7 +500,7 @@ export function SettingsModal() {
                           </SettingSection>
 
                           <p className="text-xs text-muted-foreground pt-4">
-                            Bookmarked checkpoints are not affected by retention limits.
+                            Saved versions are kept forever until you delete them.
                           </p>
                         </>
                       )}

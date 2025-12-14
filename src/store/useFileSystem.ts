@@ -32,6 +32,9 @@ interface FileSystemState {
   // External change state
   externalChange: ExternalChange | null;
 
+  // Save error state
+  saveError: string | null;
+
   // Pending rename state (for new file creation flow)
   pendingRenamePath: string | null;
 
@@ -60,6 +63,9 @@ interface FileSystemState {
   setExternalChange: (change: ExternalChange | null) => void;
   reloadFromDisk: () => Promise<void>;
   keepCurrentVersion: () => void;
+
+  // Save error actions
+  clearSaveError: () => void;
 
   // Pending rename actions
   setPendingRenamePath: (path: string | null) => void;
@@ -131,6 +137,7 @@ export const useFileSystem = create<FileSystemState>()(
       hasRecovery: false,
       recoveryTime: null,
       externalChange: null,
+      saveError: null,
       pendingRenamePath: null,
 
       setRootDir: (path) => set({ rootDir: path }),
@@ -390,16 +397,20 @@ export const useFileSystem = create<FileSystemState>()(
             rootDir,
             activeFilePath,
             json,
-            'manual'
+            'auto'
           );
 
           if (result.success) {
-            set({ editorContent: json, isDirty: false, hasRecovery: false });
+            set({ editorContent: json, isDirty: false, hasRecovery: false, saveError: null });
           } else {
-            console.error('Failed to save document:', result.error);
+            const errorMsg = result.error || 'Failed to save document';
+            console.error('Failed to save document:', errorMsg);
+            set({ saveError: errorMsg });
           }
         } catch (error) {
+          const errorMsg = error instanceof Error ? error.message : 'Failed to save file';
           console.error("Failed to save file", error);
+          set({ saveError: errorMsg });
         }
       },
 
@@ -625,6 +636,8 @@ export const useFileSystem = create<FileSystemState>()(
         // The user's current content is kept as-is
         set({ externalChange: null });
       },
+
+      clearSaveError: () => set({ saveError: null }),
 
       setPendingRenamePath: (path) => set({ pendingRenamePath: path }),
       clearPendingRenamePath: () => set({ pendingRenamePath: null }),

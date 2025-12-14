@@ -122,12 +122,6 @@ export function initAutoUpdater(mainWindow: BrowserWindow): void {
   ipcMain.handle('get-app-version', () => {
     return autoUpdater.currentVersion.version;
   });
-
-  // IPC: Set error reporting enabled/disabled
-  ipcMain.handle('set-error-reporting-enabled', (_event, enabled: boolean) => {
-    setErrorReportingEnabled(enabled);
-    return { success: true };
-  });
 }
 
 export function stopAutoUpdater(): void {
@@ -135,4 +129,16 @@ export function stopAutoUpdater(): void {
     clearInterval(updateCheckInterval);
     updateCheckInterval = null;
   }
+}
+
+/**
+ * Initialize error reporting IPC handlers.
+ * This should be called regardless of dev/prod mode.
+ */
+export function initErrorReportingHandlers(): void {
+  // IPC: Set error reporting enabled/disabled
+  ipcMain.handle('set-error-reporting-enabled', (_event, enabled: boolean) => {
+    setErrorReportingEnabled(enabled);
+    return { success: true };
+  });
 }

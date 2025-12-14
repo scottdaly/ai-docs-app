@@ -28,6 +28,9 @@ export interface Checkpoint {
   /** User-provided name (for bookmarks) */
   label?: string;
 
+  /** User-provided description (for bookmarks) */
+  description?: string;
+
   /** Document statistics at this checkpoint */
   stats: {
     wordCount: number;
@@ -54,39 +57,6 @@ export interface CheckpointHistory {
 export interface CheckpointContent {
   markdown: string;
   sidecar: SidecarDocument;
-}
-
-// ============================================================================
-// Draft Types
-// ============================================================================
-
-export interface Draft {
-  /** Unique draft ID */
-  id: string;
-
-  /** User-friendly name */
-  name: string;
-
-  /** Source file (relative path) */
-  fileKey: string;
-
-  /** Checkpoint ID where draft branched from */
-  sourceCheckpointId: string;
-
-  /** Latest checkpoint ID in this draft */
-  headId: string;
-
-  /** Draft's own checkpoint history */
-  checkpoints: Checkpoint[];
-
-  /** ISO 8601 creation timestamp */
-  created: string;
-
-  /** ISO 8601 last modified timestamp */
-  modified: string;
-
-  /** Draft status */
-  status: 'active' | 'merged' | 'archived';
 }
 
 // ============================================================================
@@ -300,11 +270,7 @@ export interface TierConfig {
   versioning: {
     maxCheckpointsPerFile: number;
     retentionDays: number;
-    maxBookmarks: number;
-  };
-
-  drafts: {
-    maxActiveDrafts: number;
+    maxVersions: number;
   };
 
   sync: {
@@ -334,10 +300,7 @@ export const FREE_TIER: TierConfig = {
   versioning: {
     maxCheckpointsPerFile: 50,
     retentionDays: 7,
-    maxBookmarks: 3,
-  },
-  drafts: {
-    maxActiveDrafts: 1,
+    maxVersions: 10,
   },
   sync: {
     enabled: false,
@@ -351,10 +314,7 @@ export const PRO_TIER: TierConfig = {
   versioning: {
     maxCheckpointsPerFile: Infinity,
     retentionDays: 365,
-    maxBookmarks: Infinity,
-  },
-  drafts: {
-    maxActiveDrafts: Infinity,
+    maxVersions: Infinity,
   },
   sync: {
     enabled: true,

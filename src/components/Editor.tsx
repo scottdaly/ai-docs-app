@@ -15,13 +15,17 @@ import { ClickableHorizontalRule } from './extensions/ClickableHorizontalRule';
 import { useEffect, useRef, useImperativeHandle, forwardRef, useState, useCallback } from 'react';
 import { useFileSystem } from '../store/useFileSystem';
 import { usePreferences } from '../store/usePreferences';
+import { useAIStore } from '../store/useAIStore';
+import { useAuthStore } from '../store/useAuthStore';
 import { ImageWrapMenu } from './ImageWrapMenu';
 import { RecoveryPrompt } from './RecoveryPrompt';
 import { ExternalChangeDialog } from './ExternalChangeDialog';
-import { useDraftStore } from '../store/useDraftStore';
-import { useHistoryStore } from '../store/useHistoryStore';
+import { InlineEditPrompt } from './InlineEditPrompt';
+import { InlineDiffView } from './InlineDiffView';
+import { useVersionStore } from '../store/useVersionStore';
 import { PaginatedEditorView } from './PaginatedEditorView';
 import { PAGE_HEIGHT, PAGE_GAP, PAGE_BREAKS_UPDATED_EVENT, PageBreak } from './extensions/PageSplitting';
+import { toast } from '../store/useToastStore';
 
 interface EditorProps {
   onEditorReady?: (editor: TiptapEditor | null) => void;
@@ -29,8 +33,6 @@ interface EditorProps {
 
 export interface EditorHandle {
   restoreContent: (content: any) => void;
-  switchToDraft: (content: any) => void;
-  switchToMain: () => void;
   getCurrentContent: () => any;
 }
 
@@ -54,14 +56,19 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
     keepCurrentVersion,
     closeFile,
   } = useFileSystem();
-  const { loadCheckpoints } = useHistoryStore();
-  const {
-    activeDraftId,
-    activeDraft,
-    saveDraftContent,
-    closeDraft,
-  } = useDraftStore();
+  const { loadVersions } = useVersionStore();
   const { pageMode } = usePreferences();
+  const { isAuthenticated } = useAuthStore();
+  const {
+    inlineEditMode,
+    inlineSelection,
+    inlineResult,
+    inlineLoading,
+    startInlineEdit,
+    submitInlineEdit,
+    acceptInlineEdit,
+    cancelInlineEdit,
+  } = useAIStore();
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSavedJsonRef = useRef<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -70,6 +77,10 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
   const [totalPages, setTotalPages] = useState(1);
   const [showScrollTooltip, setShowScrollTooltip] = useState(false);
   const [tooltipY, setTooltipY] = useState(0);
+
+  // Inline editing state
+  const [inlinePromptPosition, setInlinePromptPosition] = useState<{ top: number; left: number } | null>(null);
+  const [showInlineResult, setShowInlineResult] = useState(false);
 
   // Listen for page break updates to get total pages
   useEffect(() => {
@@ -237,17 +248,107 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
         // Only save if content actually changed
         if (jsonString !== lastSavedJsonRef.current) {
           lastSavedJsonRef.current = jsonString;
-
-          // Save to draft if editing a draft, otherwise save to main file
-          if (activeDraftId && rootDir && activeFilePath) {
-            saveDraftContent(rootDir, activeFilePath, json as any);
-          } else {
-            saveFile(json as any);
-          }
+          saveFile(json as any);
         }
       }, 1000);
     },
   });
+
+  // Cmd+K keyboard handler for inline AI editing
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+
+        if (!editor) return;
+
+        // Check if user is authenticated
+        if (!isAuthenticated) {
+          toast.error('Sign in to use AI editing');
+          return;
+        }
+
+        // Get selection
+        const { from, to } = editor.state.selection;
+        if (from === to) {
+          toast.info('Select some text to edit with AI');
+          return;
+        }
+
+        // Get selected text
+        const selectedText = editor.state.doc.textBetween(from, to, ' ');
+        if (!selectedText.trim()) {
+          toast.info('Select some text to edit with AI');
+          return;
+        }
+
+        // Get selection coordinates for positioning the popup
+        const coords = editor.view.coordsAtPos(from);
+        setInlinePromptPosition({
+          top: coords.bottom + 8,
+          left: coords.left,
+        });
+
+        // Start inline edit mode
+        startInlineEdit({ from, to, text: selectedText });
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [editor, isAuthenticated, startInlineEdit]);
+
+  // Handle inline edit prompt submission
+  const handleInlineEditSubmit = useCallback(async (prompt: string) => {
+    try {
+      await submitInlineEdit(prompt);
+      setShowInlineResult(true);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to generate edit');
+      cancelInlineEdit();
+      setInlinePromptPosition(null);
+    }
+  }, [submitInlineEdit, cancelInlineEdit]);
+
+  // Handle accepting the inline edit
+  const handleAcceptInlineEdit = useCallback(() => {
+    if (!editor || !inlineSelection || !inlineResult) return;
+
+    // Replace the selected text with the AI result
+    editor
+      .chain()
+      .focus()
+      .setTextSelection({ from: inlineSelection.from, to: inlineSelection.to })
+      .insertContent(inlineResult)
+      .run();
+
+    // Clean up
+    acceptInlineEdit();
+    setInlinePromptPosition(null);
+    setShowInlineResult(false);
+    toast.success('Edit applied');
+  }, [editor, inlineSelection, inlineResult, acceptInlineEdit]);
+
+  // Handle rejecting the inline edit
+  const handleRejectInlineEdit = useCallback(() => {
+    cancelInlineEdit();
+    setInlinePromptPosition(null);
+    setShowInlineResult(false);
+  }, [cancelInlineEdit]);
+
+  // Handle retrying with a new prompt
+  const handleRetryInlineEdit = useCallback(() => {
+    setShowInlineResult(false);
+    // Keep the selection but go back to prompt mode
+  }, []);
+
+  // Cancel inline edit when clicking away
+  const handleCancelInlinePrompt = useCallback(() => {
+    if (!showInlineResult) {
+      cancelInlineEdit();
+      setInlinePromptPosition(null);
+    }
+  }, [showInlineResult, cancelInlineEdit]);
 
   // Notify parent when editor is ready
   useEffect(() => {
@@ -326,32 +427,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
         setIsDirty(true);
         // Refresh history after restore
         if (rootDir && activeFilePath) {
-          loadCheckpoints(rootDir, activeFilePath);
-        }
-      }
-    },
-    switchToDraft: (content: any) => {
-      if (editor && content) {
-        queueMicrotask(() => {
-          editor.commands.setContent(content);
-          lastSavedJsonRef.current = JSON.stringify(content);
-        });
-      }
-    },
-    switchToMain: async () => {
-      closeDraft();
-      // Reload main document content
-      if (rootDir && activeFilePath) {
-        try {
-          const result = await window.electronAPI.workspaceLoadDocument(rootDir, activeFilePath);
-          if (result.success && result.json && editor) {
-            queueMicrotask(() => {
-              editor.commands.setContent(result.json);
-              lastSavedJsonRef.current = JSON.stringify(result.json);
-            });
-          }
-        } catch (error) {
-          console.error('Failed to reload main document:', error);
+          loadVersions(rootDir, activeFilePath);
         }
       }
     },
@@ -361,26 +437,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
       }
       return null;
     },
-  }), [editor, rootDir, activeFilePath, activeDraftId, setIsDirty, loadCheckpoints, closeDraft]);
-
-  // Handle switching back to main document (for button click)
-  const handleSwitchToMain = async () => {
-    closeDraft();
-    // Reload main document content
-    if (rootDir && activeFilePath) {
-      try {
-        const result = await window.electronAPI.workspaceLoadDocument(rootDir, activeFilePath);
-        if (result.success && result.json && editor) {
-          queueMicrotask(() => {
-            editor.commands.setContent(result.json);
-            lastSavedJsonRef.current = JSON.stringify(result.json);
-          });
-        }
-      } catch (error) {
-        console.error('Failed to reload main document:', error);
-      }
-    }
-  };
+  }), [editor, rootDir, activeFilePath, setIsDirty, loadVersions]);
 
   // Handle closing file when it's deleted externally
   const handleCloseDeletedFile = () => {
@@ -404,28 +461,31 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
         <ImageWrapMenu editor={editor} />
       )}
 
-      {/* Draft mode indicator */}
-      {activeDraft && (
-        <div className="flex-shrink-0 px-4 py-2 bg-purple-500/10 border-b border-purple-500/20 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-purple-600">
-              Editing draft: {activeDraft.name}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              Changes are saved to this draft, not the main document.
-            </span>
-          </div>
-          <button
-            onClick={handleSwitchToMain}
-            className="text-xs px-2 py-1 rounded border border-purple-500/30 text-purple-600 hover:bg-purple-500/10"
-          >
-            Exit Draft
-          </button>
-        </div>
+      {/* Inline AI Edit Prompt */}
+      {inlineEditMode && inlinePromptPosition && inlineSelection && !showInlineResult && (
+        <InlineEditPrompt
+          position={inlinePromptPosition}
+          selectedText={inlineSelection.text}
+          onSubmit={handleInlineEditSubmit}
+          onCancel={handleCancelInlinePrompt}
+          isLoading={inlineLoading}
+        />
+      )}
+
+      {/* Inline AI Edit Result (Diff View) */}
+      {inlineEditMode && inlinePromptPosition && inlineSelection && showInlineResult && inlineResult && (
+        <InlineDiffView
+          position={inlinePromptPosition}
+          originalText={inlineSelection.text}
+          modifiedText={inlineResult}
+          onAccept={handleAcceptInlineEdit}
+          onReject={handleRejectInlineEdit}
+          onRetry={handleRetryInlineEdit}
+        />
       )}
 
       {/* Recovery prompt */}
-      {hasRecovery && activeFilePath && !activeDraft && (
+      {hasRecovery && activeFilePath && (
         <RecoveryPrompt
           filePath={activeFilePath}
           recoveryTime={recoveryTime}

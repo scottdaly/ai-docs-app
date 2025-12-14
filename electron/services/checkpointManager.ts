@@ -59,7 +59,8 @@ export class CheckpointManager {
     markdown: string,
     sidecar: SidecarDocument,
     trigger: 'interval' | 'significant_change' | 'file_close' | 'file_open' | 'bookmark',
-    label?: string
+    label?: string,
+    description?: string
   ): Promise<Checkpoint | null> {
     if (!this.config.enabled && trigger !== 'bookmark') {
       return null;
@@ -126,6 +127,7 @@ export class CheckpointManager {
       parentId: history.headId || null,
       type: trigger === 'bookmark' ? 'bookmark' : 'auto',
       label,
+      description,
       stats: { wordCount, charCount, changeSize },
       trigger,
     };

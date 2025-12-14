@@ -1,104 +1,144 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
-import { ChevronRight, Send, MessageSquare, Sparkles, History, GitBranch, Bookmark, Plus, Loader2 } from 'lucide-react';
-import { useHistoryStore } from '../store/useHistoryStore';
-import { useDraftStore } from '../store/useDraftStore';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { ChevronRight, Send, MessageSquare, Sparkles, History, Save, Loader2, MoreHorizontal, RotateCcw, GitCompare, Pencil, Trash2, LogIn } from 'lucide-react';
+import { useVersionStore, Version } from '../store/useVersionStore';
 import { useFileSystem } from '../store/useFileSystem';
-import { CheckpointItem } from './CheckpointItem';
+import { useAIStore, Message } from '../store/useAIStore';
+import { useAuthStore } from '../store/useAuthStore';
+import { toast } from '../store/useToastStore';
 import { CompareModal } from './CompareModal';
-import { DraftItem } from './DraftItem';
-import { CreateDraftModal } from './CreateDraftModal';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
 
-export type RightSidebarMode = 'ai' | 'history' | 'drafts' | null;
-
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-}
+export type RightSidebarMode = 'ai' | 'history' | null;
 
 interface RightSidebarProps {
   mode: RightSidebarMode;
   onClose: () => void;
   onRestoreContent?: (content: any) => void;
-  onSwitchToDraft?: (content: any) => void;
-  onSwitchToMain?: () => void;
-  getCurrentContent?: () => any;
+  onOpenAuth?: () => void;
 }
 
 export function RightSidebar({
   mode,
   onClose,
   onRestoreContent,
-  onSwitchToDraft,
-  onSwitchToMain,
-  getCurrentContent,
+  onOpenAuth,
 }: RightSidebarProps) {
   if (!mode) return null;
 
   return (
     <div className="w-80 flex-shrink-0 flex flex-col h-full overflow-hidden border-l border-border">
       <div className="flex flex-col h-full bg-background overflow-hidden">
-        {mode === 'ai' && <AIChatPanel onClose={onClose} />}
+        {mode === 'ai' && <AIChatPanel onClose={onClose} onOpenAuth={onOpenAuth} />}
         {mode === 'history' && onRestoreContent && (
-          <HistoryPanelContent onClose={onClose} onRestoreContent={onRestoreContent} />
-        )}
-        {mode === 'drafts' && onSwitchToDraft && onSwitchToMain && getCurrentContent && (
-          <DraftPanelContent
-            onClose={onClose}
-            onSwitchToDraft={onSwitchToDraft}
-            onSwitchToMain={onSwitchToMain}
-            getCurrentContent={getCurrentContent}
-          />
+          <VersionsPanel onClose={onClose} onRestoreContent={onRestoreContent} />
         )}
       </div>
     </div>
   );
 }
 
+// Helper to extract plain text from Tiptap JSON
+function extractTextFromTiptapJson(doc: any): string {
+  if (!doc || !doc.content) return '';
+
+  const extractFromNode = (node: any): string => {
+    if (node.type === 'text') {
+      return node.text || '';
+    }
+    if (node.content && Array.isArray(node.content)) {
+      return node.content.map(extractFromNode).join('');
+    }
+    return '';
+  };
+
+  return doc.content
+    .map((node: any) => extractFromNode(node))
+    .join('\n\n');
+}
+
 // AI Chat Panel
-function AIChatPanel({ onClose }: { onClose: () => void }) {
-  const [messages, setMessages] = useState<Message[]>([]);
+function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?: () => void }) {
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  const { editorContent, activeFilePath } = useFileSystem();
+  const { isAuthenticated, checkAuth } = useAuthStore();
+  const {
+    chatHistory,
+    isStreaming,
+    sendChatMessage,
+    clearChatHistory,
+    cleanupStream,
+    fetchAvailableModels,
+  } = useAIStore();
+
+  // Cleanup stream listeners on unmount
+  useEffect(() => {
+    return () => {
+      cleanupStream();
+    };
+  }, [cleanupStream]);
+
+  // Check auth and fetch models on mount
+  useEffect(() => {
+    checkAuth();
+    fetchAvailableModels();
+  }, [checkAuth, fetchAvailableModels]);
+
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [chatHistory]);
 
+  // Focus input on mount
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
+  // Get document context for AI (with size limit to save tokens)
+  const MAX_CONTEXT_CHARS = 4000;
+
+  const getDocumentContext = useCallback(() => {
+    if (!editorContent) return undefined;
+
+    let text = extractTextFromTiptapJson(editorContent);
+    if (!text.trim()) return undefined;
+
+    // Truncate if too long (keep the end for more recent/relevant context)
+    if (text.length > MAX_CONTEXT_CHARS) {
+      text = '...[document truncated]...\n' + text.slice(-MAX_CONTEXT_CHARS);
+    }
+
+    const filename = activeFilePath?.split('/').pop() || 'Untitled';
+    return `File: ${filename}\n\n${text}`;
+  }, [editorContent, activeFilePath]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isStreaming) return;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: input.trim(),
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
+    const message = input.trim();
     setInput('');
-    setIsLoading(true);
 
-    setTimeout(() => {
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: "I'm your AI writing assistant. This feature is coming soon! I'll be able to help you with editing, brainstorming, and improving your documents.",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
-      setIsLoading(false);
-    }, 1000);
+    // Reset textarea height
+    if (inputRef.current) {
+      inputRef.current.style.height = 'auto';
+    }
+
+    try {
+      const documentContext = getDocumentContext();
+      await sendChatMessage(message, documentContext);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send message');
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -108,6 +148,51 @@ function AIChatPanel({ onClose }: { onClose: () => void }) {
     }
   };
 
+  const handleClearHistory = () => {
+    if (chatHistory.length > 0) {
+      clearChatHistory();
+      toast.success('Chat history cleared');
+    }
+  };
+
+  // Not authenticated - show login prompt
+  if (!isAuthenticated) {
+    return (
+      <>
+        <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
+          <div className="flex items-center gap-2">
+            <Sparkles size={18} className="text-primary" />
+            <h2 className="font-semibold text-sm">AI Assistant</h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
+
+        <div className="flex-1 min-h-0 flex flex-col items-center justify-center p-6 text-center">
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+            <LogIn size={24} className="text-primary" />
+          </div>
+          <h3 className="font-medium text-sm mb-2">Sign in to use AI</h3>
+          <p className="text-xs text-muted-foreground mb-4">
+            Create an account or sign in to access AI writing assistance.
+          </p>
+          {onOpenAuth && (
+            <button
+              onClick={onOpenAuth}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              Sign In
+            </button>
+          )}
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
@@ -115,49 +200,41 @@ function AIChatPanel({ onClose }: { onClose: () => void }) {
           <Sparkles size={18} className="text-primary" />
           <h2 className="font-semibold text-sm">AI Assistant</h2>
         </div>
-        <button
-          onClick={onClose}
-          className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-        >
-          <ChevronRight size={18} />
-        </button>
+        <div className="flex items-center gap-1">
+          {chatHistory.length > 0 && (
+            <button
+              onClick={handleClearHistory}
+              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              title="Clear chat history"
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
       </div>
 
       <div ref={messagesContainerRef} className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 ? (
+        {chatHistory.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
             <MessageSquare size={40} className="mb-3 opacity-50" />
             <p className="text-sm font-medium">Start a conversation</p>
             <p className="text-xs mt-1">Ask me to help with your writing</p>
+            {activeFilePath && (
+              <p className="text-xs mt-3 px-4 py-2 bg-muted/50 rounded-lg">
+                I can see your current document and help with editing, brainstorming, and more.
+              </p>
+            )}
           </div>
         ) : (
-          messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
-                  message.role === 'user'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-foreground'
-                }`}
-              >
-                {message.content}
-              </div>
-            </div>
+          chatHistory.map((message) => (
+            <MessageBubble key={message.id} message={message} />
           ))
-        )}
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-muted rounded-lg px-3 py-2 text-sm">
-              <div className="flex gap-1">
-                <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-              </div>
-            </div>
-          </div>
         )}
       </div>
 
@@ -168,11 +245,12 @@ function AIChatPanel({ onClose }: { onClose: () => void }) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask anything..."
+            placeholder={activeFilePath ? "Ask about your document..." : "Ask anything..."}
             rows={1}
+            disabled={isStreaming}
             className="flex-1 resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm
                        placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50
-                       min-h-[40px] max-h-[120px]"
+                       min-h-[40px] max-h-[120px] disabled:opacity-50"
             style={{ height: 'auto' }}
             onInput={(e) => {
               const target = e.target as HTMLTextAreaElement;
@@ -182,11 +260,15 @@ function AIChatPanel({ onClose }: { onClose: () => void }) {
           />
           <button
             type="submit"
-            disabled={!input.trim() || isLoading}
+            disabled={!input.trim() || isStreaming}
             className="p-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90
                        disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            <Send size={18} />
+            {isStreaming ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <Send size={18} />
+            )}
           </button>
         </form>
       </div>
@@ -194,8 +276,36 @@ function AIChatPanel({ onClose }: { onClose: () => void }) {
   );
 }
 
-// History Panel Content
-function HistoryPanelContent({
+// Message Bubble Component
+function MessageBubble({ message }: { message: Message }) {
+  const isUser = message.role === 'user';
+  const isStreaming = message.isStreaming && !message.content;
+
+  return (
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+      <div
+        className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+          isUser
+            ? 'bg-primary text-primary-foreground'
+            : 'bg-muted text-foreground'
+        }`}
+      >
+        {isStreaming ? (
+          <div className="flex gap-1">
+            <span className="w-2 h-2 bg-current opacity-50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+            <span className="w-2 h-2 bg-current opacity-50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+            <span className="w-2 h-2 bg-current opacity-50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+          </div>
+        ) : (
+          <div className="whitespace-pre-wrap">{message.content}</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Versions Panel - simplified from the old History Panel
+function VersionsPanel({
   onClose,
   onRestoreContent,
 }: {
@@ -204,75 +314,81 @@ function HistoryPanelContent({
 }) {
   const { rootDir, activeFilePath } = useFileSystem();
   const {
-    checkpoints,
+    versions,
     isLoading,
     error,
-    selectedCheckpointId,
+    selectedVersionId,
     isCompareMode,
-    compareCheckpointId,
+    compareVersionId,
     compareContent,
     isLoadingCompare,
-    loadCheckpoints,
-    selectCheckpoint,
-    restoreCheckpoint,
+    loadVersions,
+    selectVersion,
+    restoreVersion,
     startCompare,
     cancelCompare,
     loadCompare,
-    labelCheckpoint,
-  } = useHistoryStore();
+    renameVersion,
+  } = useVersionStore();
 
   useEffect(() => {
     if (rootDir && activeFilePath) {
-      loadCheckpoints(rootDir, activeFilePath);
+      loadVersions(rootDir, activeFilePath);
     }
-  }, [rootDir, activeFilePath, loadCheckpoints]);
+  }, [rootDir, activeFilePath, loadVersions]);
 
   useEffect(() => {
-    if (isCompareMode && selectedCheckpointId && compareCheckpointId && rootDir && activeFilePath) {
-      loadCompare(rootDir, activeFilePath, compareCheckpointId, selectedCheckpointId);
+    if (isCompareMode && selectedVersionId && compareVersionId && rootDir && activeFilePath) {
+      loadCompare(rootDir, activeFilePath, compareVersionId, selectedVersionId);
     }
-  }, [isCompareMode, selectedCheckpointId, compareCheckpointId, rootDir, activeFilePath, loadCompare]);
+  }, [isCompareMode, selectedVersionId, compareVersionId, rootDir, activeFilePath, loadCompare]);
 
-  const handleRestore = async (checkpointId: string) => {
+  // Show toast for version errors
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
+  const handleRestore = async (versionId: string) => {
     if (!rootDir || !activeFilePath) return;
-    const confirmed = window.confirm('Restore this version? Your current changes will be replaced.');
+    const confirmed = window.confirm('Restore this version? Any unsaved changes will be lost.');
     if (!confirmed) return;
-    const content = await restoreCheckpoint(rootDir, activeFilePath, checkpointId);
+    const content = await restoreVersion(rootDir, activeFilePath, versionId);
     if (content) {
       onRestoreContent(content);
-      loadCheckpoints(rootDir, activeFilePath);
+      loadVersions(rootDir, activeFilePath);
     }
   };
 
-  const handleCompare = (checkpointId: string) => {
-    startCompare(checkpointId);
+  const handleCompare = (versionId: string) => {
+    startCompare(versionId);
   };
 
-  const handleLabel = async (checkpointId: string, label: string) => {
+  const handleRename = async (versionId: string, newName: string) => {
     if (!rootDir || !activeFilePath) return;
-    await labelCheckpoint(rootDir, activeFilePath, checkpointId, label);
+    await renameVersion(rootDir, activeFilePath, versionId, newName);
   };
 
-  const bookmarks = checkpoints.filter(cp => cp.type === 'bookmark');
-  const autoSaves = checkpoints.filter(cp => cp.type === 'auto');
+  const compareSourceVersion = useMemo(() => {
+    return versions.find(v => v.id === compareVersionId);
+  }, [versions, compareVersionId]);
 
-  const compareSourceCheckpoint = useMemo(() => {
-    return checkpoints.find(cp => cp.id === compareCheckpointId);
-  }, [checkpoints, compareCheckpointId]);
+  const compareTargetVersion = useMemo(() => {
+    return versions.find(v => v.id === selectedVersionId);
+  }, [versions, selectedVersionId]);
 
-  const compareTargetCheckpoint = useMemo(() => {
-    return checkpoints.find(cp => cp.id === selectedCheckpointId);
-  }, [checkpoints, selectedCheckpointId]);
+  const showCompareModal = isCompareMode && compareContent && compareSourceVersion && compareTargetVersion;
 
-  const showCompareModal = isCompareMode && compareContent && compareSourceCheckpoint && compareTargetCheckpoint;
-
-  const handleRestoreFromCompare = async (checkpointId: string) => {
+  const handleRestoreFromCompare = async (versionId: string) => {
     if (!rootDir || !activeFilePath) return;
+    const confirmed = window.confirm('Restore this version? Any unsaved changes will be lost.');
+    if (!confirmed) return;
     try {
-      const content = await restoreCheckpoint(rootDir, activeFilePath, checkpointId);
+      const content = await restoreVersion(rootDir, activeFilePath, versionId);
       if (content) {
         onRestoreContent(content);
-        loadCheckpoints(rootDir, activeFilePath);
+        loadVersions(rootDir, activeFilePath);
       }
     } finally {
       cancelCompare();
@@ -283,28 +399,28 @@ function HistoryPanelContent({
     <>
       {showCompareModal && (
         <CompareModal
-          checkpointA={{
-            id: compareSourceCheckpoint.id,
-            label: compareSourceCheckpoint.label,
-            timestamp: compareSourceCheckpoint.timestamp,
+          versionA={{
+            id: compareSourceVersion.id,
+            name: compareSourceVersion.name,
+            timestamp: compareSourceVersion.timestamp,
           }}
-          checkpointB={{
-            id: compareTargetCheckpoint.id,
-            label: compareTargetCheckpoint.label,
-            timestamp: compareTargetCheckpoint.timestamp,
+          versionB={{
+            id: compareTargetVersion.id,
+            name: compareTargetVersion.name,
+            timestamp: compareTargetVersion.timestamp,
           }}
           contentA={compareContent.contentA.markdown || ''}
           contentB={compareContent.contentB.markdown || ''}
           onClose={cancelCompare}
-          onRestoreA={() => handleRestoreFromCompare(compareSourceCheckpoint.id)}
-          onRestoreB={() => handleRestoreFromCompare(compareTargetCheckpoint.id)}
+          onRestoreA={() => handleRestoreFromCompare(compareSourceVersion.id)}
+          onRestoreB={() => handleRestoreFromCompare(compareTargetVersion.id)}
         />
       )}
 
       <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
         <div className="flex items-center gap-2">
           <History size={18} className="text-muted-foreground" />
-          <h2 className="font-semibold text-sm">Version History</h2>
+          <h2 className="font-semibold text-sm">Versions</h2>
         </div>
         <button
           onClick={onClose}
@@ -334,236 +450,6 @@ function HistoryPanelContent({
         </div>
       )}
 
-      <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-4">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 size={20} className="animate-spin text-muted-foreground" />
-          </div>
-        ) : error ? (
-          <div className="text-center py-8 text-sm text-destructive">{error}</div>
-        ) : checkpoints.length === 0 ? (
-          <div className="text-center py-8 text-sm text-muted-foreground">
-            No version history yet.
-            <br />
-            <span className="text-xs">Versions are created automatically as you write.</span>
-          </div>
-        ) : (
-          <>
-            {bookmarks.length > 0 && (
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Bookmark size={12} className="text-yellow-500" />
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Bookmarks</span>
-                </div>
-                <div className="space-y-2">
-                  {bookmarks.map(checkpoint => (
-                    <CheckpointItem
-                      key={checkpoint.id}
-                      checkpoint={checkpoint}
-                      isSelected={selectedCheckpointId === checkpoint.id}
-                      isCompareMode={isCompareMode}
-                      isCompareSource={compareCheckpointId === checkpoint.id}
-                      onSelect={() => selectCheckpoint(checkpoint.id)}
-                      onRestore={() => handleRestore(checkpoint.id)}
-                      onCompare={() => handleCompare(checkpoint.id)}
-                      onLabel={(label) => handleLabel(checkpoint.id, label)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {autoSaves.length > 0 && (
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <History size={12} className="text-muted-foreground" />
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Auto-saves</span>
-                </div>
-                <div className="space-y-2">
-                  {autoSaves.map(checkpoint => (
-                    <CheckpointItem
-                      key={checkpoint.id}
-                      checkpoint={checkpoint}
-                      isSelected={selectedCheckpointId === checkpoint.id}
-                      isCompareMode={isCompareMode}
-                      isCompareSource={compareCheckpointId === checkpoint.id}
-                      onSelect={() => selectCheckpoint(checkpoint.id)}
-                      onRestore={() => handleRestore(checkpoint.id)}
-                      onCompare={() => handleCompare(checkpoint.id)}
-                      onLabel={(label) => handleLabel(checkpoint.id, label)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-
-      {!isLoading && checkpoints.length > 0 && (
-        <div className="flex-shrink-0 p-3 border-t text-center text-xs text-muted-foreground">
-          {checkpoints.length} version{checkpoints.length !== 1 ? 's' : ''}
-        </div>
-      )}
-    </>
-  );
-}
-
-// Draft Panel Content
-function DraftPanelContent({
-  onClose,
-  onSwitchToDraft,
-  onSwitchToMain,
-  getCurrentContent,
-}: {
-  onClose: () => void;
-  onSwitchToDraft: (content: any) => void;
-  onSwitchToMain: () => void;
-  getCurrentContent: () => any;
-}) {
-  const { rootDir, activeFilePath } = useFileSystem();
-  const {
-    drafts,
-    isLoading,
-    error,
-    activeDraftId,
-    activeDraft,
-    isCreateModalOpen,
-    loadDrafts,
-    openDraft,
-    closeDraft,
-    renameDraft,
-    applyDraft,
-    discardDraft,
-    deleteDraft,
-    openCreateModal,
-    closeCreateModal,
-    createDraft,
-    createDraftFromCheckpoint,
-    createFromCheckpointId,
-  } = useDraftStore();
-
-  useEffect(() => {
-    if (rootDir && activeFilePath) {
-      loadDrafts(rootDir, activeFilePath);
-    }
-  }, [rootDir, activeFilePath, loadDrafts]);
-
-  const handleOpenDraft = async (draftId: string) => {
-    if (!rootDir || !activeFilePath) return;
-    const content = await openDraft(rootDir, activeFilePath, draftId);
-    if (content) {
-      onSwitchToDraft(content);
-    }
-  };
-
-  const handleCloseDraft = () => {
-    closeDraft();
-    onSwitchToMain();
-  };
-
-  const handleRenameDraft = async (draftId: string, newName: string) => {
-    if (!rootDir || !activeFilePath) return;
-    await renameDraft(rootDir, activeFilePath, draftId, newName);
-  };
-
-  const handleApplyDraft = async (draftId: string) => {
-    if (!rootDir || !activeFilePath) return;
-    const confirmed = window.confirm('Apply this draft to the main document? This will replace your current content.');
-    if (!confirmed) return;
-    const content = await applyDraft(rootDir, activeFilePath, draftId);
-    if (content) {
-      onSwitchToMain();
-    }
-  };
-
-  const handleDiscardDraft = async (draftId: string) => {
-    if (!rootDir || !activeFilePath) return;
-    const confirmed = window.confirm('Discard this draft? It will be archived and no longer appear in your drafts list.');
-    if (!confirmed) return;
-    const success = await discardDraft(rootDir, activeFilePath, draftId);
-    if (success && activeDraftId === draftId) {
-      onSwitchToMain();
-    }
-  };
-
-  const handleDeleteDraft = async (draftId: string) => {
-    if (!rootDir || !activeFilePath) return;
-    const confirmed = window.confirm('Permanently delete this draft? This cannot be undone.');
-    if (!confirmed) return;
-    const success = await deleteDraft(rootDir, activeFilePath, draftId);
-    if (success && activeDraftId === draftId) {
-      onSwitchToMain();
-    }
-  };
-
-  const handleCreateDraft = async (name: string) => {
-    if (!rootDir || !activeFilePath) return;
-    let draft;
-    if (createFromCheckpointId) {
-      draft = await createDraftFromCheckpoint(rootDir, activeFilePath, name, createFromCheckpointId);
-    } else {
-      const currentContent = getCurrentContent();
-      draft = await createDraft(rootDir, activeFilePath, name, currentContent);
-    }
-    if (draft) {
-      closeCreateModal();
-      const content = await openDraft(rootDir, activeFilePath, draft.id);
-      if (content) {
-        onSwitchToDraft(content);
-      }
-    }
-  };
-
-  const activeDrafts = drafts.filter(d => d.status === 'active');
-
-  return (
-    <>
-      {isCreateModalOpen && (
-        <CreateDraftModal
-          onClose={closeCreateModal}
-          onCreate={handleCreateDraft}
-          isFromCheckpoint={!!createFromCheckpointId}
-        />
-      )}
-
-      <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
-        <div className="flex items-center gap-2">
-          <GitBranch size={18} className="text-muted-foreground" />
-          <h2 className="font-semibold text-sm">Drafts</h2>
-        </div>
-        <button
-          onClick={onClose}
-          className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-        >
-          <ChevronRight size={18} />
-        </button>
-      </div>
-
-      {activeDraft && (
-        <div className="flex-shrink-0 p-2 bg-purple-500/10 border-b border-purple-500/20">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <GitBranch size={12} className="text-purple-600" />
-              <span className="text-xs text-purple-600 font-medium truncate">Editing: {activeDraft.name}</span>
-            </div>
-            <button onClick={handleCloseDraft} className="text-xs text-purple-600 hover:text-purple-800">
-              Exit draft
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className="flex-shrink-0 p-3 border-b">
-        <button
-          onClick={() => openCreateModal()}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded text-sm hover:bg-primary/90 transition-colors"
-        >
-          <Plus size={14} />
-          New Draft
-        </button>
-      </div>
-
       <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-2">
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
@@ -571,33 +457,178 @@ function DraftPanelContent({
           </div>
         ) : error ? (
           <div className="text-center py-8 text-sm text-destructive">{error}</div>
-        ) : activeDrafts.length === 0 ? (
+        ) : versions.length === 0 ? (
           <div className="text-center py-8 text-sm text-muted-foreground">
-            No drafts yet.
-            <br />
-            <span className="text-xs">Create a draft to experiment with changes without affecting your main document.</span>
+            <Save size={32} className="mx-auto mb-3 opacity-50" />
+            <p className="font-medium">No versions saved yet</p>
+            <p className="text-xs mt-1 px-4">
+              Save a version when you reach a milestone—like completing a draft or before making big changes.
+            </p>
           </div>
         ) : (
-          activeDrafts.map(draft => (
-            <DraftItem
-              key={draft.id}
-              draft={draft}
-              isActive={activeDraftId === draft.id}
-              onOpen={() => handleOpenDraft(draft.id)}
-              onRename={(newName) => handleRenameDraft(draft.id, newName)}
-              onApply={() => handleApplyDraft(draft.id)}
-              onDiscard={() => handleDiscardDraft(draft.id)}
-              onDelete={() => handleDeleteDraft(draft.id)}
-            />
-          ))
+          <div className="space-y-2">
+            {versions.map(version => (
+              <VersionItem
+                key={version.id}
+                version={version}
+                isSelected={selectedVersionId === version.id}
+                isCompareMode={isCompareMode}
+                isCompareSource={compareVersionId === version.id}
+                onSelect={() => selectVersion(version.id)}
+                onRestore={() => handleRestore(version.id)}
+                onCompare={() => handleCompare(version.id)}
+                onRename={(name) => handleRename(version.id, name)}
+              />
+            ))}
+          </div>
         )}
       </div>
 
-      {!isLoading && activeDrafts.length > 0 && (
+      {!isLoading && versions.length > 0 && (
         <div className="flex-shrink-0 p-3 border-t text-center text-xs text-muted-foreground">
-          {activeDrafts.length} draft{activeDrafts.length !== 1 ? 's' : ''}
+          {versions.length} version{versions.length !== 1 ? 's' : ''} saved
         </div>
       )}
     </>
+  );
+}
+
+// Version Item Component
+function VersionItem({
+  version,
+  isSelected,
+  isCompareMode,
+  isCompareSource,
+  onSelect,
+  onRestore,
+  onCompare,
+  onRename,
+}: {
+  version: Version;
+  isSelected: boolean;
+  isCompareMode: boolean;
+  isCompareSource: boolean;
+  onSelect: () => void;
+  onRestore: () => void;
+  onCompare: () => void;
+  onRename: (name: string) => void;
+}) {
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [newName, setNewName] = useState(version.name || '');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isRenaming && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isRenaming]);
+
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const isYesterday = new Date(now.getTime() - 86400000).toDateString() === date.toDateString();
+
+    const time = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+    if (isToday) return `Today at ${time}`;
+    if (isYesterday) return `Yesterday at ${time}`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ` at ${time}`;
+  };
+
+  const handleRenameSubmit = () => {
+    if (newName.trim() && newName.trim() !== version.name) {
+      onRename(newName.trim());
+    }
+    setIsRenaming(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleRenameSubmit();
+    } else if (e.key === 'Escape') {
+      setNewName(version.name || '');
+      setIsRenaming(false);
+    }
+  };
+
+  return (
+    <div
+      className={`p-3 rounded-lg border transition-colors cursor-pointer ${
+        isCompareSource
+          ? 'border-blue-500 bg-blue-500/10'
+          : isSelected
+          ? 'border-primary bg-primary/5'
+          : 'border-border hover:border-primary/50 hover:bg-muted/50'
+      }`}
+      onClick={() => {
+        if (isCompareMode && !isCompareSource) {
+          onSelect();
+        }
+      }}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          {isRenaming ? (
+            <input
+              ref={inputRef}
+              type="text"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onBlur={handleRenameSubmit}
+              onKeyDown={handleKeyDown}
+              className="w-full px-2 py-1 text-sm font-medium bg-background border border-primary rounded focus:outline-none focus:ring-1 focus:ring-primary"
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <div className="font-medium text-sm truncate">
+              {version.name || 'Untitled version'}
+            </div>
+          )}
+          <div className="text-xs text-muted-foreground mt-1">
+            {formatTimestamp(version.timestamp)}
+          </div>
+          {version.description && (
+            <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
+              {version.description}
+            </div>
+          )}
+          <div className="text-xs text-muted-foreground mt-0.5">
+            {version.stats.wordCount.toLocaleString()} words
+          </div>
+        </div>
+
+        {!isCompareMode && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="p-1 rounded hover:bg-muted transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MoreHorizontal size={14} className="text-muted-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem onClick={onRestore}>
+                <RotateCcw size={14} className="mr-2" />
+                Restore
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onCompare}>
+                <GitCompare size={14} className="mr-2" />
+                Compare
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                setNewName(version.name || '');
+                setIsRenaming(true);
+              }}>
+                <Pencil size={14} className="mr-2" />
+                Rename
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
+    </div>
   );
 }

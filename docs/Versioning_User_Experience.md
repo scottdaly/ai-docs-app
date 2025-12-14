@@ -1,267 +1,167 @@
 # Versioning User Experience Strategy
 
-This document describes the user-facing experience for saving, version history, and document recovery in Midlight. It focuses on how users interact with these features, not the technical implementation.
+This document describes the user-facing experience for saving and version history in Midlight. It focuses on how users interact with these features, not the technical implementation.
 
 ---
 
 ## Core Philosophy
 
-### Invisible Safety Net
+### Two Simple Concepts
 
-> **Users should never think about saving or versioning—it just works.**
+Midlight's approach to saving and versioning is built on just two concepts:
 
-Midlight protects users' work automatically. There's no "Save" button, no commit messages, no branches to manage. The system captures history silently, and users only interact with it when they need to recover something.
+| Concept | What It Is | User Action |
+|---------|------------|-------------|
+| **Auto-save** | Continuous, invisible saving with undo history | None—it just works |
+| **Versions** | Intentional snapshots at meaningful milestones | User clicks "Save Version" |
 
-### Three Principles
+That's it. No checkpoints, bookmarks, drafts, or branches. Just automatic protection and intentional milestones.
 
-1. **Auto-everything**: Saving and versioning happen without user action
-2. **Non-destructive**: You can always go back; nothing is truly lost
-3. **Simple language**: No technical jargon—"Checkpoints" not "commits"
+### The Mental Model
+
+Think of it like writing in a notebook:
+- **Auto-save** = The ink is permanent the moment you write
+- **Versions** = Taking a photo of a page before making big changes
 
 ---
 
-## The Saving Experience
+## Auto-Save: Invisible Protection
 
 ### What Users See
 
 **Nothing.** That's the point.
 
-- No save button in the UI
-- No "unsaved changes" warnings
-- No "Are you sure you want to close?" dialogs
-- Document title never shows a dirty indicator (•)
+- No save button
+- No "unsaved changes" indicator
+- No "Are you sure?" dialogs when closing
+- No anxiety about losing work
 
 ### What Actually Happens
 
-1. User types → changes saved within 1 second of pausing
-2. User closes file → saved immediately
-3. User quits app → saved immediately
-4. App crashes → recovered on next launch
+1. **Continuous saving**: Changes saved within 1 second of pausing
+2. **Undo history**: Can undo/redo within the session
+3. **Crash recovery**: Unsaved work recovered after unexpected quit
+4. **AI edit recovery**: Each AI edit creates an undo point
 
-### Mental Model
+### The User's Mental Model
 
-Users should feel like they're editing a Google Doc:
-- Changes are always saved
-- Close the app anytime
-- Come back and everything is there
+> "I just type. It's always saved. If I mess up, I can undo."
+
+This is how Google Docs and Notion work. Users trust the app to handle saving.
+
+### Undo as the Primary Recovery
+
+For recent mistakes, **Undo (⌘Z)** is the answer:
+- Works for manual edits
+- Works for AI-generated changes
+- Available throughout the editing session
+
+**After AI edits a document:**
+- The change appears in the editor
+- User can immediately Undo if they don't like it
+- No special UI needed—standard undo behavior
 
 ---
 
-## Checkpoints: Moments in Time
+## Versions: Intentional Milestones
 
-### What Is a Checkpoint?
+### What Is a Version?
 
-A checkpoint is a saved snapshot of your document. Think of it as a photograph of your document at a specific moment.
+A version is a snapshot you intentionally save at a meaningful moment—like a commit in GitHub, but simpler.
 
-**User-facing description:**
-> "Midlight automatically saves checkpoints as you work. You can always go back to see how your document looked before."
+**When to save a version:**
+- Before sending to someone
+- After completing a major section
+- Before making significant changes
+- At any "I might want to come back to this" moment
 
-### When Checkpoints Are Created
+### Creating a Version
 
-Users don't create checkpoints manually (though they can "bookmark" important ones). The system creates them:
+**Entry point:** "Save Version" button in toolbar or menu (⌘S as optional shortcut)
 
-| Trigger | User Perception |
-|---------|-----------------|
-| Every 5 minutes of editing | Invisible |
-| After significant changes (~100 words) | Invisible |
-| When closing a file | Invisible |
-| When user clicks "Bookmark" | Explicit |
+```
+┌──────────────────────────────────────────────┐
+│  Save Version                                 │
+├──────────────────────────────────────────────┤
+│                                              │
+│  Name this version:                          │
+│  ┌────────────────────────────────────────┐  │
+│  │ First draft complete                   │  │
+│  └────────────────────────────────────────┘  │
+│                                              │
+│  A version captures your document at this    │
+│  moment. You can return to it anytime.       │
+│                                              │
+│              [Cancel]  [Save Version]        │
+└──────────────────────────────────────────────┘
+```
 
-### Viewing Checkpoints
+### Viewing Versions
 
 **Entry point:** History icon in toolbar or right sidebar
 
 ```
 ┌─────────────────────────────────────────┐
-│  Document History                        │
+│  Version History                         │
 ├─────────────────────────────────────────┤
 │                                         │
-│  ★ Before client revisions              │  ← Bookmarked
-│    Today at 2:30 PM · 1,240 words       │
+│  📌 Before client revisions             │
+│     Today at 2:30 PM · 1,240 words      │
+│     [View] [Restore] [Compare]          │
 │                                         │
-│  ○ Auto-saved                           │  ← Automatic
-│    Today at 1:15 PM · 1,180 words       │
+│  📌 First draft complete                │
+│     Yesterday at 4:15 PM · 980 words    │
+│     [View] [Restore] [Compare]          │
 │                                         │
-│  ○ Auto-saved                           │
-│    Today at 11:00 AM · 950 words        │
+│  📌 Initial outline                     │
+│     Dec 10 at 11:00 AM · 320 words      │
+│     [View] [Restore] [Compare]          │
 │                                         │
-│  ─────── Yesterday ───────              │
-│                                         │
-│  ○ Auto-saved                           │
-│    4:45 PM · 820 words                  │
-│                                         │
+│  ─────────────────────────────────────  │
+│  Versions are saved forever until you   │
+│  delete them.                           │
 └─────────────────────────────────────────┘
 ```
 
-### Checkpoint Actions
+### Version Actions
 
-| Action | What It Does | User Language |
-|--------|--------------|---------------|
-| Preview | Shows the document at that point | "See what it looked like" |
-| Compare | Side-by-side with current version | "What changed?" |
-| Restore | Makes this the current version | "Go back to this" |
-| Bookmark | Names it and prevents auto-cleanup | "Remember this version" |
+| Action | What It Does |
+|--------|--------------|
+| **View** | Opens read-only preview of that version |
+| **Restore** | Makes this version the current document |
+| **Compare** | Shows differences between this and current |
+| **Delete** | Removes this version permanently |
 
-### Restoring a Checkpoint
+### Restoring a Version
 
-**Critical UX principle:** Restoring is non-destructive.
-
-When a user restores an old checkpoint:
-1. Current version is saved as a new checkpoint first
-2. Old version becomes the active document
-3. User sees: "Restored. Your previous version was saved as a checkpoint."
-
-This means users can never lose work by restoring—they can always "undo the restore."
-
----
-
-## Bookmarks: Named Checkpoints
-
-### Why Bookmarks?
-
-Automatic checkpoints are great for "oops I made a mistake" recovery. But users also want to mark important moments:
-
-- "Before I sent to client"
-- "First draft complete"
-- "After incorporating feedback"
-
-### Creating a Bookmark
-
-**Entry point:** Bookmark icon in toolbar
+When restoring, the current state is automatically saved first:
 
 ```
 ┌──────────────────────────────────────────────┐
-│  Bookmark This Version                        │
+│  Restore Version?                             │
 ├──────────────────────────────────────────────┤
 │                                              │
-│  Name this version:                          │
-│  ┌────────────────────────────────────────┐  │
-│  │ Before client revisions                │  │
-│  └────────────────────────────────────────┘  │
+│  Restore to "First draft complete"?          │
 │                                              │
-│  This helps you find this version later.     │
+│  Your current document will be saved as a    │
+│  new version called "Before restore" so you  │
+│  can get back to it if needed.               │
 │                                              │
-│              [Cancel]  [Save Bookmark]       │
+│              [Cancel]  [Restore]             │
 └──────────────────────────────────────────────┘
 ```
 
-### Bookmark Benefits
-
-- Shown with a ★ star in history
-- Never auto-deleted (regular checkpoints expire)
-- Easier to find among many auto-saves
-
----
-
-## Drafts: Safe Experimentation
-
-### The Problem Drafts Solve
-
-> "I want to try rewriting the introduction, but I don't want to mess up what I have."
-
-Users sometimes want to experiment without risk. Currently, they might:
-- Copy-paste to a new document
-- Manually save a backup
-- Just not try the experiment
-
-### What Is a Draft?
-
-A draft is a separate version of your document where you can experiment freely. Your main document stays untouched until you decide to use the changes.
-
-**User-facing description:**
-> "Start a draft to try something new. If you like it, apply the changes. If not, just delete the draft—your original is safe."
-
-### Creating a Draft
-
-**Entry point:** "Start Draft" in document menu or history panel
-
-```
-┌──────────────────────────────────────────────┐
-│  Start a Draft                                │
-├──────────────────────────────────────────────┤
-│                                              │
-│  A draft lets you experiment without         │
-│  changing your main document.                │
-│                                              │
-│  Name your draft:                            │
-│  ┌────────────────────────────────────────┐  │
-│  │ Try shorter introduction               │  │
-│  └────────────────────────────────────────┘  │
-│                                              │
-│  Start from:                                 │
-│  ● Current version                           │
-│  ○ Before client revisions (2:30 PM)         │
-│  ○ Choose another checkpoint...              │
-│                                              │
-│              [Cancel]  [Create Draft]        │
-└──────────────────────────────────────────────┘
-```
-
-### Working in a Draft
-
-When a draft is active:
-- Editor shows draft indicator: `📝 Draft: Try shorter introduction`
-- Edits are saved to the draft, not the main document
-- User can switch between draft and main anytime
-
-### Applying Draft Changes
-
-When the user is happy with their draft:
-
-```
-┌──────────────────────────────────────────────┐
-│  Apply Draft Changes                          │
-├──────────────────────────────────────────────┤
-│                                              │
-│  Draft: "Try shorter introduction"           │
-│                                              │
-│  How would you like to apply these changes?  │
-│                                              │
-│  ● Replace main document with draft          │
-│    Your current main document will be        │
-│    saved as a checkpoint first.              │
-│                                              │
-│  ○ Compare side-by-side                      │
-│    Review both versions and choose what      │
-│    to keep from each.                        │
-│                                              │
-│              [Cancel]  [Apply Changes]       │
-└──────────────────────────────────────────────┘
-```
-
-### Discarding a Draft
-
-If the experiment didn't work out:
-
-```
-┌──────────────────────────────────────────────┐
-│  Delete Draft?                                │
-├──────────────────────────────────────────────┤
-│                                              │
-│  Are you sure you want to delete the draft   │
-│  "Try shorter introduction"?                 │
-│                                              │
-│  Your main document will not be affected.    │
-│                                              │
-│              [Cancel]  [Delete Draft]        │
-└──────────────────────────────────────────────┘
-```
+This means restoring is never destructive—you can always undo a restore.
 
 ---
 
 ## Comparing Versions
 
-### The Compare View
-
-Users can compare any two versions side-by-side:
+Users can compare any version with the current document:
 
 ```
 ┌───────────────────────────────────────────────────────────────────┐
-│  Compare Versions                                            [X]  │
-├───────────────────────────────────────────────────────────────────┤
-│  ┌─────────────────┐           ┌─────────────────┐               │
-│  │ ▼ Yesterday 4PM │    vs     │ ▼ Today 2:30 PM │               │
-│  └─────────────────┘           └─────────────────┘               │
+│  Compare: "First draft" → Current                            [X]  │
 ├───────────────────────────────────────────────────────────────────┤
 │                                                                   │
 │  # My Document                                                    │
@@ -275,231 +175,189 @@ Users can compare any two versions side-by-side:
 │  The rest of the document continues here...                       │
 │                                                                   │
 ├───────────────────────────────────────────────────────────────────┤
-│  Summary: -89 words removed · +12 words added                     │
+│  -89 words removed · +12 words added                              │
 │                                                                   │
-│           [Restore Yesterday]  [Restore Today]  [Close]           │
+│                    [Restore "First draft"]  [Close]               │
 └───────────────────────────────────────────────────────────────────┘
 ```
 
-### Visual Language
+**Visual language:**
+- ~~Strikethrough with red~~ = Removed text
+- ++Underline with green++ = Added text
 
-| Change Type | Visual Treatment |
-|-------------|------------------|
-| Removed text | ~~Strikethrough~~ with red background |
-| Added text | ++Underline++ with green background |
-| Unchanged | Normal text |
+---
+
+## AI Edits and Undo
+
+### How AI Edits Work with Undo
+
+When the AI makes changes to a document:
+
+1. AI applies the edit to the document
+2. Edit appears as a single undoable action
+3. User can immediately **Undo (⌘Z)** to revert
+4. User can also chat "undo that" or "revert that change"
+
+**No special version is created.** AI edits are just edits—undoable like any other.
+
+### When to Save a Version Around AI Edits
+
+If a user is about to ask the AI to make major changes:
+- **Before:** Optionally save a version ("Before AI rewrite")
+- **After:** If they like the result, optionally save a version
+
+But this is the user's choice. The system doesn't automatically create versions for AI edits.
+
+### Conversation-Based Recovery
+
+In the chat interface, users can reference previous states:
+
+> **User:** "Actually, go back to how the introduction was before"
+> **AI:** Reverts the introduction to the previous state
+
+The AI can use undo or re-edit to achieve this. No special versioning system needed.
 
 ---
 
 ## Crash Recovery
 
-### What Users Experience
+### What Users See After a Crash
 
-If the app crashes or quits unexpectedly:
-
-**On next launch:**
+If the app quits unexpectedly and there was unsaved work:
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  Recover Unsaved Changes?                           │
+│  Recover Changes?                                   │
 ├─────────────────────────────────────────────────────┤
 │                                                     │
 │  Midlight found unsaved changes from your last      │
-│  session:                                           │
+│  session.                                           │
 │                                                     │
-│  📄 Project Proposal.md                             │
-│     ~2 paragraphs of unsaved changes                │
+│  📄 Project Proposal                                │
+│     ~2 paragraphs since last auto-save              │
 │                                                     │
-│  📄 Meeting Notes.md                                │
-│     ~5 sentences of unsaved changes                 │
-│                                                     │
-│         [Discard All]  [Recover All]                │
-│                                                     │
-│  Or choose individually:                            │
-│  [View Details]                                     │
+│         [Discard]  [Recover]                        │
 └─────────────────────────────────────────────────────┘
 ```
 
-### Recovery Is Automatic
+### How Recovery Works
 
-The key insight: users shouldn't have to think about crash recovery. The system:
-1. Saves a recovery file every few seconds while editing
-2. Cleans it up on normal save
-3. Only shows the dialog if there's actually something to recover
+1. System saves recovery data every few seconds
+2. On clean exit, recovery data is deleted
+3. On crash, recovery data persists
+4. On next launch, offer to recover
 
 ---
 
-## External Changes
+## External File Changes
 
-### The Problem
+### When Files Change Outside Midlight
 
-If a user edits a file outside Midlight (in VS Code, via git, through sync services), Midlight needs to handle it gracefully.
+If someone edits a file in another app (VS Code, git, sync service):
 
-### What Users See
+**If no unsaved changes in Midlight:** Auto-reload silently
 
-When returning to Midlight after an external change:
+**If there are unsaved changes:**
 
 ```
 ┌─────────────────────────────────────────────────────┐
 │  File Changed                                       │
 ├─────────────────────────────────────────────────────┤
 │                                                     │
-│  "Project Proposal.md" was modified outside of      │
+│  "Project Proposal" was modified outside of         │
 │  Midlight.                                          │
 │                                                     │
-│  What would you like to do?                         │
-│                                                     │
-│  [Reload from Disk]                                 │
-│    Use the version saved by the other app           │
-│                                                     │
-│  [Keep My Version]                                  │
-│    Keep what's in Midlight, ignore external changes │
-│                                                     │
-│  [Compare]                                          │
-│    See both versions before deciding                │
-│                                                     │
+│  [Reload from Disk]  [Keep Mine]  [Compare]         │
 └─────────────────────────────────────────────────────┘
 ```
 
-### Smart Defaults
+---
 
-- If user hasn't made changes in Midlight: auto-reload silently
-- If user has unsaved changes: always prompt
+## What's NOT in This System
+
+To keep the model simple, we explicitly **don't** have:
+
+| Concept | Why Not |
+|---------|---------|
+| Automatic checkpoints | Confusing—are they versions? Can I delete them? |
+| Bookmarks | Redundant—versions are bookmarks |
+| Drafts/branches | Too complex for most users |
+| Auto-cleanup | Versions are permanent until deleted |
+| Commit messages | "Name" is simpler |
+| Version numbers | Timestamps + names are clearer |
 
 ---
 
 ## Information Hierarchy
 
-### What Users Need to Know
-
-**Always visible:**
+### Always Visible
 - Nothing about saving (it's automatic)
 
-**On demand (History panel):**
-- Recent checkpoints with timestamps
-- Bookmarked versions
-- Active drafts
+### On Demand (History Panel)
+- List of saved versions with names and dates
+- View, restore, compare, delete actions
 
-**When needed (Dialogs):**
-- Recovery after crash
-- External change conflicts
-- Draft application choices
+### When Needed (Dialogs)
+- Save Version prompt
+- Restore confirmation
+- Crash recovery
+- External change conflict
 
-### What Users Never See
-
-- Technical terms (commits, branches, HEAD, hash)
+### Never Visible
+- Technical terms (commits, branches, HEAD)
 - File system details (.midlight folder)
-- Save progress indicators
-- Version numbers or IDs
-
----
-
-## Edge Cases & Error States
-
-### "I Can't Find My Old Version"
-
-**Cause:** Auto-checkpoints older than retention period were cleaned up.
-
-**Prevention:**
-- Prompt users to bookmark important versions
-- Show "Checkpoint expires in X days" for old versions
-
-**Recovery:**
-- Clear message: "Checkpoints older than 30 days are automatically removed. Bookmark important versions to keep them forever."
-
-### "I Accidentally Restored the Wrong Version"
-
-**Solution:** Restoring always creates a checkpoint of current state first.
-
-**Message after restore:**
-> "Restored to [version name]. Your previous version was saved—you can restore it from the history."
-
-### "My Draft and Main Document Diverged"
-
-When user's main document changed significantly while working on a draft:
-
-```
-┌──────────────────────────────────────────────┐
-│  Your Main Document Has Changed               │
-├──────────────────────────────────────────────┤
-│                                              │
-│  Since you started this draft, your main     │
-│  document has been edited.                   │
-│                                              │
-│  You can:                                    │
-│                                              │
-│  ● Replace main with draft                   │
-│    Discard changes made to main since draft  │
-│    was created                               │
-│                                              │
-│  ○ Compare all three versions                │
-│    See original, current main, and draft     │
-│    side by side                              │
-│                                              │
-│              [Cancel]  [Continue]            │
-└──────────────────────────────────────────────┘
-```
+- Undo history persistence details
 
 ---
 
 ## Feature Discovery
 
-### How Users Learn About Versioning
+### First Document
 
-**Onboarding tooltip (first document):**
-> "Your work is automatically saved and versioned. Click the History icon anytime to see previous versions."
+Tooltip after first edit:
+> "Your work is automatically saved. Use ⌘Z to undo anytime."
 
-**Empty history state:**
-> "As you edit, Midlight saves checkpoints automatically. They'll appear here so you can always go back."
+### After Significant Editing
 
-**After significant edit session:**
-> "Tip: Bookmark this version if it's a milestone you might want to return to."
+Subtle prompt:
+> "Want to save this as a version? You can return to it later."
 
-### Progressive Disclosure
+### Empty Version History
 
-| User Need | Feature Introduced |
-|-----------|-------------------|
-| "Did my work save?" | Auto-save reassurance |
-| "I made a mistake" | Checkpoint restore |
-| "I want to mark this version" | Bookmarks |
-| "I want to try something risky" | Drafts |
-| "What did I change?" | Compare view |
-
----
-
-## Success Metrics
-
-### User Confidence
-- Users close the app without worrying about saving
-- Users feel safe making big changes
-
-### Feature Adoption
-- % of users who view history at least once
-- % of users who restore a checkpoint
-- % of users who create a bookmark
-- % of users who use drafts
-
-### Recovery Effectiveness
-- % of crash recovery offers accepted
-- Time from crash to recovered state
-- User satisfaction after recovery
+```
+┌─────────────────────────────────────────┐
+│  Version History                         │
+├─────────────────────────────────────────┤
+│                                         │
+│  No versions saved yet.                 │
+│                                         │
+│  Save a version when you reach a        │
+│  milestone—like completing a draft      │
+│  or before making big changes.          │
+│                                         │
+│  [Save Version]                         │
+│                                         │
+└─────────────────────────────────────────┘
+```
 
 ---
 
 ## Summary
 
-| Concept | User Language | User Action |
-|---------|---------------|-------------|
-| Saving | (invisible) | None needed |
-| Version history | "Document History" | View in sidebar/panel |
-| Snapshot | "Checkpoint" | Created automatically |
-| Named snapshot | "Bookmark" | Click bookmark icon |
-| Branch | "Draft" | Start from menu |
-| Restore | "Go back to this" | Click restore button |
-| Diff | "Compare" | Select two versions |
+| User Need | Solution |
+|-----------|----------|
+| "Did my work save?" | Auto-save (invisible, always on) |
+| "I just made a mistake" | Undo (⌘Z) |
+| "I want to save a milestone" | Save Version |
+| "What did this look like before?" | View version |
+| "I want to go back to an old version" | Restore version |
+| "What changed since then?" | Compare version |
+| "The AI messed something up" | Undo (⌘Z) or chat "undo that" |
+| "The app crashed" | Crash recovery prompt |
 
-The goal is for users to feel their work is always safe, without ever having to think about version control.
+**The goal:** Users feel their work is always safe, and creating intentional milestones is simple and familiar—like saving a commit, but without the complexity.
 
 ---
 
 *Document created: 2025-12-12*
+*Revised: 2025-12-13 - Simplified from Checkpoints/Bookmarks/Drafts to Auto-save/Versions*

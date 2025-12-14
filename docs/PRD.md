@@ -74,11 +74,43 @@ The core premise is to move beyond "AI as a feature" (like a simple "summarize" 
 *   **Cross-File Actions (Advanced):**
     *   *Example:* "Review the last three files in my 'Meetings' folder and create a 'Project Summary' document."
 
-### 4.3 Storage & Sync Architecture
+### 4.3 Saving & Version Control
+
+Midlight uses an **auto-save with manual snapshots** model that prioritizes user peace of mind while providing powerful version control capabilities.
+
+#### Auto-Save (Continuous)
+*   Documents are automatically saved as the user types, with a short debounce delay.
+*   A status indicator in the toolbar shows "Saving..." or "Saved" so users always know their work is safe.
+*   Users can press `Cmd/Ctrl+S` for immediate save confirmation (shows toast notification).
+*   Auto-save creates internal checkpoints for recovery purposes, but these are hidden from the user interface.
+
+#### Manual Snapshots (User-Created Versions)
+*   Users can create **named snapshots** at any time via the Save (floppy disk) icon in the toolbar.
+*   Snapshots open a modal dialog with:
+    *   **Name** (required, 50 chars max) — e.g., "Before major rewrite", "Draft v2"
+    *   **Description** (optional, 200 chars max) — Notes about what this version represents
+*   Snapshots are designed for meaningful milestones, not routine saves.
+*   The Versions panel (History icon) shows all user-created snapshots for the current document.
+
+#### Version Features
+*   **Preview:** View any snapshot's content without restoring.
+*   **Restore:** Revert the document to a previous snapshot (with confirmation warning).
+*   **Compare:** Select two snapshots to view a word-level diff showing additions and removals.
+*   **Rename:** Update the name of an existing snapshot.
+
+#### Design Philosophy
+The system is intentionally simple:
+*   **No manual "Save" action required** — auto-save handles this invisibly.
+*   **Snapshots ≠ Saves** — they are deliberate bookmarks, not routine operations.
+*   **No complex branching** — linear history keeps the mental model simple.
+*   **Familiar iconography** — Save icon creates snapshots; History icon views them.
+
+### 4.4 Storage & Sync Architecture
 
 #### Default Mode (Local-First)
 *   All files are stored on the user's local hard drive in a user-selected folder.
 *   The app is fully functional offline (except for LLM features requiring an API).
+*   Version history (snapshots and auto-checkpoints) is stored in a `.midlight` folder within the workspace.
 
 #### Premium Mode (Cloud Sync)
 *   A paid subscription feature.

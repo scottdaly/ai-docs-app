@@ -12,9 +12,6 @@ export type { ImageStoreResult } from './imageManager';
 export { RecoveryManager } from './recoveryManager';
 export { FileWatcher } from './fileWatcher';
 export type { FileChangeEvent, FileWatcherConfig } from './fileWatcher';
-export { DraftManager } from './draftManager';
-export type { DraftFile, DraftListItem } from './draftManager';
-
 // Document serialization
 export { DocumentSerializer } from './documentSerializer';
 export type { SerializedDocument } from './documentSerializer';
@@ -34,9 +31,6 @@ export type {
   Checkpoint,
   CheckpointHistory,
   CheckpointContent,
-
-  // Draft types
-  Draft,
 
   // Sidecar document types
   SidecarDocument,

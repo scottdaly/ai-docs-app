@@ -156,46 +156,6 @@ interface ExternalChangeEvent {
   timestamp: string;
 }
 
-// --- Draft Types ---
-
-interface Draft {
-  id: string;
-  name: string;
-  fileKey: string;
-  sourceCheckpointId: string;
-  headId: string;
-  checkpoints: Checkpoint[];
-  created: string;
-  modified: string;
-  status: 'active' | 'merged' | 'archived';
-}
-
-interface DraftListItem {
-  id: string;
-  name: string;
-  fileKey: string;
-  created: string;
-  modified: string;
-  status: 'active' | 'merged' | 'archived';
-  wordCount: number;
-}
-
-interface DraftsResult extends WorkspaceResult {
-  drafts?: DraftListItem[];
-}
-
-interface DraftResult extends WorkspaceResult {
-  draft?: Draft;
-}
-
-interface DraftContentResult extends WorkspaceResult {
-  content?: any;
-}
-
-interface DraftCountResult extends WorkspaceResult {
-  count?: number;
-}
-
 // --- Import Types ---
 
 type ImportSourceType = 'obsidian' | 'notion' | 'generic';
@@ -295,6 +255,96 @@ interface ImportResultResponse extends WorkspaceResult {
   result?: ImportResult;
 }
 
+// --- Authentication Types ---
+
+interface AuthUser {
+  id: number;
+  email: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+}
+
+interface AuthSubscription {
+  tier: 'free' | 'premium';
+  status: 'active' | 'cancelled' | 'expired';
+  currentPeriodEnd?: string;
+}
+
+interface AuthResult {
+  user: AuthUser;
+  accessToken?: string;
+}
+
+interface QuotaInfo {
+  tier: string;
+  limit: number | null;
+  used: number;
+  remaining: number | null;
+}
+
+// --- LLM Types ---
+
+interface LLMMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
+interface LLMChatOptions {
+  provider: 'openai' | 'anthropic';
+  model: string;
+  messages: LLMMessage[];
+  temperature?: number;
+  maxTokens?: number;
+  requestType?: 'chat' | 'inline_edit' | 'agent';
+}
+
+interface LLMChatResponse {
+  content: string;
+  usage?: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  };
+}
+
+interface LLMTool {
+  name: string;
+  description: string;
+  parameters: any;
+}
+
+interface LLMChatWithToolsOptions extends LLMChatOptions {
+  tools: LLMTool[];
+}
+
+interface LLMToolCall {
+  id: string;
+  name: string;
+  arguments: any;
+}
+
+interface LLMToolResponse {
+  content?: string;
+  toolCalls?: LLMToolCall[];
+}
+
+interface ModelInfo {
+  id: string;
+  name: string;
+  tier: string;
+}
+
+interface AvailableModels {
+  openai: ModelInfo[];
+  anthropic: ModelInfo[];
+}
+
+interface LLMStatus {
+  available: boolean;
+  authenticated: boolean;
+  quota?: QuotaInfo;
+}
+
 interface IElectronAPI {
   // Platform info
   platform: 'darwin' | 'win32' | 'linux';
@@ -354,7 +404,7 @@ interface IElectronAPI {
   workspaceRestoreCheckpoint: (workspaceRoot: string, filePath: string, checkpointId: string) => Promise<CheckpointContentResult>;
 
   // Create a bookmark (named checkpoint)
-  workspaceCreateBookmark: (workspaceRoot: string, filePath: string, json: any, label: string) => Promise<SaveResult>;
+  workspaceCreateBookmark: (workspaceRoot: string, filePath: string, json: any, label: string, description?: string) => Promise<SaveResult>;
 
   // Label an existing checkpoint
   workspaceLabelCheckpoint: (workspaceRoot: string, filePath: string, checkpointId: string, label: string) => Promise<WorkspaceResult>;
@@ -385,44 +435,6 @@ interface IElectronAPI {
 
   // Check if a file has external changes
   workspaceHasExternalChange: (workspaceRoot: string, filePath: string) => Promise<ExternalChangeResult>;
-
-  // --- Draft APIs ---
-
-  // Create a new draft from current document state
-  workspaceCreateDraft: (workspaceRoot: string, filePath: string, name: string, json: any) => Promise<DraftResult>;
-
-  // Create a new draft from a checkpoint
-  workspaceCreateDraftFromCheckpoint: (workspaceRoot: string, filePath: string, name: string, checkpointId: string) => Promise<DraftResult>;
-
-  // Get all drafts for a file
-  workspaceGetDrafts: (workspaceRoot: string, filePath: string) => Promise<DraftsResult>;
-
-  // Get all active drafts across all files
-  workspaceGetAllActiveDrafts: (workspaceRoot: string) => Promise<DraftsResult>;
-
-  // Get a specific draft
-  workspaceGetDraft: (workspaceRoot: string, filePath: string, draftId: string) => Promise<DraftResult>;
-
-  // Get draft content as Tiptap JSON
-  workspaceGetDraftContent: (workspaceRoot: string, filePath: string, draftId: string) => Promise<DraftContentResult>;
-
-  // Save draft content
-  workspaceSaveDraftContent: (workspaceRoot: string, filePath: string, draftId: string, json: any, trigger?: string) => Promise<SaveResult>;
-
-  // Rename a draft
-  workspaceRenameDraft: (workspaceRoot: string, filePath: string, draftId: string, newName: string) => Promise<WorkspaceResult>;
-
-  // Apply (merge) a draft to the main document
-  workspaceApplyDraft: (workspaceRoot: string, filePath: string, draftId: string) => Promise<DraftContentResult>;
-
-  // Discard a draft (archive without applying)
-  workspaceDiscardDraft: (workspaceRoot: string, filePath: string, draftId: string) => Promise<WorkspaceResult>;
-
-  // Delete a draft permanently
-  workspaceDeleteDraft: (workspaceRoot: string, filePath: string, draftId: string) => Promise<WorkspaceResult>;
-
-  // Count active drafts (for tier enforcement)
-  workspaceCountActiveDrafts: (workspaceRoot: string) => Promise<DraftCountResult>;
 
   // --- Import APIs ---
 
@@ -487,6 +499,35 @@ interface IElectronAPI {
   onUpdateDownloadProgress: (callback: (data: { percent: number; bytesPerSecond: number; total: number; transferred: number }) => void) => () => void;
   onUpdateDownloaded: (callback: (data: { version: string; releaseNotes?: string }) => void) => () => void;
   onUpdateError: (callback: (data: { message: string }) => void) => () => void;
+
+  // --- Authentication APIs ---
+  auth: {
+    signup: (email: string, password: string, displayName?: string) => Promise<AuthResult>;
+    login: (email: string, password: string) => Promise<AuthResult>;
+    logout: () => Promise<void>;
+    loginWithGoogle: () => Promise<AuthResult>;
+    loginWithGithub: () => Promise<AuthResult>;
+    getUser: () => Promise<AuthUser | null>;
+    getSubscription: () => Promise<AuthSubscription | null>;
+    getUsage: () => Promise<QuotaInfo | null>;
+    isAuthenticated: () => Promise<boolean>;
+    onAuthStateChange: (callback: (user: AuthUser | null) => void) => () => void;
+  };
+
+  // --- LLM APIs ---
+  llm: {
+    chat: (options: LLMChatOptions) => Promise<LLMChatResponse>;
+    chatStream: (options: LLMChatOptions, channelId: string) => void;
+    onStreamChunk: (channelId: string, callback: (data: { content: string }) => void) => () => void;
+    onStreamDone: (channelId: string, callback: () => void) => () => void;
+    onStreamUsage: (channelId: string, callback: (data: { usage: any }) => void) => () => void;
+    onStreamError: (channelId: string, callback: (data: { error: string }) => void) => () => void;
+    offStream: (channelId: string) => void;
+    chatWithTools: (options: LLMChatWithToolsOptions) => Promise<LLMToolResponse>;
+    getModels: () => Promise<AvailableModels>;
+    getQuota: () => Promise<QuotaInfo>;
+    getStatus: () => Promise<LLMStatus>;
+  };
 }
 
 interface Window {

@@ -3,39 +3,39 @@ import { diffWords } from 'diff';
 import { useMemo } from 'react';
 
 interface CompareModalProps {
-  /** Source checkpoint (older) */
-  checkpointA: {
+  /** Source version (older) */
+  versionA: {
     id: string;
-    label?: string;
+    name?: string;
     timestamp: string;
   };
 
-  /** Target checkpoint (newer) */
-  checkpointB: {
+  /** Target version (newer) */
+  versionB: {
     id: string;
-    label?: string;
+    name?: string;
     timestamp: string;
   };
 
-  /** Content of checkpoint A */
+  /** Content of version A */
   contentA: string;
 
-  /** Content of checkpoint B */
+  /** Content of version B */
   contentB: string;
 
   /** Called to close the modal */
   onClose: () => void;
 
-  /** Called to restore checkpoint A */
+  /** Called to restore version A */
   onRestoreA: () => void;
 
-  /** Called to restore checkpoint B */
+  /** Called to restore version B */
   onRestoreB: () => void;
 }
 
 export function CompareModal({
-  checkpointA,
-  checkpointB,
+  versionA,
+  versionB,
   contentA,
   contentB,
   onClose,
@@ -76,7 +76,7 @@ export function CompareModal({
           <div>
             <h2 className="font-semibold text-lg">Compare Versions</h2>
             <p className="text-sm text-muted-foreground">
-              {checkpointA.label || 'Version'} → {checkpointB.label || 'Version'}
+              {versionA.name || 'Version'} → {versionB.name || 'Version'}
             </p>
           </div>
           <button
@@ -100,10 +100,10 @@ export function CompareModal({
             <div className="flex items-center justify-between">
               <div>
                 <div className="font-medium text-sm">
-                  {checkpointA.label || 'Older Version'}
+                  {versionA.name || 'Older Version'}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {formatTime(checkpointA.timestamp)}
+                  {formatTime(versionA.timestamp)}
                 </div>
               </div>
               <button
@@ -119,10 +119,10 @@ export function CompareModal({
             <div className="flex items-center justify-between">
               <div>
                 <div className="font-medium text-sm">
-                  {checkpointB.label || 'Newer Version'}
+                  {versionB.name || 'Newer Version'}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {formatTime(checkpointB.timestamp)}
+                  {formatTime(versionB.timestamp)}
                 </div>
               </div>
               <button

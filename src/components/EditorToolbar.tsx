@@ -4,10 +4,11 @@ import {
   Image as ImageIcon,
   Minus,
   History,
-  Bookmark,
-  GitBranch,
+  Save,
   Sparkles,
   MoreVertical,
+  Check,
+  Cloud,
 } from 'lucide-react';
 import { BlockTypeDropdown } from './BlockTypeDropdown';
 import { FontFamilyDropdown } from './FontFamilyDropdown';
@@ -16,11 +17,10 @@ import { ColorPickerDropdown } from './ColorPickerDropdown';
 import { HighlightPickerDropdown } from './HighlightPickerDropdown';
 import { TextStyleDropdown } from './TextStyleDropdown';
 import { AlignmentDropdown } from './AlignmentDropdown';
-import { useHistoryStore } from '../store/useHistoryStore';
-import { useDraftStore } from '../store/useDraftStore';
+import { SaveSnapshotModal } from './SaveSnapshotModal';
+import { useVersionStore } from '../store/useVersionStore';
 import { useFileSystem } from '../store/useFileSystem';
 import { useRef, useState, useEffect, useCallback, ReactNode } from 'react';
-import { Loader2 } from 'lucide-react';
 import { RightSidebarMode } from './RightSidebar';
 import {
   DropdownMenu,
@@ -44,31 +44,28 @@ export function EditorToolbar({ editor, rightPanelMode, onSetRightPanelMode }: E
   const fileInputRef = useRef<HTMLInputElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const itemsContainerRef = useRef<HTMLDivElement>(null);
-  const { createBookmark } = useHistoryStore();
-  const { activeDraft } = useDraftStore();
-  const { rootDir, activeFilePath } = useFileSystem();
-  const [isCreatingBookmark, setIsCreatingBookmark] = useState(false);
-  const [isSavingBookmark, setIsSavingBookmark] = useState(false);
-  const [bookmarkName, setBookmarkName] = useState('');
+  const { saveVersion } = useVersionStore();
+  const { rootDir, activeFilePath, isDirty } = useFileSystem();
+  const [isSavingSnapshot, setIsSavingSnapshot] = useState(false);
+  const [isSnapshotModalOpen, setIsSnapshotModalOpen] = useState(false);
   const [overflowIndex, setOverflowIndex] = useState<number>(-1);
   const lastOverflowIndexRef = useRef<number>(-1);
   const itemWidthsRef = useRef<number[]>([]);
   const isInitializedRef = useRef(false);
 
-  const handleCreateBookmark = async () => {
-    if (!editor || !rootDir || !activeFilePath || !bookmarkName.trim() || isSavingBookmark) return;
+  const handleSaveSnapshot = async (name: string, description?: string) => {
+    if (!editor || !rootDir || !activeFilePath) return;
 
-    setIsSavingBookmark(true);
+    setIsSavingSnapshot(true);
     try {
       const json = editor.getJSON();
-      const success = await createBookmark(rootDir, activeFilePath, json, bookmarkName.trim());
+      const success = await saveVersion(rootDir, activeFilePath, json, name, description);
 
       if (success) {
-        setBookmarkName('');
-        setIsCreatingBookmark(false);
+        setIsSnapshotModalOpen(false);
       }
     } finally {
-      setIsSavingBookmark(false);
+      setIsSavingSnapshot(false);
     }
   };
 
@@ -342,82 +339,43 @@ export function EditorToolbar({ editor, rightPanelMode, onSetRightPanelMode }: E
 
       {/* Right-side controls (always visible) */}
       <div className="flex items-center gap-1 shrink-0">
-        {/* Bookmark creation */}
-        {isCreatingBookmark ? (
-          <div className="flex items-center gap-1">
-            <input
-              type="text"
-              value={bookmarkName}
-              onChange={(e) => setBookmarkName(e.target.value.slice(0, 50))}
-              placeholder="Bookmark name..."
-              className="text-xs px-2 py-1 border rounded bg-background w-32"
-              maxLength={50}
-              autoFocus
-              disabled={isSavingBookmark}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleCreateBookmark();
-                if (e.key === 'Escape') {
-                  setIsCreatingBookmark(false);
-                  setBookmarkName('');
-                }
-              }}
-            />
-            <button
-              onClick={handleCreateBookmark}
-              disabled={!bookmarkName.trim() || isSavingBookmark}
-              className="text-xs px-2 py-1 bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50 flex items-center gap-1"
-            >
-              {isSavingBookmark ? (
-                <>
-                  <Loader2 size={12} className="animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                'Save'
-              )}
-            </button>
-            <button
-              onClick={() => {
-                setIsCreatingBookmark(false);
-                setBookmarkName('');
-              }}
-              className="text-xs px-2 py-1 border rounded hover:bg-muted"
-            >
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => setIsCreatingBookmark(true)}
-            className="p-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors text-muted-foreground"
-            title="Create Bookmark"
-          >
-            <Bookmark size={16} />
-          </button>
-        )}
+        {/* Save status indicator */}
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground px-2">
+          {isDirty ? (
+            <>
+              <Cloud size={14} className="animate-pulse" />
+              <span>Saving...</span>
+            </>
+          ) : (
+            <>
+              <Check size={14} className="text-green-500" />
+              <span>Saved</span>
+            </>
+          )}
+        </div>
 
         <div className="w-px h-4 bg-border mx-1" />
 
-        {/* History toggle */}
+        {/* Create Snapshot */}
+        <button
+          onClick={() => setIsSnapshotModalOpen(true)}
+          className="p-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors text-muted-foreground"
+          title="Create Snapshot"
+        >
+          <Save size={16} />
+        </button>
+
+        <div className="w-px h-4 bg-border mx-1" />
+
+        {/* Snapshots toggle */}
         <button
           onClick={() => onSetRightPanelMode(rightPanelMode === 'history' ? null : 'history')}
           className={`p-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors ${
             rightPanelMode === 'history' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
           }`}
-          title="Version History"
+          title="Snapshots"
         >
           <History size={16} />
-        </button>
-
-        {/* Drafts toggle */}
-        <button
-          onClick={() => onSetRightPanelMode(rightPanelMode === 'drafts' ? null : 'drafts')}
-          className={`p-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors ${
-            rightPanelMode === 'drafts' || activeDraft ? 'bg-purple-500/20 text-purple-600' : 'text-muted-foreground'
-          }`}
-          title={activeDraft ? `Editing draft: ${activeDraft.name}` : 'Drafts'}
-        >
-          <GitBranch size={16} />
         </button>
 
         {/* AI Assistant toggle */}
@@ -432,6 +390,14 @@ export function EditorToolbar({ editor, rightPanelMode, onSetRightPanelMode }: E
           <Sparkles size={16} />
         </button>
       </div>
+
+      {/* Save Snapshot Modal */}
+      <SaveSnapshotModal
+        open={isSnapshotModalOpen}
+        onOpenChange={setIsSnapshotModalOpen}
+        onSave={handleSaveSnapshot}
+        isSaving={isSavingSnapshot}
+      />
     </div>
   );
 }

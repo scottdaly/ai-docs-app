@@ -11,8 +11,11 @@ import { ImportDetectionDialog, DetectedSourceType } from './components/ImportDe
 import { RightSidebar, RightSidebarMode } from './components/RightSidebar'
 import { UpdateNotification } from './components/UpdateNotification'
 import { ImagePreview } from './components/ImagePreview'
+import { ToastContainer } from './components/ToastContainer'
+import { AuthModal } from './components/AuthModal'
 import { EditorHandle } from './components/Editor'
 import { useFileSystem } from './store/useFileSystem'
+import { toast } from './store/useToastStore'
 import { useRecentWorkspaces } from './store/useRecentWorkspaces'
 import { useTheme, Theme } from './store/useTheme'
 import { useSettingsStore } from './store/useSettingsStore'
@@ -104,8 +107,11 @@ function App() {
   const [detectedFolderName, setDetectedFolderName] = useState('');
   const [detectedType, setDetectedType] = useState<DetectedSourceType>('generic');
 
-  // Right sidebar state (ai, history, drafts, or null)
+  // Right sidebar state (ai, history, or null)
   const [rightPanelMode, setRightPanelMode] = useState<RightSidebarMode>(null);
+
+  // Auth modal state
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   // Editor ref for accessing editor methods from RightSidebar
   const editorRef = useRef<EditorHandle>(null);
@@ -209,6 +215,34 @@ function App() {
     };
   }, []);
 
+  // Watch for save errors and show toast
+  const { saveError, clearSaveError, saveFile, editorContent, isDirty } = useFileSystem();
+  useEffect(() => {
+    if (saveError) {
+      toast.error(saveError);
+      clearSaveError();
+    }
+  }, [saveError, clearSaveError]);
+
+  // Handle Cmd/Ctrl+S to trigger immediate save
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        // Only save if there's content and it's dirty
+        if (editorContent && isDirty) {
+          saveFile(editorContent);
+          toast.success('Document saved');
+        } else if (editorContent && !isDirty) {
+          toast.info('Already saved');
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [editorContent, isDirty, saveFile]);
+
   // Import from menu (obsidian/notion)
   const handleImportFromMenu = (type: 'obsidian' | 'notion') => {
     setImportSourceType(type);
@@ -304,15 +338,13 @@ function App() {
                   />
                 )}
               </div>
-              {/* Right Sidebar - AI, History, or Drafts - only show for markdown files */}
+              {/* Right Sidebar - AI or History - only show for markdown files */}
               {activeFile?.category !== 'viewable' && (
                 <RightSidebar
                   mode={rightPanelMode}
                   onClose={() => setRightPanelMode(null)}
                   onRestoreContent={(content) => editorRef.current?.restoreContent(content)}
-                  onSwitchToDraft={(content) => editorRef.current?.switchToDraft(content)}
-                  onSwitchToMain={() => editorRef.current?.switchToMain()}
-                  getCurrentContent={() => editorRef.current?.getCurrentContent()}
+                  onOpenAuth={() => setAuthModalOpen(true)}
                 />
               )}
             </div>
@@ -327,6 +359,7 @@ function App() {
           />
         )}
         <SettingsModal />
+        <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
         <ExportProgress isVisible={isExporting} onClose={() => setIsExporting(false)} />
         <ImportDetectionDialog
           open={detectionDialogOpen}
@@ -355,6 +388,7 @@ function App() {
           initialSourcePath={importSourcePath}
         />
         <UpdateNotification />
+        <ToastContainer />
       </div>
     </DropZone>
   )

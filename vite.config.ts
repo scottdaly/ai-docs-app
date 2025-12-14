@@ -16,6 +16,13 @@ export default defineConfig(() => {
     electron({
       main: {
         entry: ['electron/main.ts', 'electron/docx-worker.ts'],
+        vite: {
+          build: {
+            rollupOptions: {
+              external: ['electron-store'],
+            },
+          },
+        },
       },
       preload: {
         input: 'electron/preload.ts',

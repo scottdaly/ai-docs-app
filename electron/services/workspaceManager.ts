@@ -17,7 +17,6 @@ import { ObjectStore } from './objectStore';
 import { CheckpointManager } from './checkpointManager';
 import { ImageManager } from './imageManager';
 import { RecoveryManager } from './recoveryManager';
-import { DraftManager, DraftListItem } from './draftManager';
 import { DocumentSerializer } from './documentSerializer';
 import { DocumentDeserializer } from './documentDeserializer';
 import {
@@ -26,7 +25,6 @@ import {
   DEFAULT_WORKSPACE_CONFIG,
   RecoveryFile,
   Checkpoint,
-  Draft,
   createEmptySidecar,
 } from './types';
 
@@ -58,7 +56,6 @@ export class WorkspaceManager {
   private checkpointManager: CheckpointManager;
   private imageManager: ImageManager;
   private recoveryManager: RecoveryManager;
-  private draftManager: DraftManager;
   private serializer: DocumentSerializer;
   private deserializer: DocumentDeserializer;
 
@@ -75,7 +72,6 @@ export class WorkspaceManager {
     this.checkpointManager = new CheckpointManager(workspaceRoot, this.objectStore);
     this.imageManager = new ImageManager(workspaceRoot);
     this.recoveryManager = new RecoveryManager(workspaceRoot);
-    this.draftManager = new DraftManager(workspaceRoot, this.objectStore);
     this.serializer = new DocumentSerializer(this.imageManager);
     this.deserializer = new DocumentDeserializer(this.imageManager);
   }
@@ -95,7 +91,6 @@ export class WorkspaceManager {
       this.checkpointManager.init(),
       this.imageManager.init(),
       this.recoveryManager.init(),
-      this.draftManager.init(),
     ]);
 
     // Load or create workspace config
@@ -331,7 +326,8 @@ export class WorkspaceManager {
   async createBookmark(
     filePath: string,
     json: TiptapDocument,
-    label: string
+    label: string,
+    description?: string
   ): Promise<Checkpoint | null> {
     await this.ensureInitialized();
     const fileKey = this.getFileKey(filePath);
@@ -344,7 +340,8 @@ export class WorkspaceManager {
       markdown,
       sidecar,
       'bookmark',
-      label
+      label,
+      description
     );
   }
 
@@ -381,201 +378,6 @@ export class WorkspaceManager {
     ]);
 
     return { contentA, contentB };
-  }
-
-  // ============================================================================
-  // Draft Operations
-  // ============================================================================
-
-  /**
-   * Create a new draft from a checkpoint.
-   */
-  async createDraft(
-    filePath: string,
-    name: string,
-    sourceCheckpointId: string
-  ): Promise<Draft | null> {
-    await this.ensureInitialized();
-    const fileKey = this.getFileKey(filePath);
-
-    // Get checkpoint content
-    const content = await this.checkpointManager.getCheckpointContent(fileKey, sourceCheckpointId);
-    if (!content) return null;
-
-    return this.draftManager.createDraft(fileKey, name, sourceCheckpointId, content);
-  }
-
-  /**
-   * Create a new draft from current document state.
-   */
-  async createDraftFromCurrent(
-    filePath: string,
-    name: string,
-    json: TiptapDocument
-  ): Promise<Draft | null> {
-    await this.ensureInitialized();
-    const fileKey = this.getFileKey(filePath);
-
-    // Get current head checkpoint ID
-    const headId = await this.checkpointManager.getHeadId(fileKey);
-
-    // Serialize current state
-    const existingSidecar = await this.loadSidecar(filePath);
-    const { markdown, sidecar } = await this.serializer.serialize(json, existingSidecar);
-
-    // Create draft
-    return this.draftManager.createDraft(
-      fileKey,
-      name,
-      headId || 'current',
-      { markdown, sidecar }
-    );
-  }
-
-  /**
-   * Get all drafts for a file.
-   */
-  async getDrafts(filePath: string): Promise<DraftListItem[]> {
-    await this.ensureInitialized();
-    const fileKey = this.getFileKey(filePath);
-    return this.draftManager.getDrafts(fileKey);
-  }
-
-  /**
-   * Get all active drafts across all files.
-   */
-  async getAllActiveDrafts(): Promise<DraftListItem[]> {
-    await this.ensureInitialized();
-    return this.draftManager.getAllActiveDrafts();
-  }
-
-  /**
-   * Get a specific draft.
-   */
-  async getDraft(filePath: string, draftId: string): Promise<Draft | null> {
-    await this.ensureInitialized();
-    const fileKey = this.getFileKey(filePath);
-    return this.draftManager.getDraft(fileKey, draftId);
-  }
-
-  /**
-   * Get current content of a draft as Tiptap JSON.
-   */
-  async getDraftContent(filePath: string, draftId: string): Promise<TiptapDocument | null> {
-    await this.ensureInitialized();
-    const fileKey = this.getFileKey(filePath);
-    const content = await this.draftManager.getDraftContent(fileKey, draftId);
-
-    if (!content) return null;
-
-    return this.deserializer.deserialize(content.markdown, content.sidecar);
-  }
-
-  /**
-   * Save content to a draft.
-   */
-  async saveDraftContent(
-    filePath: string,
-    draftId: string,
-    json: TiptapDocument,
-    trigger: string = 'auto'
-  ): Promise<Checkpoint | null> {
-    await this.ensureInitialized();
-    const fileKey = this.getFileKey(filePath);
-
-    // Serialize to markdown + sidecar
-    const existingSidecar = await this.loadSidecar(filePath);
-    const { markdown, sidecar } = await this.serializer.serialize(json, existingSidecar);
-
-    return this.draftManager.saveDraftContent(fileKey, draftId, { markdown, sidecar }, trigger);
-  }
-
-  /**
-   * Rename a draft.
-   */
-  async renameDraft(filePath: string, draftId: string, newName: string): Promise<boolean> {
-    await this.ensureInitialized();
-    const fileKey = this.getFileKey(filePath);
-    return this.draftManager.renameDraft(fileKey, draftId, newName);
-  }
-
-  /**
-   * Apply (merge) a draft to the main document.
-   * Returns the Tiptap JSON content to be applied.
-   */
-  async applyDraft(filePath: string, draftId: string): Promise<TiptapDocument | null> {
-    await this.ensureInitialized();
-    const fileKey = this.getFileKey(filePath);
-
-    const content = await this.draftManager.applyDraft(fileKey, draftId);
-    if (!content) return null;
-
-    // Write to main file
-    await fs.writeFile(filePath, content.markdown, 'utf8');
-    await this.saveSidecar(filePath, content.sidecar);
-
-    // Create a checkpoint marking the merge
-    await this.checkpointManager.createCheckpoint(
-      fileKey,
-      content.markdown,
-      content.sidecar,
-      'draft_apply',
-      `Applied draft`
-    );
-
-    return this.deserializer.deserialize(content.markdown, content.sidecar);
-  }
-
-  /**
-   * Discard a draft without applying it.
-   */
-  async discardDraft(filePath: string, draftId: string): Promise<boolean> {
-    await this.ensureInitialized();
-    const fileKey = this.getFileKey(filePath);
-    return this.draftManager.discardDraft(fileKey, draftId);
-  }
-
-  /**
-   * Permanently delete a draft.
-   */
-  async deleteDraft(filePath: string, draftId: string): Promise<boolean> {
-    await this.ensureInitialized();
-    const fileKey = this.getFileKey(filePath);
-    return this.draftManager.deleteDraft(fileKey, draftId);
-  }
-
-  /**
-   * Get checkpoints for a draft.
-   */
-  async getDraftCheckpoints(filePath: string, draftId: string): Promise<Checkpoint[]> {
-    await this.ensureInitialized();
-    const fileKey = this.getFileKey(filePath);
-    return this.draftManager.getDraftCheckpoints(fileKey, draftId);
-  }
-
-  /**
-   * Restore draft to a specific checkpoint.
-   */
-  async restoreDraftCheckpoint(
-    filePath: string,
-    draftId: string,
-    checkpointId: string
-  ): Promise<TiptapDocument | null> {
-    await this.ensureInitialized();
-    const fileKey = this.getFileKey(filePath);
-
-    const content = await this.draftManager.restoreDraftCheckpoint(fileKey, draftId, checkpointId);
-    if (!content) return null;
-
-    return this.deserializer.deserialize(content.markdown, content.sidecar);
-  }
-
-  /**
-   * Count active drafts (for tier enforcement).
-   */
-  async countActiveDrafts(): Promise<number> {
-    await this.ensureInitialized();
-    return this.draftManager.countActiveDrafts();
   }
 
   // ============================================================================
@@ -618,14 +420,8 @@ export class WorkspaceManager {
   async runGC(): Promise<{ objectsFreed: number; imagesFreed: number }> {
     await this.ensureInitialized();
 
-    // Get all referenced hashes from checkpoints and drafts
-    const [checkpointHashes, draftHashes] = await Promise.all([
-      this.checkpointManager.getAllReferencedHashes(),
-      this.draftManager.getAllReferencedHashes(),
-    ]);
-
-    // Merge hash sets
-    const referencedHashes = new Set([...checkpointHashes, ...draftHashes]);
+    // Get all referenced hashes from checkpoints
+    const referencedHashes = await this.checkpointManager.getAllReferencedHashes();
 
     // Get all image references from sidecars
     const referencedImages = await this.getAllImageRefs();

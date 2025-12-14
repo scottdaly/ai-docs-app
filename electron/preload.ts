@@ -69,8 +69,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('workspace:restoreCheckpoint', workspaceRoot, filePath, checkpointId),
 
   // Create a bookmark (named checkpoint)
-  workspaceCreateBookmark: (workspaceRoot: string, filePath: string, json: any, label: string) =>
-    ipcRenderer.invoke('workspace:createBookmark', workspaceRoot, filePath, json, label),
+  workspaceCreateBookmark: (workspaceRoot: string, filePath: string, json: any, label: string, description?: string) =>
+    ipcRenderer.invoke('workspace:createBookmark', workspaceRoot, filePath, json, label, description),
 
   // Label an existing checkpoint
   workspaceLabelCheckpoint: (workspaceRoot: string, filePath: string, checkpointId: string, label: string) =>
@@ -111,56 +111,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Check if a file has external changes
   workspaceHasExternalChange: (workspaceRoot: string, filePath: string) =>
     ipcRenderer.invoke('workspace:hasExternalChange', workspaceRoot, filePath),
-
-  // --- Draft APIs ---
-
-  // Create a new draft from current document state
-  workspaceCreateDraft: (workspaceRoot: string, filePath: string, name: string, json: any) =>
-    ipcRenderer.invoke('workspace:createDraft', workspaceRoot, filePath, name, json),
-
-  // Create a new draft from a checkpoint
-  workspaceCreateDraftFromCheckpoint: (workspaceRoot: string, filePath: string, name: string, checkpointId: string) =>
-    ipcRenderer.invoke('workspace:createDraftFromCheckpoint', workspaceRoot, filePath, name, checkpointId),
-
-  // Get all drafts for a file
-  workspaceGetDrafts: (workspaceRoot: string, filePath: string) =>
-    ipcRenderer.invoke('workspace:getDrafts', workspaceRoot, filePath),
-
-  // Get all active drafts across all files
-  workspaceGetAllActiveDrafts: (workspaceRoot: string) =>
-    ipcRenderer.invoke('workspace:getAllActiveDrafts', workspaceRoot),
-
-  // Get a specific draft
-  workspaceGetDraft: (workspaceRoot: string, filePath: string, draftId: string) =>
-    ipcRenderer.invoke('workspace:getDraft', workspaceRoot, filePath, draftId),
-
-  // Get draft content as Tiptap JSON
-  workspaceGetDraftContent: (workspaceRoot: string, filePath: string, draftId: string) =>
-    ipcRenderer.invoke('workspace:getDraftContent', workspaceRoot, filePath, draftId),
-
-  // Save draft content
-  workspaceSaveDraftContent: (workspaceRoot: string, filePath: string, draftId: string, json: any, trigger?: string) =>
-    ipcRenderer.invoke('workspace:saveDraftContent', workspaceRoot, filePath, draftId, json, trigger),
-
-  // Rename a draft
-  workspaceRenameDraft: (workspaceRoot: string, filePath: string, draftId: string, newName: string) =>
-    ipcRenderer.invoke('workspace:renameDraft', workspaceRoot, filePath, draftId, newName),
-
-  // Apply (merge) a draft to the main document
-  workspaceApplyDraft: (workspaceRoot: string, filePath: string, draftId: string) =>
-    ipcRenderer.invoke('workspace:applyDraft', workspaceRoot, filePath, draftId),
-
-  // Discard a draft (archive without applying)
-  workspaceDiscardDraft: (workspaceRoot: string, filePath: string, draftId: string) =>
-    ipcRenderer.invoke('workspace:discardDraft', workspaceRoot, filePath, draftId),
-
-  // Delete a draft permanently
-  workspaceDeleteDraft: (workspaceRoot: string, filePath: string, draftId: string) =>
-    ipcRenderer.invoke('workspace:deleteDraft', workspaceRoot, filePath, draftId),
-
-  // Count active drafts (for tier enforcement)
-  workspaceCountActiveDrafts: (workspaceRoot: string) =>
-    ipcRenderer.invoke('workspace:countActiveDrafts', workspaceRoot),
 
   // --- Import APIs ---
 
@@ -282,7 +232,132 @@ contextBridge.exposeInMainWorld('electronAPI', {
       const subscription = (_: any, data: { message: string }) => callback(data);
       ipcRenderer.on('update-error', subscription);
       return () => ipcRenderer.off('update-error', subscription);
-  }
+  },
+
+  // --- Authentication APIs ---
+
+  auth: {
+    // Email/password authentication
+    signup: (email: string, password: string, displayName?: string) =>
+      ipcRenderer.invoke('auth:signup', email, password, displayName),
+
+    login: (email: string, password: string) =>
+      ipcRenderer.invoke('auth:login', email, password),
+
+    logout: () =>
+      ipcRenderer.invoke('auth:logout'),
+
+    // OAuth authentication
+    loginWithGoogle: () =>
+      ipcRenderer.invoke('auth:loginWithGoogle'),
+
+    loginWithGithub: () =>
+      ipcRenderer.invoke('auth:loginWithGithub'),
+
+    // User info
+    getUser: () =>
+      ipcRenderer.invoke('auth:getUser'),
+
+    getSubscription: () =>
+      ipcRenderer.invoke('auth:getSubscription'),
+
+    getUsage: () =>
+      ipcRenderer.invoke('auth:getUsage'),
+
+    isAuthenticated: () =>
+      ipcRenderer.invoke('auth:isAuthenticated'),
+
+    // Listen for auth state changes
+    onAuthStateChange: (callback: (user: any) => void) => {
+      const subscription = (_: any, user: any) => callback(user);
+      ipcRenderer.on('auth:stateChange', subscription);
+      return () => ipcRenderer.off('auth:stateChange', subscription);
+    },
+  },
+
+  // --- LLM APIs ---
+
+  llm: {
+    // Non-streaming chat
+    chat: (options: {
+      provider: 'openai' | 'anthropic';
+      model: string;
+      messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
+      temperature?: number;
+      maxTokens?: number;
+      requestType?: 'chat' | 'inline_edit' | 'agent';
+    }) => ipcRenderer.invoke('llm:chat', options),
+
+    // Streaming chat
+    chatStream: (
+      options: {
+        provider: 'openai' | 'anthropic';
+        model: string;
+        messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
+        temperature?: number;
+        maxTokens?: number;
+        requestType?: 'chat' | 'inline_edit' | 'agent';
+      },
+      channelId: string
+    ) => {
+      ipcRenderer.send('llm:chatStream', options, channelId);
+    },
+
+    // Streaming event listeners
+    onStreamChunk: (channelId: string, callback: (data: { content: string }) => void) => {
+      const subscription = (_: any, data: { content: string }) => callback(data);
+      ipcRenderer.on(`llm:stream:${channelId}:chunk`, subscription);
+      return () => ipcRenderer.off(`llm:stream:${channelId}:chunk`, subscription);
+    },
+
+    onStreamDone: (channelId: string, callback: () => void) => {
+      const subscription = () => callback();
+      ipcRenderer.on(`llm:stream:${channelId}:done`, subscription);
+      return () => ipcRenderer.off(`llm:stream:${channelId}:done`, subscription);
+    },
+
+    onStreamUsage: (channelId: string, callback: (data: { usage: any }) => void) => {
+      const subscription = (_: any, data: { usage: any }) => callback(data);
+      ipcRenderer.on(`llm:stream:${channelId}:usage`, subscription);
+      return () => ipcRenderer.off(`llm:stream:${channelId}:usage`, subscription);
+    },
+
+    onStreamError: (channelId: string, callback: (data: { error: string }) => void) => {
+      const subscription = (_: any, data: { error: string }) => callback(data);
+      ipcRenderer.on(`llm:stream:${channelId}:error`, subscription);
+      return () => ipcRenderer.off(`llm:stream:${channelId}:error`, subscription);
+    },
+
+    // Remove all stream listeners for a channel
+    offStream: (channelId: string) => {
+      ipcRenderer.removeAllListeners(`llm:stream:${channelId}:chunk`);
+      ipcRenderer.removeAllListeners(`llm:stream:${channelId}:done`);
+      ipcRenderer.removeAllListeners(`llm:stream:${channelId}:usage`);
+      ipcRenderer.removeAllListeners(`llm:stream:${channelId}:error`);
+    },
+
+    // Chat with tools/function calling
+    chatWithTools: (options: {
+      provider: 'openai' | 'anthropic';
+      model: string;
+      messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
+      tools: Array<{ name: string; description: string; parameters: any }>;
+      temperature?: number;
+      maxTokens?: number;
+    }) => ipcRenderer.invoke('llm:chatWithTools', options),
+
+    // Get available models
+    getModels: () =>
+      ipcRenderer.invoke('llm:getModels'),
+
+    // Get quota info
+    getQuota: () =>
+      ipcRenderer.invoke('llm:getQuota'),
+
+    // Get LLM service status
+    getStatus: () =>
+      ipcRenderer.invoke('llm:getStatus'),
+  },
 })
 
 contextBridge.exposeInMainWorld('ipcRenderer', {

@@ -24,8 +24,28 @@ import {
   validateImportOptions,
   IMPORT_CONFIG,
 } from './services/importSecurity'
-import { initAutoUpdater, stopAutoUpdater } from './services/autoUpdateService'
+import { initAutoUpdater, stopAutoUpdater, initErrorReportingHandlers } from './services/autoUpdateService'
 import { reportError } from './services/errorReportingService'
+import {
+  initAuth,
+  signup,
+  login,
+  logout,
+  startOAuth,
+  handleOAuthProtocolCallback,
+  getUser,
+  getSubscription,
+  getUsage,
+  isAuthenticated,
+} from './services/authService'
+import {
+  chat as llmChat,
+  chatStream as llmChatStream,
+  chatWithTools as llmChatWithTools,
+  getModels as llmGetModels,
+  getQuota as llmGetQuota,
+  getStatus as llmGetStatus,
+} from './services/llmService'
 
 // Global error handlers - catch crashes and unhandled errors
 process.on('uncaughtException', (error) => {
@@ -1194,10 +1214,10 @@ ipcMain.handle('workspace:restoreCheckpoint', async (_, workspaceRoot: string, f
 });
 
 // Create bookmark
-ipcMain.handle('workspace:createBookmark', async (_, workspaceRoot: string, filePath: string, json: any, label: string) => {
+ipcMain.handle('workspace:createBookmark', async (_, workspaceRoot: string, filePath: string, json: any, label: string, description?: string) => {
     try {
         const manager = getWorkspaceManager(workspaceRoot);
-        const checkpoint = await manager.createBookmark(filePath, json, label);
+        const checkpoint = await manager.createBookmark(filePath, json, label, description);
         if (!checkpoint) {
             return { success: false, error: 'Failed to create bookmark' };
         }
@@ -1333,167 +1353,6 @@ ipcMain.handle('workspace:hasExternalChange', async (_, workspaceRoot: string, f
         return { success: true, hasChange };
     } catch (error) {
         console.error('Failed to check external change:', error);
-        return { success: false, error: String(error) };
-    }
-});
-
-// --- Draft IPC Handlers ---
-
-// Create a new draft from current document state
-ipcMain.handle('workspace:createDraft', async (_, workspaceRoot: string, filePath: string, name: string, json: any) => {
-    try {
-        const manager = getWorkspaceManager(workspaceRoot);
-        const draft = await manager.createDraftFromCurrent(filePath, name, json);
-        if (!draft) {
-            return { success: false, error: 'Failed to create draft' };
-        }
-        return { success: true, draft };
-    } catch (error) {
-        console.error('Failed to create draft:', error);
-        return { success: false, error: String(error) };
-    }
-});
-
-// Create a new draft from a checkpoint
-ipcMain.handle('workspace:createDraftFromCheckpoint', async (_, workspaceRoot: string, filePath: string, name: string, checkpointId: string) => {
-    try {
-        const manager = getWorkspaceManager(workspaceRoot);
-        const draft = await manager.createDraft(filePath, name, checkpointId);
-        if (!draft) {
-            return { success: false, error: 'Checkpoint not found' };
-        }
-        return { success: true, draft };
-    } catch (error) {
-        console.error('Failed to create draft from checkpoint:', error);
-        return { success: false, error: String(error) };
-    }
-});
-
-// Get all drafts for a file
-ipcMain.handle('workspace:getDrafts', async (_, workspaceRoot: string, filePath: string) => {
-    try {
-        const manager = getWorkspaceManager(workspaceRoot);
-        const drafts = await manager.getDrafts(filePath);
-        return { success: true, drafts };
-    } catch (error) {
-        console.error('Failed to get drafts:', error);
-        return { success: false, error: String(error) };
-    }
-});
-
-// Get all active drafts across all files
-ipcMain.handle('workspace:getAllActiveDrafts', async (_, workspaceRoot: string) => {
-    try {
-        const manager = getWorkspaceManager(workspaceRoot);
-        const drafts = await manager.getAllActiveDrafts();
-        return { success: true, drafts };
-    } catch (error) {
-        console.error('Failed to get all active drafts:', error);
-        return { success: false, error: String(error) };
-    }
-});
-
-// Get a specific draft
-ipcMain.handle('workspace:getDraft', async (_, workspaceRoot: string, filePath: string, draftId: string) => {
-    try {
-        const manager = getWorkspaceManager(workspaceRoot);
-        const draft = await manager.getDraft(filePath, draftId);
-        if (!draft) {
-            return { success: false, error: 'Draft not found' };
-        }
-        return { success: true, draft };
-    } catch (error) {
-        console.error('Failed to get draft:', error);
-        return { success: false, error: String(error) };
-    }
-});
-
-// Get draft content as Tiptap JSON
-ipcMain.handle('workspace:getDraftContent', async (_, workspaceRoot: string, filePath: string, draftId: string) => {
-    try {
-        const manager = getWorkspaceManager(workspaceRoot);
-        const content = await manager.getDraftContent(filePath, draftId);
-        if (!content) {
-            return { success: false, error: 'Draft not found' };
-        }
-        return { success: true, content };
-    } catch (error) {
-        console.error('Failed to get draft content:', error);
-        return { success: false, error: String(error) };
-    }
-});
-
-// Save draft content
-ipcMain.handle('workspace:saveDraftContent', async (_, workspaceRoot: string, filePath: string, draftId: string, json: any, trigger?: string) => {
-    try {
-        const manager = getWorkspaceManager(workspaceRoot);
-        const checkpoint = await manager.saveDraftContent(filePath, draftId, json, trigger || 'auto');
-        return { success: true, checkpointCreated: checkpoint };
-    } catch (error) {
-        console.error('Failed to save draft content:', error);
-        return { success: false, error: String(error) };
-    }
-});
-
-// Rename a draft
-ipcMain.handle('workspace:renameDraft', async (_, workspaceRoot: string, filePath: string, draftId: string, newName: string) => {
-    try {
-        const manager = getWorkspaceManager(workspaceRoot);
-        const success = await manager.renameDraft(filePath, draftId, newName);
-        return { success };
-    } catch (error) {
-        console.error('Failed to rename draft:', error);
-        return { success: false, error: String(error) };
-    }
-});
-
-// Apply (merge) a draft to the main document
-ipcMain.handle('workspace:applyDraft', async (_, workspaceRoot: string, filePath: string, draftId: string) => {
-    try {
-        const manager = getWorkspaceManager(workspaceRoot);
-        const content = await manager.applyDraft(filePath, draftId);
-        if (!content) {
-            return { success: false, error: 'Draft not found or could not be applied' };
-        }
-        return { success: true, content };
-    } catch (error) {
-        console.error('Failed to apply draft:', error);
-        return { success: false, error: String(error) };
-    }
-});
-
-// Discard a draft (archive it without applying)
-ipcMain.handle('workspace:discardDraft', async (_, workspaceRoot: string, filePath: string, draftId: string) => {
-    try {
-        const manager = getWorkspaceManager(workspaceRoot);
-        const success = await manager.discardDraft(filePath, draftId);
-        return { success };
-    } catch (error) {
-        console.error('Failed to discard draft:', error);
-        return { success: false, error: String(error) };
-    }
-});
-
-// Delete a draft permanently
-ipcMain.handle('workspace:deleteDraft', async (_, workspaceRoot: string, filePath: string, draftId: string) => {
-    try {
-        const manager = getWorkspaceManager(workspaceRoot);
-        const success = await manager.deleteDraft(filePath, draftId);
-        return { success };
-    } catch (error) {
-        console.error('Failed to delete draft:', error);
-        return { success: false, error: String(error) };
-    }
-});
-
-// Count active drafts (for tier enforcement)
-ipcMain.handle('workspace:countActiveDrafts', async (_, workspaceRoot: string) => {
-    try {
-        const manager = getWorkspaceManager(workspaceRoot);
-        const count = await manager.countActiveDrafts();
-        return { success: true, count };
-    } catch (error) {
-        console.error('Failed to count active drafts:', error);
         return { success: false, error: String(error) };
     }
 });
@@ -1698,6 +1557,147 @@ ipcMain.handle('import:notion', async (_, analysisJson: string, destPath: string
     }
 });
 
+// --- Authentication IPC Handlers ---
+
+ipcMain.handle('auth:signup', async (_, email: string, password: string, displayName?: string) => {
+  try {
+    return await signup(email, password, displayName);
+  } catch (error) {
+    console.error('Signup failed:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('auth:login', async (_, email: string, password: string) => {
+  try {
+    return await login(email, password);
+  } catch (error) {
+    console.error('Login failed:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('auth:logout', async () => {
+  try {
+    await logout();
+    return { success: true };
+  } catch (error) {
+    console.error('Logout failed:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('auth:loginWithGoogle', async () => {
+  try {
+    return await startOAuth('google');
+  } catch (error) {
+    console.error('Google OAuth failed:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('auth:loginWithGithub', async () => {
+  try {
+    return await startOAuth('github');
+  } catch (error) {
+    console.error('GitHub OAuth failed:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('auth:getUser', async () => {
+  try {
+    return await getUser();
+  } catch (error) {
+    console.error('Get user failed:', error);
+    return null;
+  }
+});
+
+ipcMain.handle('auth:getSubscription', async () => {
+  try {
+    return await getSubscription();
+  } catch (error) {
+    console.error('Get subscription failed:', error);
+    return { tier: 'free', status: 'active' };
+  }
+});
+
+ipcMain.handle('auth:getUsage', async () => {
+  try {
+    return await getUsage();
+  } catch (error) {
+    console.error('Get usage failed:', error);
+    return null;
+  }
+});
+
+ipcMain.handle('auth:isAuthenticated', () => {
+  return isAuthenticated();
+});
+
+// --- LLM IPC Handlers ---
+
+ipcMain.handle('llm:chat', async (_, options) => {
+  try {
+    return await llmChat(options);
+  } catch (error: any) {
+    console.error('LLM chat failed:', error);
+    throw error;
+  }
+});
+
+ipcMain.on('llm:chatStream', async (event, options, channelId) => {
+  const window = BrowserWindow.fromWebContents(event.sender);
+  if (!window) {
+    console.error('No window found for stream request');
+    return;
+  }
+
+  try {
+    await llmChatStream(options, channelId, window);
+  } catch (error: any) {
+    console.error('LLM stream failed:', error);
+    window.webContents.send(`llm:stream:${channelId}:error`, { error: error.message });
+  }
+});
+
+ipcMain.handle('llm:chatWithTools', async (_, options) => {
+  try {
+    return await llmChatWithTools(options);
+  } catch (error: any) {
+    console.error('LLM chat with tools failed:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('llm:getModels', async () => {
+  try {
+    return await llmGetModels();
+  } catch (error) {
+    console.error('Get models failed:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('llm:getQuota', async () => {
+  try {
+    return await llmGetQuota();
+  } catch (error) {
+    console.error('Get quota failed:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('llm:getStatus', async () => {
+  try {
+    return await llmGetStatus();
+  } catch (error) {
+    console.error('Get status failed:', error);
+    return { status: 'error', providers: {} };
+  }
+});
+
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
@@ -1732,11 +1732,73 @@ app.on('activate', () => {
 // Check if we're in development mode
 const isDev = !!VITE_DEV_SERVER_URL;
 
+// Register custom protocol for OAuth callbacks (midlight://)
+if (process.defaultApp) {
+  // Dev mode: need to register with path to electron
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient('midlight', process.execPath, [path.resolve(process.argv[1])]);
+  }
+} else {
+  // Production: just register the protocol
+  app.setAsDefaultProtocolClient('midlight');
+}
+
+// Handle protocol URL on macOS (works when app is already running or launched fresh)
+app.on('open-url', (event, url) => {
+  event.preventDefault();
+  console.log('[Auth] Received protocol URL:', url);
+
+  if (url.startsWith('midlight://auth/callback')) {
+    handleOAuthProtocolCallback(url);
+    // Bring the app window to front
+    if (win) {
+      if (win.isMinimized()) win.restore();
+      win.focus();
+    }
+  }
+});
+
+// Handle protocol URL on Windows/Linux (when app is already running)
+// For single instance apps
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', (_event, commandLine) => {
+    // Someone tried to run a second instance, we should focus our window
+    if (win) {
+      if (win.isMinimized()) win.restore();
+      win.focus();
+    }
+
+    // Look for the protocol URL in the command line args (Windows/Linux)
+    const protocolUrl = commandLine.find(arg => arg.startsWith('midlight://'));
+    if (protocolUrl && protocolUrl.startsWith('midlight://auth/callback')) {
+      console.log('[Auth] Received protocol URL from second instance:', protocolUrl);
+      handleOAuthProtocolCallback(protocolUrl);
+    }
+  });
+}
+
 app.whenReady().then(() => {
   createWindow();
+
+  // Initialize authentication service
+  initAuth();
+
+  // Initialize error reporting handlers (in both dev and prod)
+  initErrorReportingHandlers();
 
   // Initialize auto-updater in production only
   if (win && !isDev) {
     initAutoUpdater(win);
+  }
+
+  // Handle protocol URL if app was launched with it (Windows/Linux cold start)
+  const protocolUrl = process.argv.find(arg => arg.startsWith('midlight://'));
+  if (protocolUrl && protocolUrl.startsWith('midlight://auth/callback')) {
+    console.log('[Auth] Received protocol URL from launch args:', protocolUrl);
+    // Small delay to ensure auth service is initialized
+    setTimeout(() => handleOAuthProtocolCallback(protocolUrl), 500);
   }
 })
