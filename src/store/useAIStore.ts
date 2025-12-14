@@ -383,18 +383,43 @@ Respond ONLY with the modified text. Do not include the XML tags in your respons
       },
 
       fetchAvailableModels: async () => {
-        try {
-          const models = await window.electronAPI.llm.getModels();
-          console.log('[AI Store] Fetched models:', models);
-          set({ availableModels: models });
+        // Retry a few times in case token isn't ready yet
+        const maxRetries = 3;
+        const retryDelay = 500;
 
-          // Auto-select first model if none selected
-          const { selectedModel } = get();
-          if (!selectedModel && models.openai?.length > 0) {
-            set({ selectedModel: models.openai[0].id });
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+          try {
+            const models = await window.electronAPI.llm.getModels();
+            console.log(`[AI Store] Fetched models (attempt ${attempt}):`, models);
+
+            // If we got models, set them and return
+            if (models.openai?.length > 0 || models.anthropic?.length > 0) {
+              set({ availableModels: models });
+
+              // Auto-select first model if none selected
+              const { selectedModel } = get();
+              if (!selectedModel && models.openai?.length > 0) {
+                set({ selectedModel: models.openai[0].id });
+              }
+              return;
+            }
+
+            // If no models and we have retries left, wait and try again
+            if (attempt < maxRetries) {
+              console.log(`[AI Store] No models returned, retrying in ${retryDelay}ms...`);
+              await new Promise((resolve) => setTimeout(resolve, retryDelay));
+            } else {
+              // Final attempt, set what we got (empty)
+              set({ availableModels: models });
+            }
+          } catch (error) {
+            console.error(`[AI Store] Failed to fetch models (attempt ${attempt}):`, error);
+            if (attempt === maxRetries) {
+              // Give up after max retries
+              return;
+            }
+            await new Promise((resolve) => setTimeout(resolve, retryDelay));
           }
-        } catch (error) {
-          console.error('[AI Store] Failed to fetch models:', error);
         }
       },
 

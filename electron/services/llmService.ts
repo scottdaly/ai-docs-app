@@ -261,8 +261,10 @@ export async function chatWithTools(
  */
 export async function getModels(): Promise<AvailableModels> {
   const token = await getAccessToken();
+  console.log('[LLM] getModels - token available:', !!token);
   if (!token) {
     // Return empty models if not authenticated (don't throw)
+    console.log('[LLM] getModels - returning empty models (no token)');
     return { openai: [], anthropic: [] };
   }
 
