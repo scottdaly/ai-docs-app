@@ -62,6 +62,9 @@ export interface QuotaInfo {
 let accessToken: string | null = null;
 let tokenExpiry: number | null = null;
 
+// Track pending token refresh
+let pendingRefresh: Promise<boolean> | null = null;
+
 // Pending OAuth promise handlers (for system browser flow)
 let pendingOAuthResolve: ((result: AuthResult) => void) | null = null;
 let pendingOAuthReject: ((error: Error) => void) | null = null;
@@ -80,7 +83,17 @@ export function initAuth(): void {
   const storedExpiry = store.get('tokenExpiry');
 
   if (!storedExpiry || storedExpiry <= Date.now()) {
-    // Token expired, don't restore
+    // Token expired, try to refresh in background
+    console.log('[Auth] Access token expired or missing, starting background refresh');
+    // Start refresh immediately and track the promise
+    pendingRefresh = refreshAccessToken()
+      .then((success) => {
+        console.log(`[Auth] Background token refresh: ${success ? 'succeeded' : 'failed'}`);
+        return success;
+      })
+      .finally(() => {
+        pendingRefresh = null;
+      });
     return;
   }
 
@@ -126,6 +139,12 @@ export function isAuthenticated(): boolean {
  * Get current access token (auto-refreshes if needed)
  */
 export async function getAccessToken(): Promise<string | null> {
+  // Wait for pending refresh if one is in progress
+  if (pendingRefresh) {
+    console.log('[Auth] Waiting for pending token refresh...');
+    await pendingRefresh;
+  }
+
   if (!accessToken || !tokenExpiry) {
     return null;
   }

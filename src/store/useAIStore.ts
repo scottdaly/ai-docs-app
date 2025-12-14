@@ -383,9 +383,9 @@ Respond ONLY with the modified text. Do not include the XML tags in your respons
       },
 
       fetchAvailableModels: async () => {
-        // Retry a few times in case token isn't ready yet
-        const maxRetries = 3;
-        const retryDelay = 500;
+        // Retry a few times in case token isn't ready yet (background refresh may be in progress)
+        const maxRetries = 4;
+        const retryDelays = [500, 1000, 2000, 3000]; // Fallback delays (main wait is in getAccessToken)
 
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
           try {
@@ -406,8 +406,9 @@ Respond ONLY with the modified text. Do not include the XML tags in your respons
 
             // If no models and we have retries left, wait and try again
             if (attempt < maxRetries) {
-              console.log(`[AI Store] No models returned, retrying in ${retryDelay}ms...`);
-              await new Promise((resolve) => setTimeout(resolve, retryDelay));
+              const delay = retryDelays[attempt - 1] || 1000;
+              console.log(`[AI Store] No models returned, retrying in ${delay}ms...`);
+              await new Promise((resolve) => setTimeout(resolve, delay));
             } else {
               // Final attempt, set what we got (empty)
               set({ availableModels: models });
@@ -418,7 +419,7 @@ Respond ONLY with the modified text. Do not include the XML tags in your respons
               // Give up after max retries
               return;
             }
-            await new Promise((resolve) => setTimeout(resolve, retryDelay));
+            await new Promise((resolve) => setTimeout(resolve, retryDelays[attempt - 1] || 1000));
           }
         }
       },
