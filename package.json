@@ -1,6 +1,6 @@
 {
   "name": "midlight",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "description": "A local-first, AI-native editor.",
   "main": "dist-electron/main.js",
   "build": {
