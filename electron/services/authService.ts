@@ -62,9 +62,6 @@ export interface QuotaInfo {
 let accessToken: string | null = null;
 let tokenExpiry: number | null = null;
 
-// Track pending token refresh
-let pendingRefresh: Promise<boolean> | null = null;
-
 // Pending OAuth promise handlers (for system browser flow)
 let pendingOAuthResolve: ((result: AuthResult) => void) | null = null;
 let pendingOAuthReject: ((error: Error) => void) | null = null;
@@ -81,19 +78,21 @@ export function initAuth(): void {
   console.log(`[Auth] Encryption available: ${encryptionAvailable}`);
 
   const storedExpiry = store.get('tokenExpiry');
+  const hasStoredAuth = store.get('encryptedAccessToken') || store.get('accessToken') || store.get('user');
 
   if (!storedExpiry || storedExpiry <= Date.now()) {
-    // Token expired, try to refresh in background
-    console.log('[Auth] Access token expired or missing, starting background refresh');
-    // Start refresh immediately and track the promise
-    pendingRefresh = refreshAccessToken()
-      .then((success) => {
-        console.log(`[Auth] Background token refresh: ${success ? 'succeeded' : 'failed'}`);
-        return success;
-      })
-      .finally(() => {
-        pendingRefresh = null;
-      });
+    // Only try refresh if user has logged in before (has stored auth data)
+    if (hasStoredAuth) {
+      console.log('[Auth] Access token expired, scheduling background refresh');
+      // Delay refresh to allow app to fully initialize
+      setTimeout(() => {
+        refreshAccessToken().then((success) => {
+          console.log(`[Auth] Background token refresh: ${success ? 'succeeded' : 'failed'}`);
+        });
+      }, 500);
+    } else {
+      console.log('[Auth] No stored auth data, skipping background refresh');
+    }
     return;
   }
 
@@ -139,12 +138,6 @@ export function isAuthenticated(): boolean {
  * Get current access token (auto-refreshes if needed)
  */
 export async function getAccessToken(): Promise<string | null> {
-  // Wait for pending refresh if one is in progress
-  if (pendingRefresh) {
-    console.log('[Auth] Waiting for pending token refresh...');
-    await pendingRefresh;
-  }
-
   if (!accessToken || !tokenExpiry) {
     return null;
   }
@@ -283,8 +276,10 @@ export function startOAuth(provider: 'google' | 'github'): Promise<AuthResult> {
     } else {
       // Production: use protocol handler
       authUrl = `${API_BASE}/api/auth/${provider}?desktop=true`;
+      console.log(`[Auth] Production mode: using protocol handler`);
     }
 
+    console.log(`[Auth] Opening OAuth URL: ${authUrl}`);
     // Open OAuth URL in system browser
     shell.openExternal(authUrl);
 
@@ -396,6 +391,8 @@ function startDevCallbackServer(): Promise<number> {
  * Called by main.ts when the app receives a midlight:// URL
  */
 export async function handleOAuthProtocolCallback(url: string): Promise<void> {
+  console.log('[Auth] Received OAuth protocol callback:', url);
+
   if (!pendingOAuthResolve || !pendingOAuthReject) {
     console.error('[Auth] Received OAuth callback but no pending OAuth flow');
     return;
@@ -403,8 +400,10 @@ export async function handleOAuthProtocolCallback(url: string): Promise<void> {
 
   try {
     const result = await handleOAuthCallback(url);
+    console.log('[Auth] OAuth callback handled successfully');
     pendingOAuthResolve(result);
   } catch (error) {
+    console.error('[Auth] OAuth callback failed:', error);
     pendingOAuthReject(error as Error);
   } finally {
     pendingOAuthResolve = null;
@@ -418,6 +417,7 @@ export async function handleOAuthProtocolCallback(url: string): Promise<void> {
 async function exchangeCode(code: string): Promise<{ accessToken: string; expiresIn: number }> {
   return new Promise((resolve, reject) => {
     const url = `${API_BASE}/api/auth/exchange`;
+    console.log('[Auth] Exchanging code at:', url);
 
     const request = net.request({
       method: 'POST',
@@ -430,6 +430,7 @@ async function exchangeCode(code: string): Promise<{ accessToken: string; expire
     let responseData = '';
 
     request.on('response', (response) => {
+      console.log('[Auth] Exchange response status:', response.statusCode);
       response.on('data', (chunk) => {
         responseData += chunk.toString();
       });
@@ -438,17 +439,21 @@ async function exchangeCode(code: string): Promise<{ accessToken: string; expire
         try {
           const data = JSON.parse(responseData);
           if (response.statusCode >= 200 && response.statusCode < 300) {
+            console.log('[Auth] Exchange successful');
             resolve(data);
           } else {
+            console.error('[Auth] Exchange failed:', data.error);
             reject(new Error(data.error || 'Code exchange failed'));
           }
         } catch {
+          console.error('[Auth] Failed to parse exchange response:', responseData);
           reject(new Error('Failed to parse exchange response'));
         }
       });
     });
 
     request.on('error', (error) => {
+      console.error('[Auth] Exchange request error:', error);
       reject(error);
     });
 

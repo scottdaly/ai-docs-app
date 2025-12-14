@@ -84,11 +84,13 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
     };
   }, [cleanupStream]);
 
-  // Check auth and fetch models on mount (wait for auth first)
+  // Check auth and fetch models on mount (only if authenticated)
   useEffect(() => {
     const init = async () => {
-      await checkAuth();
-      fetchAvailableModels();
+      const authed = await checkAuth();
+      if (authed) {
+        fetchAvailableModels();
+      }
     };
     init();
   }, [checkAuth, fetchAvailableModels]);
