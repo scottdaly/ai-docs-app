@@ -84,10 +84,13 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
     };
   }, [cleanupStream]);
 
-  // Check auth and fetch models on mount
+  // Check auth and fetch models on mount (wait for auth first)
   useEffect(() => {
-    checkAuth();
-    fetchAvailableModels();
+    const init = async () => {
+      await checkAuth();
+      fetchAvailableModels();
+    };
+    init();
   }, [checkAuth, fetchAvailableModels]);
 
   // Auto-scroll to bottom when messages change

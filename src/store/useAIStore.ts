@@ -385,6 +385,7 @@ Respond ONLY with the modified text. Do not include the XML tags in your respons
       fetchAvailableModels: async () => {
         try {
           const models = await window.electronAPI.llm.getModels();
+          console.log('[AI Store] Fetched models:', models);
           set({ availableModels: models });
 
           // Auto-select first model if none selected
@@ -393,7 +394,7 @@ Respond ONLY with the modified text. Do not include the XML tags in your respons
             set({ selectedModel: models.openai[0].id });
           }
         } catch (error) {
-          console.error('Failed to fetch models:', error);
+          console.error('[AI Store] Failed to fetch models:', error);
         }
       },
 

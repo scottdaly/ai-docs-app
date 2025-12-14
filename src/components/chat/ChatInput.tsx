@@ -154,7 +154,7 @@ export function ChatInput({ onSubmit, isStreaming, placeholder }: ChatInputProps
           />
         )}
 
-        <div className="rounded-lg border border-border bg-background overflow-hidden focus-within:ring-2 focus-within:ring-primary/50">
+        <div className="rounded-lg bg-background overflow-hidden focus-within:ring-2 focus-within:ring-primary/50">
           {/* Textarea */}
           <textarea
             ref={inputRef}

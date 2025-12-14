@@ -268,6 +268,7 @@ export async function getModels(): Promise<AvailableModels> {
 
   try {
     const response = await makeAuthenticatedRequest('/api/llm/models');
+    console.log('[LLM] Models API response status:', response.status);
 
     if (!response.ok) {
       console.error('[LLM] Failed to get models:', response.status);
@@ -275,6 +276,7 @@ export async function getModels(): Promise<AvailableModels> {
     }
 
     const data = await response.json();
+    console.log('[LLM] Models API response data:', JSON.stringify(data));
     return data.models;
   } catch (error) {
     console.error('[LLM] Error fetching models:', error);
