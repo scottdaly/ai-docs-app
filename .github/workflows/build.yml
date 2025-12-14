@@ -120,6 +120,7 @@ jobs:
             release/*.blockmap
             release/latest*.yml
           if-no-files-found: ignore
+          retention-days: 1  # Short retention since artifacts are deployed immediately
 
   deploy:
     needs: build
