@@ -8,7 +8,9 @@
  * - Automatic token refresh
  */
 
-import { net, shell, safeStorage } from 'electron';
+import { app, net, shell, safeStorage } from 'electron';
+import http from 'http';
+import { URL } from 'url';
 // @ts-ignore - electron-store has no type declarations
 import Store from 'electron-store';
 
@@ -63,6 +65,9 @@ let tokenExpiry: number | null = null;
 // Pending OAuth promise handlers (for system browser flow)
 let pendingOAuthResolve: ((result: AuthResult) => void) | null = null;
 let pendingOAuthReject: ((error: Error) => void) | null = null;
+
+// Dev mode callback server
+let devCallbackServer: http.Server | null = null;
 
 /**
  * Initialize auth service - restore tokens from storage
@@ -222,20 +227,46 @@ export async function logout(): Promise<void> {
 /**
  * Start OAuth flow - opens in system browser for better UX
  * (user has access to saved passwords, password managers, existing sessions)
+ *
+ * In dev mode, uses a local HTTP server callback to avoid protocol handler conflicts
+ * In production, uses the midlight:// protocol handler
  */
 export function startOAuth(provider: 'google' | 'github'): Promise<AuthResult> {
-  return new Promise((resolve, reject) => {
-    // Cancel any pending OAuth
+  return new Promise(async (resolve, reject) => {
+    // Cancel any pending OAuth and cleanup
     if (pendingOAuthReject) {
       pendingOAuthReject(new Error('OAuth cancelled - new flow started'));
+    }
+    if (devCallbackServer) {
+      devCallbackServer.close();
+      devCallbackServer = null;
     }
 
     // Store promise handlers for when callback arrives
     pendingOAuthResolve = resolve;
     pendingOAuthReject = reject;
 
+    const isDev = !app.isPackaged;
+    let authUrl: string;
+
+    if (isDev) {
+      // Dev mode: start local HTTP server for callback
+      try {
+        const port = await startDevCallbackServer();
+        authUrl = `${API_BASE}/api/auth/${provider}?desktop=true&callback_port=${port}`;
+        console.log(`[Auth] Dev mode: started callback server on port ${port}`);
+      } catch (error) {
+        reject(new Error('Failed to start dev callback server'));
+        pendingOAuthResolve = null;
+        pendingOAuthReject = null;
+        return;
+      }
+    } else {
+      // Production: use protocol handler
+      authUrl = `${API_BASE}/api/auth/${provider}?desktop=true`;
+    }
+
     // Open OAuth URL in system browser
-    const authUrl = `${API_BASE}/api/auth/${provider}?desktop=true`;
     shell.openExternal(authUrl);
 
     // Set a timeout (5 minutes) in case user abandons the flow
@@ -245,7 +276,99 @@ export function startOAuth(provider: 'google' | 'github'): Promise<AuthResult> {
         pendingOAuthResolve = null;
         pendingOAuthReject = null;
       }
+      if (devCallbackServer) {
+        devCallbackServer.close();
+        devCallbackServer = null;
+      }
     }, 5 * 60 * 1000);
+  });
+}
+
+/**
+ * Start a local HTTP server to receive OAuth callback in dev mode
+ * Returns the port number
+ */
+function startDevCallbackServer(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const server = http.createServer(async (req, res) => {
+      if (!req.url?.startsWith('/auth/callback')) {
+        res.writeHead(404);
+        res.end('Not found');
+        return;
+      }
+
+      const url = new URL(req.url, `http://localhost`);
+      const code = url.searchParams.get('code');
+      const error = url.searchParams.get('error');
+
+      // Send success page to browser
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Authentication</title>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #1a1a2e; color: #eee; }
+              .container { text-align: center; }
+              h1 { color: #4ade80; }
+              p { color: #aaa; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>${error ? 'Authentication Failed' : 'Authentication Successful!'}</h1>
+              <p>${error ? 'Please try again.' : 'You can close this window and return to Midlight.'}</p>
+            </div>
+          </body>
+        </html>
+      `);
+
+      // Close server
+      server.close();
+      devCallbackServer = null;
+
+      // Handle the callback
+      if (error) {
+        if (pendingOAuthReject) {
+          pendingOAuthReject(new Error(`OAuth failed: ${error}`));
+        }
+      } else if (code) {
+        try {
+          const result = await handleOAuthCallback(`midlight://auth/callback?code=${code}`);
+          if (pendingOAuthResolve) {
+            pendingOAuthResolve(result);
+          }
+        } catch (err) {
+          if (pendingOAuthReject) {
+            pendingOAuthReject(err as Error);
+          }
+        }
+      } else {
+        if (pendingOAuthReject) {
+          pendingOAuthReject(new Error('No code received'));
+        }
+      }
+
+      pendingOAuthResolve = null;
+      pendingOAuthReject = null;
+    });
+
+    server.on('error', (err) => {
+      reject(err);
+    });
+
+    // Listen on a random available port
+    server.listen(0, '127.0.0.1', () => {
+      const address = server.address();
+      if (address && typeof address === 'object') {
+        devCallbackServer = server;
+        resolve(address.port);
+      } else {
+        server.close();
+        reject(new Error('Failed to get server port'));
+      }
+    });
   });
 }
 
