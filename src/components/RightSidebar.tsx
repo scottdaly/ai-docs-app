@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { ChevronRight, Send, MessageSquare, Sparkles, History, Save, Loader2, MoreHorizontal, RotateCcw, GitCompare, Pencil, Trash2, LogIn } from 'lucide-react';
+import { ChevronRight, MessageSquare, Sparkles, History, Save, Loader2, MoreHorizontal, RotateCcw, GitCompare, Pencil, Trash2, LogIn } from 'lucide-react';
+import { ChatInput } from './chat/ChatInput';
 import { useVersionStore, Version } from '../store/useVersionStore';
 import { useFileSystem } from '../store/useFileSystem';
 import { useAIStore, Message } from '../store/useAIStore';
@@ -63,9 +64,7 @@ function extractTextFromTiptapJson(doc: any): string {
 
 // AI Chat Panel
 function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?: () => void }) {
-  const [input, setInput] = useState('');
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const { editorContent, activeFilePath } = useFileSystem();
   const { isAuthenticated, checkAuth } = useAuthStore();
@@ -98,11 +97,6 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
     }
   }, [chatHistory]);
 
-  // Focus input on mount
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
   // Get document context for AI (with size limit to save tokens)
   const MAX_CONTEXT_CHARS = 4000;
 
@@ -121,32 +115,14 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
     return `File: ${filename}\n\n${text}`;
   }, [editorContent, activeFilePath]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isStreaming) return;
-
-    const message = input.trim();
-    setInput('');
-
-    // Reset textarea height
-    if (inputRef.current) {
-      inputRef.current.style.height = 'auto';
-    }
-
+  const handleSubmit = useCallback(async (message: string) => {
     try {
       const documentContext = getDocumentContext();
       await sendChatMessage(message, documentContext);
     } catch (error: any) {
       toast.error(error.message || 'Failed to send message');
     }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit(e);
-    }
-  };
+  }, [getDocumentContext, sendChatMessage]);
 
   const handleClearHistory = () => {
     if (chatHistory.length > 0) {
@@ -238,40 +214,11 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
         )}
       </div>
 
-      <div className="flex-shrink-0 p-3 border-t border-border bg-muted/20">
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <textarea
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={activeFilePath ? "Ask about your document..." : "Ask anything..."}
-            rows={1}
-            disabled={isStreaming}
-            className="flex-1 resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm
-                       placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50
-                       min-h-[40px] max-h-[120px] disabled:opacity-50"
-            style={{ height: 'auto' }}
-            onInput={(e) => {
-              const target = e.target as HTMLTextAreaElement;
-              target.style.height = 'auto';
-              target.style.height = Math.min(target.scrollHeight, 120) + 'px';
-            }}
-          />
-          <button
-            type="submit"
-            disabled={!input.trim() || isStreaming}
-            className="p-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90
-                       disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {isStreaming ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
-              <Send size={18} />
-            )}
-          </button>
-        </form>
-      </div>
+      <ChatInput
+        onSubmit={handleSubmit}
+        isStreaming={isStreaming}
+        placeholder={activeFilePath ? "Ask about your document..." : "Ask anything..."}
+      />
     </>
   );
 }
