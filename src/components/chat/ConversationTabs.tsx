@@ -81,7 +81,7 @@ export function ConversationTabs({ onClose }: ConversationTabsProps) {
   };
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2 bg-muted/10">
+    <div className="flex items-center gap-2 px-3 py-2">
       {/* Title - click to edit */}
       <div className="flex-1 min-w-0">
         {isEditing ? (

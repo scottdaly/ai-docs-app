@@ -146,7 +146,7 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
   if (isInitializing) {
     return (
       <>
-        <div className="flex items-center justify-end px-2 py-2 border-b border-border bg-muted/10">
+        <div className="flex items-center justify-end px-2 py-2">
           <button
             onClick={onClose}
             className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
@@ -167,7 +167,7 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
     return (
       <>
         {/* Simple header with close button */}
-        <div className="flex items-center justify-end px-2 py-2 border-b border-border bg-muted/10">
+        <div className="flex items-center justify-end px-2 py-2">
           <button
             onClick={onClose}
             className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
@@ -203,7 +203,7 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
       {/* Conversation tabs with close button */}
       <ConversationTabs onClose={onClose} />
 
-      <div ref={messagesContainerRef} className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
+      <div ref={messagesContainerRef} className="flex-1 min-h-0 overflow-y-auto px-4 pt-4 pb-2 space-y-4">
         {chatHistory.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
             <MessageSquare size={40} className="mb-3 opacity-50" />

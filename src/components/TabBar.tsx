@@ -165,11 +165,11 @@ export function TabBar({ inTitleBar = false }: TabBarProps) {
                       relative flex items-center min-w-[120px] max-w-[200px] px-3 text-sm select-none cursor-pointer group transition-all
                       ${inTitleBar
                         ? `h-8 rounded-md ${isActive
-                            ? 'bg-background/90 text-foreground font-medium'
+                            ? 'bg-background/90 text-foreground font-medium shadow-sm'
                             : 'text-muted-foreground hover:bg-white/10'
                           }`
                         : `h-9 rounded-t-lg ${isActive
-                            ? 'bg-background text-foreground font-medium z-20 relative'
+                            ? 'bg-background text-foreground font-medium z-20 relative shadow-sm'
                             : 'bg-transparent border-transparent text-muted-foreground hover:bg-black/10 dark:hover:bg-white/10 mb-0 border-b-0'
                           }`
                       }

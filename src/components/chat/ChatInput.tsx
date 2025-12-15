@@ -120,7 +120,7 @@ export function ChatInput({ onSubmit, isStreaming, placeholder }: ChatInputProps
   };
 
   return (
-    <div className="flex-shrink-0 bg-muted/20">
+    <div className="flex-shrink-0">
       {/* Context Chips Row */}
       {contextItems.length > 0 && (
         <div className="flex flex-wrap gap-1.5 px-3 pt-2">
