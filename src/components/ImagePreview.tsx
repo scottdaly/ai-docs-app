@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { RiZoomInLine, RiZoomOutLine, RiRefreshLine } from '@remixicon/react';
 
 interface ImagePreviewProps {
   filePath: string;
@@ -133,7 +133,7 @@ export function ImagePreview({ filePath, fileName }: ImagePreviewProps) {
           className="p-1.5 rounded hover:bg-accent text-muted-foreground hover:text-foreground"
           title="Zoom Out"
         >
-          <ZoomOut size={16} />
+          <RiZoomOutLine size={16} />
         </button>
         <div className="flex items-center">
           <input
@@ -154,14 +154,14 @@ export function ImagePreview({ filePath, fileName }: ImagePreviewProps) {
           className="p-1.5 rounded hover:bg-accent text-muted-foreground hover:text-foreground"
           title="Zoom In"
         >
-          <ZoomIn size={16} />
+          <RiZoomInLine size={16} />
         </button>
         <button
           onClick={handleReset}
           className="p-1.5 rounded hover:bg-accent text-muted-foreground hover:text-foreground"
           title="Reset Zoom"
         >
-          <RotateCcw size={16} />
+          <RiRefreshLine size={16} />
         </button>
       </div>
 

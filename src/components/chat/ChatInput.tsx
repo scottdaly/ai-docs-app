@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, AtSign } from 'lucide-react';
+import { RiSendPlaneLine, RiLoader4Line, RiAtLine } from '@remixicon/react';
 import { ModelSelector } from './ModelSelector';
 import { ContextPicker } from './ContextPicker';
 import { useAIStore } from '../../store/useAIStore';
@@ -195,7 +195,7 @@ export function ChatInput({ onSubmit, isStreaming, placeholder }: ChatInputProps
                 }`}
                 title="Add file context (@)"
               >
-                <AtSign size={16} />
+                <RiAtLine size={16} />
               </button>
 
               {/* Send Button */}
@@ -206,9 +206,9 @@ export function ChatInput({ onSubmit, isStreaming, placeholder }: ChatInputProps
                            disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isStreaming ? (
-                  <Loader2 size={16} className="animate-spin" />
+                  <RiLoader4Line size={16} className="animate-spin" />
                 ) : (
-                  <Send size={16} />
+                  <RiSendPlaneLine size={16} />
                 )}
               </button>
             </div>

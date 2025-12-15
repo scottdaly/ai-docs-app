@@ -1,6 +1,6 @@
 import { Editor } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
-import { WrapText, AlignJustify, Crop } from 'lucide-react';
+import { RiTextWrap, RiAlignJustify, RiCropLine } from '@remixicon/react';
 
 interface ImageWrapMenuProps {
   editor: Editor;
@@ -50,7 +50,7 @@ export function ImageWrapMenu({ editor }: ImageWrapMenuProps) {
         }`}
         title="In Line (Break Text)"
       >
-        <AlignJustify size={16} />
+        <RiAlignJustify size={16} />
       </button>
       <button
         onClick={() => setWrap(true)}
@@ -59,7 +59,7 @@ export function ImageWrapMenu({ editor }: ImageWrapMenuProps) {
         }`}
         title="Wrap Text"
       >
-        <WrapText size={16} />
+        <RiTextWrap size={16} />
       </button>
       <div className="w-px h-4 bg-border mx-1 self-center" />
       <button
@@ -67,7 +67,7 @@ export function ImageWrapMenu({ editor }: ImageWrapMenuProps) {
         className="p-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors text-muted-foreground"
         title="Crop Image"
       >
-        <Crop size={16} />
+        <RiCropLine size={16} />
       </button>
     </BubbleMenu>
   );

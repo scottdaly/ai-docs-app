@@ -9,19 +9,19 @@ import {
 } from './ui/dialog';
 import { Button } from './ui/button';
 import {
-  FolderOpen,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  Loader2,
-  Link2,
-  Quote,
-  FileCode,
-  ChevronRight,
-  LucideIcon,
-  Table2,
-  Hash,
-} from 'lucide-react';
+  RiFolderOpenLine,
+  RiAlertLine,
+  RiCheckboxCircleLine,
+  RiCloseCircleLine,
+  RiLoader4Line,
+  RiLinksLine,
+  RiDoubleQuotesL,
+  RiFileCodeLine,
+  RiArrowRightSLine,
+  RiTableLine,
+  RiHashtag,
+} from '@remixicon/react';
+import type { RemixiconComponentType } from '@remixicon/react';
 import appIcon from '../../build/icon.png';
 
 type WizardStep = 'select' | 'analyze' | 'options' | 'importing' | 'complete';
@@ -260,9 +260,9 @@ export function ImportWizard({
           <div className="py-4">
             {sourcePath ? (
               <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                <FolderOpen size={20} className="text-primary" />
+                <RiFolderOpenLine size={20} className="text-primary" />
                 <span className="truncate flex-1 text-sm">{sourcePath}</span>
-                {isAnalyzing && <Loader2 size={16} className="animate-spin" />}
+                {isAnalyzing && <RiLoader4Line size={16} className="animate-spin" />}
               </div>
             ) : (
               <Button
@@ -271,14 +271,14 @@ export function ImportWizard({
                 className="w-full h-24 flex flex-col gap-2"
                 disabled={isAnalyzing}
               >
-                <FolderOpen size={24} />
+                <RiFolderOpenLine size={24} />
                 <span>Select {sourceLabel} Folder</span>
               </Button>
             )}
 
             {error && (
               <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-sm text-destructive flex items-start gap-2">
-                <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+                <RiAlertLine size={16} className="shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
             )}
@@ -310,23 +310,23 @@ export function ImportWizard({
               <div className="space-y-1">
                 {/* Obsidian-specific features */}
                 {sourceType === 'obsidian' && analysis.wikiLinks > 0 && (
-                  <FeatureItem icon={Link2} count={analysis.wikiLinks} label="wiki-links" subLabel={`in ${analysis.filesWithWikiLinks} files`} />
+                  <FeatureItem icon={RiLinksLine} count={analysis.wikiLinks} label="wiki-links" subLabel={`in ${analysis.filesWithWikiLinks} files`} />
                 )}
                 {analysis.frontMatter > 0 && (
-                  <FeatureItem icon={FileCode} count={analysis.frontMatter} label="files with front-matter" />
+                  <FeatureItem icon={RiFileCodeLine} count={analysis.frontMatter} label="files with front-matter" />
                 )}
                 {analysis.callouts > 0 && (
-                  <FeatureItem icon={Quote} count={analysis.callouts} label="files with callouts" />
+                  <FeatureItem icon={RiDoubleQuotesL} count={analysis.callouts} label="files with callouts" />
                 )}
                 {sourceType === 'obsidian' && analysis.dataviewBlocks > 0 && (
-                  <FeatureItem icon={AlertTriangle} count={analysis.dataviewBlocks} label="Dataview blocks" subLabel="(will be removed)" warning />
+                  <FeatureItem icon={RiAlertLine} count={analysis.dataviewBlocks} label="Dataview blocks" subLabel="(will be removed)" warning />
                 )}
                 {/* Notion-specific features */}
                 {sourceType === 'notion' && analysis.filesWithUUIDs !== undefined && analysis.filesWithUUIDs > 0 && (
-                  <FeatureItem icon={Hash} count={analysis.filesWithUUIDs} label="files with UUID suffixes" subLabel="(will be cleaned)" />
+                  <FeatureItem icon={RiHashtag} count={analysis.filesWithUUIDs} label="files with UUID suffixes" subLabel="(will be cleaned)" />
                 )}
                 {sourceType === 'notion' && analysis.csvDatabases !== undefined && analysis.csvDatabases > 0 && (
-                  <FeatureItem icon={Table2} count={analysis.csvDatabases} label="CSV databases" subLabel="(will convert to tables)" />
+                  <FeatureItem icon={RiTableLine} count={analysis.csvDatabases} label="CSV databases" subLabel="(will convert to tables)" />
                 )}
               </div>
             </div>
@@ -416,7 +416,7 @@ export function ImportWizard({
         {step === 'importing' && (
           <div className="py-8 space-y-4">
             <div className="flex flex-col items-center gap-4">
-              <Loader2 size={48} className="animate-spin text-primary" />
+              <RiLoader4Line size={48} className="animate-spin text-primary" />
               <div className="text-center">
                 <div className="font-medium">
                   {isCancelling && 'Cancelling...'}
@@ -459,7 +459,7 @@ export function ImportWizard({
               >
                 {isCancelling ? (
                   <>
-                    <Loader2 size={14} className="mr-2 animate-spin" />
+                    <RiLoader4Line size={14} className="mr-2 animate-spin" />
                     Cancelling...
                   </>
                 ) : (
@@ -476,7 +476,7 @@ export function ImportWizard({
             {result && result.success ? (
               <>
                 <div className="flex items-center justify-center gap-2 text-green-600">
-                  <CheckCircle size={24} />
+                  <RiCheckboxCircleLine size={24} />
                   <span className="font-medium">Import Successful</span>
                 </div>
 
@@ -499,7 +499,7 @@ export function ImportWizard({
                 {result.warnings.length > 0 && (
                   <div className="space-y-2">
                     <h4 className="text-sm font-medium flex items-center gap-1">
-                      <AlertTriangle size={14} className="text-amber-500" />
+                      <RiAlertLine size={14} className="text-amber-500" />
                       Warnings ({result.warnings.length})
                     </h4>
                     <div className="max-h-32 overflow-y-auto space-y-1">
@@ -519,7 +519,7 @@ export function ImportWizard({
               </>
             ) : (
               <div className="flex flex-col items-center gap-2 text-destructive">
-                <XCircle size={24} />
+                <RiCloseCircleLine size={24} />
                 <span className="font-medium">Import Failed</span>
                 {error && <p className="text-sm text-muted-foreground">{error}</p>}
               </div>
@@ -543,20 +543,20 @@ export function ImportWizard({
                 <Button onClick={handleStartImport} disabled={isStartingImport}>
                   {isStartingImport ? (
                     <>
-                      <Loader2 size={16} className="mr-2 animate-spin" />
+                      <RiLoader4Line size={16} className="mr-2 animate-spin" />
                       Starting...
                     </>
                   ) : (
                     <>
                       Start Import
-                      <ChevronRight size={16} className="ml-1" />
+                      <RiArrowRightSLine size={16} className="ml-1" />
                     </>
                   )}
                 </Button>
               ) : (
                 <Button onClick={() => setStep('options')}>
                   Configure Options
-                  <ChevronRight size={16} className="ml-1" />
+                  <RiArrowRightSLine size={16} className="ml-1" />
                 </Button>
               )}
             </>
@@ -570,13 +570,13 @@ export function ImportWizard({
               <Button onClick={handleStartImport} disabled={isStartingImport}>
                 {isStartingImport ? (
                   <>
-                    <Loader2 size={16} className="mr-2 animate-spin" />
+                    <RiLoader4Line size={16} className="mr-2 animate-spin" />
                     Starting...
                   </>
                 ) : (
                   <>
                     Start Import
-                    <ChevronRight size={16} className="ml-1" />
+                    <RiArrowRightSLine size={16} className="ml-1" />
                   </>
                 )}
               </Button>
@@ -602,7 +602,7 @@ function FeatureItem({
   subLabel,
   warning,
 }: {
-  icon: LucideIcon;
+  icon: RemixiconComponentType;
   count: number;
   label: string;
   subLabel?: string;

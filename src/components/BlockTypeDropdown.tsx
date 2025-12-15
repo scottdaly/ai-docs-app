@@ -1,4 +1,4 @@
-import { ChevronDown, List, ListOrdered, Code2, Quote, Type } from 'lucide-react';
+import { RiArrowDownSLine, RiListUnordered, RiListOrdered, RiCodeLine, RiDoubleQuotesL, RiText } from '@remixicon/react';
 import { Editor } from '@tiptap/react';
 import {
   DropdownMenu,
@@ -131,10 +131,10 @@ export function BlockTypeDropdown({ editor }: BlockTypeDropdownProps) {
     if (editor.isActive('heading', { level: 3 })) return <H3Icon />;
     if (editor.isActive('heading', { level: 4 })) return <H4Icon />;
     if (editor.isActive('heading', { level: 5 })) return <H5Icon />;
-    if (editor.isActive('bulletList')) return <List size={16} />;
-    if (editor.isActive('orderedList')) return <ListOrdered size={16} />;
-    if (editor.isActive('codeBlock')) return <Code2 size={16} />;
-    if (editor.isActive('blockquote')) return <Quote size={16} />;
+    if (editor.isActive('bulletList')) return <RiListUnordered size={16} />;
+    if (editor.isActive('orderedList')) return <RiListOrdered size={16} />;
+    if (editor.isActive('codeBlock')) return <RiCodeLine size={16} />;
+    if (editor.isActive('blockquote')) return <RiDoubleQuotesL size={16} />;
     return <TtIcon />;
   };
 
@@ -148,7 +148,7 @@ export function BlockTypeDropdown({ editor }: BlockTypeDropdownProps) {
           <div className="w-4 h-4 flex items-center justify-center">
             {getActiveIcon()}
           </div>
-          <ChevronDown size={12} />
+          <RiArrowDownSLine size={12} />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-52">
@@ -156,7 +156,7 @@ export function BlockTypeDropdown({ editor }: BlockTypeDropdownProps) {
           onClick={setParagraph}
           className={editor.isActive('paragraph') && !editor.isActive('bulletList') && !editor.isActive('orderedList') && !editor.isActive('codeBlock') && !editor.isActive('blockquote') ? 'bg-accent' : ''}
         >
-          <Type size={16} className="mr-2 shrink-0" />
+          <RiText size={16} className="mr-2 shrink-0" />
           <span className="flex-1">Normal text</span>
           <DropdownMenuShortcut>{mod}{alt}0</DropdownMenuShortcut>
         </DropdownMenuItem>
@@ -215,7 +215,7 @@ export function BlockTypeDropdown({ editor }: BlockTypeDropdownProps) {
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           className={editor.isActive('bulletList') ? 'bg-accent' : ''}
         >
-          <List size={16} className="mr-2 shrink-0" />
+          <RiListUnordered size={16} className="mr-2 shrink-0" />
           <span className="flex-1">Bullet list</span>
           <DropdownMenuShortcut>{mod}{alt}8</DropdownMenuShortcut>
         </DropdownMenuItem>
@@ -223,7 +223,7 @@ export function BlockTypeDropdown({ editor }: BlockTypeDropdownProps) {
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           className={editor.isActive('orderedList') ? 'bg-accent' : ''}
         >
-          <ListOrdered size={16} className="mr-2 shrink-0" />
+          <RiListOrdered size={16} className="mr-2 shrink-0" />
           <span className="flex-1">Numbered list</span>
           <DropdownMenuShortcut>{mod}{alt}7</DropdownMenuShortcut>
         </DropdownMenuItem>
@@ -232,7 +232,7 @@ export function BlockTypeDropdown({ editor }: BlockTypeDropdownProps) {
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
           className={editor.isActive('blockquote') ? 'bg-accent' : ''}
         >
-          <Quote size={16} className="mr-2 shrink-0" />
+          <RiDoubleQuotesL size={16} className="mr-2 shrink-0" />
           <span className="flex-1">Quote</span>
           <DropdownMenuShortcut>{mod}{alt}9</DropdownMenuShortcut>
         </DropdownMenuItem>
@@ -240,7 +240,7 @@ export function BlockTypeDropdown({ editor }: BlockTypeDropdownProps) {
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
           className={editor.isActive('codeBlock') ? 'bg-accent' : ''}
         >
-          <Code2 size={16} className="mr-2 shrink-0" />
+          <RiCodeLine size={16} className="mr-2 shrink-0" />
           <span className="flex-1">Code block</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

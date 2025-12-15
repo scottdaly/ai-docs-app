@@ -1,29 +1,29 @@
-import { LucideIcon } from 'lucide-react';
+import type { RemixiconComponentType } from '@remixicon/react';
 import {
-  File,
-  FileText,
-  FileImage,
-} from 'lucide-react';
+  RiFileLine,
+  RiFileTextLine,
+  RiImageLine,
+} from '@remixicon/react';
 import { FileCategory } from '../shared/types';
 
 // Get the appropriate icon component for a file category
-export function getFileIcon(category: FileCategory | undefined): LucideIcon {
+export function getFileIcon(category: FileCategory | undefined): RemixiconComponentType {
   switch (category) {
     case 'native':
       // Native Midlight files get a special icon with sparkle indicator
-      return FileText;
+      return RiFileTextLine;
     case 'compatible':
       // Compatible markdown files
-      return FileText;
+      return RiFileTextLine;
     case 'importable':
       // Files that can be imported (docx, etc.)
-      return FileText;
+      return RiFileTextLine;
     case 'viewable':
       // Images and PDFs
-      return FileImage;
+      return RiImageLine;
     case 'unsupported':
     default:
-      return File;
+      return RiFileLine;
   }
 }
 

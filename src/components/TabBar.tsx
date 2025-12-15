@@ -1,4 +1,4 @@
-import { X, Plus, FolderOpen, ChevronLeft, ChevronRight } from 'lucide-react';
+import { RiCloseLine, RiAddLine, RiFolderOpenLine, RiArrowLeftSLine, RiArrowRightSLine } from '@remixicon/react';
 import { useFileSystem } from '../store/useFileSystem';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { FileNode } from '../shared/types';
@@ -226,7 +226,7 @@ export function TabBar({ inTitleBar = false }: TabBarProps) {
 
               >
 
-                <X size={13} />
+                <RiCloseLine size={13} />
 
               </button>
 
@@ -249,7 +249,7 @@ export function TabBar({ inTitleBar = false }: TabBarProps) {
                 : 'text-muted-foreground/30 cursor-default'
             }`}
           >
-            <ChevronLeft size={16} />
+            <RiArrowLeftSLine size={16} />
           </button>
           <button
             onClick={scrollRight}
@@ -260,7 +260,7 @@ export function TabBar({ inTitleBar = false }: TabBarProps) {
                 : 'text-muted-foreground/30 cursor-default'
             }`}
           >
-            <ChevronRight size={16} />
+            <RiArrowRightSLine size={16} />
           </button>
         </div>
       )}
@@ -274,7 +274,7 @@ export function TabBar({ inTitleBar = false }: TabBarProps) {
             className={`p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors ${inTitleBar ? 'hover:bg-white/10' : 'hover:bg-muted/60'}`}
             title="New Document"
           >
-            <Plus size={16} />
+            <RiAddLine size={16} />
           </button>
           {/* Divider between + and folder buttons */}
           <div className={`w-px bg-muted-foreground/30 mx-0.5 ${inTitleBar ? 'h-4' : 'h-5'}`} />
@@ -283,7 +283,7 @@ export function TabBar({ inTitleBar = false }: TabBarProps) {
             className={`p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors ${inTitleBar ? 'hover:bg-white/10' : 'hover:bg-muted/60'}`}
             title="Open File"
           >
-            <FolderOpen size={16} />
+            <RiFolderOpenLine size={16} />
           </button>
         </div>
       )}

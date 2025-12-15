@@ -7,7 +7,7 @@ import {
   DialogFooter,
 } from './ui/dialog';
 import { Button } from './ui/button';
-import { FolderOpen, Sparkles, Settings, FileText } from 'lucide-react';
+import { RiFolderOpenLine, RiSparklingLine, RiSettings3Line, RiFileTextLine } from '@remixicon/react';
 import appIcon from '../../build/icon.png';
 
 export type DetectedSourceType = 'obsidian' | 'notion' | 'midlight' | 'generic';
@@ -83,7 +83,7 @@ export function ImportDetectionDialog({
 
           <div className="py-4">
             <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-              <FolderOpen size={20} className="text-muted-foreground" />
+              <RiFolderOpenLine size={20} className="text-muted-foreground" />
               <span className="truncate text-sm">{folderPath}</span>
             </div>
           </div>
@@ -115,7 +115,7 @@ export function ImportDetectionDialog({
 
         <div className="py-4">
           <div className="flex items-center gap-3 p-3 bg-muted rounded-lg mb-4">
-            <FolderOpen size={20} className="text-muted-foreground" />
+            <RiFolderOpenLine size={20} className="text-muted-foreground" />
             <span className="truncate text-sm">{folderPath}</span>
           </div>
 
@@ -129,7 +129,7 @@ export function ImportDetectionDialog({
               className="w-full flex items-center gap-4 p-4 rounded-lg border border-primary bg-primary/5 hover:bg-primary/10 transition-colors text-left group"
             >
               <div className={`w-10 h-10 rounded-lg ${sourceInfo.bgColor} flex items-center justify-center ${sourceInfo.color}`}>
-                <Sparkles size={20} />
+                <RiSparklingLine size={20} />
               </div>
               <div className="flex-1">
                 <div className="font-medium text-foreground flex items-center gap-2">
@@ -149,7 +149,7 @@ export function ImportDetectionDialog({
               className="w-full flex items-center gap-4 p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors text-left group"
             >
               <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-accent transition-colors">
-                <Settings size={20} />
+                <RiSettings3Line size={20} />
               </div>
               <div className="flex-1">
                 <div className="font-medium text-foreground">Customize Import</div>
@@ -164,7 +164,7 @@ export function ImportDetectionDialog({
               className="w-full flex items-center gap-4 p-3 rounded-lg hover:bg-accent/50 transition-colors text-left group"
             >
               <div className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground">
-                <FileText size={18} />
+                <RiFileTextLine size={18} />
               </div>
               <div className="flex-1">
                 <div className="text-sm text-muted-foreground">

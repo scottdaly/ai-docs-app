@@ -1,15 +1,5 @@
 import { Editor } from '@tiptap/react';
-import {
-  Bold,
-  Image as ImageIcon,
-  Minus,
-  History,
-  Save,
-  Sparkles,
-  MoreVertical,
-  Check,
-  Cloud,
-} from 'lucide-react';
+import { RiBold, RiImageLine, RiSubtractLine, RiHistoryLine, RiSaveLine, RiSparklingLine, RiMore2Line, RiCheckLine, RiCloudLine } from '@remixicon/react';
 import { BlockTypeDropdown } from './BlockTypeDropdown';
 import { FontFamilyDropdown } from './FontFamilyDropdown';
 import { FontSizeDropdown } from './FontSizeDropdown';
@@ -214,7 +204,7 @@ export function EditorToolbar({ editor, rightPanelMode, onSetRightPanelMode }: E
           }`}
           title="Bold (Ctrl+B)"
         >
-          <Bold size={16} />
+          <RiBold size={16} />
         </button>
       ),
     },
@@ -257,7 +247,7 @@ export function EditorToolbar({ editor, rightPanelMode, onSetRightPanelMode }: E
           className="p-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors text-muted-foreground"
           title="Insert Image"
         >
-          <ImageIcon size={16} />
+          <RiImageLine size={16} />
         </button>
       ),
     },
@@ -269,7 +259,7 @@ export function EditorToolbar({ editor, rightPanelMode, onSetRightPanelMode }: E
           className="p-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors text-muted-foreground"
           title="Insert Horizontal Rule"
         >
-          <Minus size={16} />
+          <RiSubtractLine size={16} />
         </button>
       ),
     },
@@ -306,7 +296,7 @@ export function EditorToolbar({ editor, rightPanelMode, onSetRightPanelMode }: E
               className="p-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors text-muted-foreground shrink-0"
               title="More options"
             >
-              <MoreVertical size={16} />
+              <RiMore2Line size={16} />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="p-1 overflow-visible">
@@ -343,12 +333,12 @@ export function EditorToolbar({ editor, rightPanelMode, onSetRightPanelMode }: E
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground px-2">
           {isDirty ? (
             <>
-              <Cloud size={14} className="animate-pulse" />
+              <RiCloudLine size={14} className="animate-pulse" />
               <span>Saving...</span>
             </>
           ) : (
             <>
-              <Check size={14} className="text-green-500" />
+              <RiCheckLine size={14} className="text-green-500" />
               <span>Saved</span>
             </>
           )}
@@ -362,7 +352,7 @@ export function EditorToolbar({ editor, rightPanelMode, onSetRightPanelMode }: E
           className="p-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors text-muted-foreground"
           title="Create Snapshot"
         >
-          <Save size={16} />
+          <RiSaveLine size={16} />
         </button>
 
         <div className="w-px h-4 bg-border mx-1" />
@@ -375,7 +365,7 @@ export function EditorToolbar({ editor, rightPanelMode, onSetRightPanelMode }: E
           }`}
           title="Snapshots"
         >
-          <History size={16} />
+          <RiHistoryLine size={16} />
         </button>
 
         {/* AI Assistant toggle */}
@@ -387,7 +377,7 @@ export function EditorToolbar({ editor, rightPanelMode, onSetRightPanelMode }: E
           }`}
           title="AI Assistant"
         >
-          <Sparkles size={16} />
+          <RiSparklingLine size={16} />
         </button>
       </div>
 

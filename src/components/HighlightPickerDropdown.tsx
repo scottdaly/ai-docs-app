@@ -1,5 +1,5 @@
 import { Editor } from '@tiptap/react';
-import { Highlighter, ChevronDown, ChevronLeft } from 'lucide-react';
+import { RiMarkPenLine, RiArrowDownSLine, RiArrowLeftSLine } from '@remixicon/react';
 import { useState, useRef, useEffect } from 'react';
 import { HexColorPicker } from 'react-colorful';
 
@@ -105,13 +105,13 @@ export function HighlightPickerDropdown({ editor }: HighlightPickerDropdownProps
         title="Highlight"
       >
         <div className="relative">
-          <Highlighter size={14} />
+          <RiMarkPenLine size={14} />
           <div
             className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-1 rounded-full"
             style={{ backgroundColor: selectedColor }}
           />
         </div>
-        <ChevronDown size={12} />
+        <RiArrowDownSLine size={12} />
       </button>
 
       {isOpen && (
@@ -190,7 +190,7 @@ export function HighlightPickerDropdown({ editor }: HighlightPickerDropdownProps
                   className="text-muted-foreground hover:text-foreground p-1"
                   title="Back"
                 >
-                  <ChevronLeft size={16} />
+                  <RiArrowLeftSLine size={16} />
                 </button>
                 <div className="text-xs font-medium flex-1 text-center">Highlight Color</div>
                 <div className="w-6"></div>

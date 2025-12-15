@@ -1,4 +1,4 @@
-import { ChevronDown, Check } from 'lucide-react';
+import { RiArrowDownSLine, RiCheckLine } from '@remixicon/react';
 import { Editor } from '@tiptap/react';
 import { useState, useRef, useEffect } from 'react';
 
@@ -148,7 +148,7 @@ export function FontSizeDropdown({ editor }: FontSizeDropdownProps) {
         title="Font Size"
       >
         <span>{currentSize}</span>
-        <ChevronDown size={14} className="opacity-50 shrink-0" />
+        <RiArrowDownSLine size={14} className="opacity-50 shrink-0" />
       </button>
 
       {isOpen && (
@@ -160,7 +160,7 @@ export function FontSizeDropdown({ editor }: FontSizeDropdownProps) {
               className="flex items-center w-full px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground text-left"
             >
               <span className="flex-1">{size.label}</span>
-              {isSizeActive(size.value) && <Check size={14} className="ml-2 opacity-70" />}
+              {isSizeActive(size.value) && <RiCheckLine size={14} className="ml-2 opacity-70" />}
             </button>
           ))}
 

@@ -5,7 +5,7 @@
  * Midlight (e.g., by another editor, Git, or sync tools).
  */
 
-import { AlertTriangle, RefreshCw, X, FileX } from 'lucide-react';
+import { RiAlertLine, RiRefreshLine, RiCloseLine, RiFileWarningLine } from '@remixicon/react';
 
 interface ExternalChangeDialogProps {
   /** Relative file path that was changed */
@@ -47,9 +47,9 @@ export function ExternalChangeDialog({
         {/* Header */}
         <div className="flex items-center gap-3 p-4 border-b">
           {isDeleted ? (
-            <FileX className="w-6 h-6 text-destructive shrink-0" />
+            <RiFileWarningLine className="w-6 h-6 text-destructive shrink-0" />
           ) : (
-            <AlertTriangle className="w-6 h-6 text-yellow-500 shrink-0" />
+            <RiAlertLine className="w-6 h-6 text-yellow-500 shrink-0" />
           )}
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-foreground">
@@ -64,7 +64,7 @@ export function ExternalChangeDialog({
             className="p-1 rounded hover:bg-muted transition-colors"
             aria-label="Dismiss"
           >
-            <X className="w-5 h-5 text-muted-foreground" />
+            <RiCloseLine className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
 
@@ -107,7 +107,7 @@ export function ExternalChangeDialog({
                 onClick={onReload}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
               >
-                <RefreshCw className="w-4 h-4" />
+                <RiRefreshLine className="w-4 h-4" />
                 Reload
               </button>
               <button

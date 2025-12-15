@@ -1,11 +1,5 @@
 import { Editor } from '@tiptap/react';
-import {
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  AlignJustify,
-  ChevronDown,
-} from 'lucide-react';
+import { RiAlignLeft, RiAlignCenter, RiAlignRight, RiAlignJustify, RiArrowDownSLine } from '@remixicon/react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,10 +53,10 @@ export function AlignmentDropdown({ editor }: AlignmentDropdownProps) {
 
   // Determine which icon to show based on current alignment
   const getActiveIcon = () => {
-    if (isAlignActive('center')) return <AlignCenter size={16} />;
-    if (isAlignActive('right')) return <AlignRight size={16} />;
-    if (isAlignActive('justify')) return <AlignJustify size={16} />;
-    return <AlignLeft size={16} />;
+    if (isAlignActive('center')) return <RiAlignCenter size={16} />;
+    if (isAlignActive('right')) return <RiAlignRight size={16} />;
+    if (isAlignActive('justify')) return <RiAlignJustify size={16} />;
+    return <RiAlignLeft size={16} />;
   };
 
   return (
@@ -73,7 +67,7 @@ export function AlignmentDropdown({ editor }: AlignmentDropdownProps) {
           title="Text Alignment"
         >
           {getActiveIcon()}
-          <ChevronDown size={12} />
+          <RiArrowDownSLine size={12} />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-48">
@@ -81,7 +75,7 @@ export function AlignmentDropdown({ editor }: AlignmentDropdownProps) {
           onClick={() => setAlignment('left')}
           className={isAlignActive('left') ? 'bg-accent' : ''}
         >
-          <AlignLeft size={16} className="mr-2 shrink-0" />
+          <RiAlignLeft size={16} className="mr-2 shrink-0" />
           <span className="flex-1">Align left</span>
           <DropdownMenuShortcut>{mod}{shift}L</DropdownMenuShortcut>
         </DropdownMenuItem>
@@ -89,7 +83,7 @@ export function AlignmentDropdown({ editor }: AlignmentDropdownProps) {
           onClick={() => setAlignment('center')}
           className={isAlignActive('center') ? 'bg-accent' : ''}
         >
-          <AlignCenter size={16} className="mr-2 shrink-0" />
+          <RiAlignCenter size={16} className="mr-2 shrink-0" />
           <span className="flex-1">Align center</span>
           <DropdownMenuShortcut>{mod}{shift}E</DropdownMenuShortcut>
         </DropdownMenuItem>
@@ -97,7 +91,7 @@ export function AlignmentDropdown({ editor }: AlignmentDropdownProps) {
           onClick={() => setAlignment('right')}
           className={isAlignActive('right') ? 'bg-accent' : ''}
         >
-          <AlignRight size={16} className="mr-2 shrink-0" />
+          <RiAlignRight size={16} className="mr-2 shrink-0" />
           <span className="flex-1">Align right</span>
           <DropdownMenuShortcut>{mod}{shift}R</DropdownMenuShortcut>
         </DropdownMenuItem>
@@ -105,7 +99,7 @@ export function AlignmentDropdown({ editor }: AlignmentDropdownProps) {
           onClick={() => setAlignment('justify')}
           className={isAlignActive('justify') ? 'bg-accent' : ''}
         >
-          <AlignJustify size={16} className="mr-2 shrink-0" />
+          <RiAlignJustify size={16} className="mr-2 shrink-0" />
           <span className="flex-1">Justify</span>
           <DropdownMenuShortcut>{mod}{shift}J</DropdownMenuShortcut>
         </DropdownMenuItem>

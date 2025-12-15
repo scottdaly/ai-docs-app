@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Download, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { RiCloseLine, RiDownloadLine, RiErrorWarningLine, RiCheckboxCircleLine, RiLoader4Line } from '@remixicon/react';
 
 interface UpdateState {
   status: 'idle' | 'checking' | 'available' | 'downloading' | 'ready' | 'not-available' | 'error';
@@ -168,16 +168,16 @@ export function UpdateNotification({ onCheckForUpdates }: UpdateNotificationProp
         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
           <div className="flex items-center gap-2">
             {updateState.status === 'available' && (
-              <Download className="w-4 h-4 text-primary" />
+              <RiDownloadLine className="w-4 h-4 text-primary" />
             )}
             {updateState.status === 'downloading' && (
-              <Download className="w-4 h-4 text-primary animate-pulse" />
+              <RiDownloadLine className="w-4 h-4 text-primary animate-pulse" />
             )}
             {updateState.status === 'ready' && (
-              <CheckCircle className="w-4 h-4 text-green-500" />
+              <RiCheckboxCircleLine className="w-4 h-4 text-green-500" />
             )}
             {updateState.status === 'error' && (
-              <AlertCircle className="w-4 h-4 text-destructive" />
+              <RiErrorWarningLine className="w-4 h-4 text-destructive" />
             )}
             <span className="font-medium text-sm">
               {updateState.status === 'available' && 'Update Available'}
@@ -191,7 +191,7 @@ export function UpdateNotification({ onCheckForUpdates }: UpdateNotificationProp
               onClick={handleDismiss}
               className="p-1 hover:bg-muted rounded transition-colors"
             >
-              <X className="w-4 h-4 text-muted-foreground" />
+              <RiCloseLine className="w-4 h-4 text-muted-foreground" />
             </button>
           )}
         </div>
@@ -252,7 +252,7 @@ export function UpdateNotification({ onCheckForUpdates }: UpdateNotificationProp
                 >
                   {isRestarting ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <RiLoader4Line className="w-4 h-4 animate-spin" />
                       Restarting...
                     </>
                   ) : (

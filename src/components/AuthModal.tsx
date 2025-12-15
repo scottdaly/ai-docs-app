@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, Loader2, Mail, Lock, User, AlertCircle } from 'lucide-react';
+import { RiCloseLine, RiLoader4Line, RiMailLine, RiLockLine, RiUserLine, RiErrorWarningLine } from '@remixicon/react';
 import { useAuthStore } from '../store/useAuthStore';
 
 interface AuthModalProps {
@@ -106,7 +106,7 @@ export function AuthModal({ isOpen, onClose, initialTab = 'login' }: AuthModalPr
               {activeTab === 'login' ? 'Welcome back' : 'Create an account'}
             </Dialog.Title>
             <Dialog.Close className="rounded-full p-2 opacity-70 ring-offset-background transition-all hover:bg-accent hover:opacity-100 focus:outline-none">
-              <X size={18} />
+              <RiCloseLine size={18} />
               <span className="sr-only">Close</span>
             </Dialog.Close>
           </div>
@@ -140,7 +140,7 @@ export function AuthModal({ isOpen, onClose, initialTab = 'login' }: AuthModalPr
             {/* Error Display */}
             {displayError && (
               <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 flex items-start gap-2">
-                <AlertCircle size={16} className="text-destructive mt-0.5 flex-shrink-0" />
+                <RiErrorWarningLine size={16} className="text-destructive mt-0.5 flex-shrink-0" />
                 <p className="text-sm text-destructive">{displayError}</p>
               </div>
             )}
@@ -175,7 +175,7 @@ export function AuthModal({ isOpen, onClose, initialTab = 'login' }: AuthModalPr
                     Email
                   </label>
                   <div className="relative">
-                    <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <RiMailLine size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input
                       id="login-email"
                       type="email"
@@ -193,7 +193,7 @@ export function AuthModal({ isOpen, onClose, initialTab = 'login' }: AuthModalPr
                     Password
                   </label>
                   <div className="relative">
-                    <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <RiLockLine size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input
                       id="login-password"
                       type="password"
@@ -213,7 +213,7 @@ export function AuthModal({ isOpen, onClose, initialTab = 'login' }: AuthModalPr
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 size={16} className="animate-spin" />
+                      <RiLoader4Line size={16} className="animate-spin" />
                       Logging in...
                     </>
                   ) : (
@@ -231,7 +231,7 @@ export function AuthModal({ isOpen, onClose, initialTab = 'login' }: AuthModalPr
                     Display Name <span className="text-muted-foreground">(optional)</span>
                   </label>
                   <div className="relative">
-                    <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <RiUserLine size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input
                       id="signup-name"
                       type="text"
@@ -249,7 +249,7 @@ export function AuthModal({ isOpen, onClose, initialTab = 'login' }: AuthModalPr
                     Email
                   </label>
                   <div className="relative">
-                    <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <RiMailLine size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input
                       id="signup-email"
                       type="email"
@@ -267,7 +267,7 @@ export function AuthModal({ isOpen, onClose, initialTab = 'login' }: AuthModalPr
                     Password
                   </label>
                   <div className="relative">
-                    <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <RiLockLine size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input
                       id="signup-password"
                       type="password"
@@ -285,7 +285,7 @@ export function AuthModal({ isOpen, onClose, initialTab = 'login' }: AuthModalPr
                     Confirm Password
                   </label>
                   <div className="relative">
-                    <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <RiLockLine size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input
                       id="signup-confirm"
                       type="password"
@@ -305,7 +305,7 @@ export function AuthModal({ isOpen, onClose, initialTab = 'login' }: AuthModalPr
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 size={16} className="animate-spin" />
+                      <RiLoader4Line size={16} className="animate-spin" />
                       Creating account...
                     </>
                   ) : (

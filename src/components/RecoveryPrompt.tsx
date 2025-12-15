@@ -1,4 +1,4 @@
-import { AlertTriangle } from 'lucide-react';
+import { RiAlertLine } from '@remixicon/react';
 
 interface RecoveryPromptProps {
   filePath: string;
@@ -23,7 +23,7 @@ export function RecoveryPrompt({ filePath, recoveryTime, onRecover, onDiscard }:
   return (
     <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 p-4 mx-4 mt-2 rounded-r">
       <div className="flex items-start">
-        <AlertTriangle className="h-5 w-5 text-yellow-500 mr-3 mt-0.5 flex-shrink-0" />
+        <RiAlertLine className="h-5 w-5 text-yellow-500 mr-3 mt-0.5 flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
             Unsaved changes recovered

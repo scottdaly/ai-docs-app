@@ -10,17 +10,17 @@ import {
   ContextMenuTrigger,
 } from './ui/context-menu';
 import {
-  FileText,
-  FolderPlus,
-  Pencil,
-  Copy,
-  Trash2,
-  FolderOpen,
-  Clipboard,
-  ClipboardPaste,
-  Scissors,
-  Code,
-} from 'lucide-react';
+  RiFileTextLine,
+  RiFolderAddLine,
+  RiPencilLine,
+  RiFileCopyLine,
+  RiDeleteBinLine,
+  RiFolderOpenLine,
+  RiClipboardLine,
+  RiClipboardFill,
+  RiScissorsCutLine,
+  RiCodeLine,
+} from '@remixicon/react';
 
 interface FileContextMenuProps {
   node: FileNode;
@@ -229,17 +229,17 @@ export function FileContextMenu({
           </div>
           <ContextMenuSeparator />
           <ContextMenuItem onClick={handleBulkCopy}>
-            <Copy className="mr-2 h-4 w-4" />
+            <RiFileCopyLine className="mr-2 h-4 w-4" />
             Copy {selectionCount} Items
             <ContextMenuShortcut>⌘C</ContextMenuShortcut>
           </ContextMenuItem>
           <ContextMenuItem onClick={handleBulkCut}>
-            <Scissors className="mr-2 h-4 w-4" />
+            <RiScissorsCutLine className="mr-2 h-4 w-4" />
             Cut {selectionCount} Items
             <ContextMenuShortcut>⌘X</ContextMenuShortcut>
           </ContextMenuItem>
           <ContextMenuItem onClick={handleBulkDuplicate}>
-            <Copy className="mr-2 h-4 w-4" />
+            <RiFileCopyLine className="mr-2 h-4 w-4" />
             Duplicate {selectionCount} Items
           </ContextMenuItem>
           <ContextMenuSeparator />
@@ -247,7 +247,7 @@ export function FileContextMenu({
             onClick={handleBulkTrash}
             className="text-destructive focus:text-destructive"
           >
-            <Trash2 className="mr-2 h-4 w-4" />
+            <RiDeleteBinLine className="mr-2 h-4 w-4" />
             Delete {selectionCount} Items
           </ContextMenuItem>
         </ContextMenuContent>
@@ -262,13 +262,13 @@ export function FileContextMenu({
         {isFile && (
           <>
             <ContextMenuItem onClick={handleOpen}>
-              <FileText className="mr-2 h-4 w-4" />
+              <RiFileTextLine className="mr-2 h-4 w-4" />
               Open
               <ContextMenuShortcut>Enter</ContextMenuShortcut>
             </ContextMenuItem>
             {isSvg && (
               <ContextMenuItem onClick={handleOpenAsCode}>
-                <Code className="mr-2 h-4 w-4" />
+                <RiCodeLine className="mr-2 h-4 w-4" />
                 Open as Code
               </ContextMenuItem>
             )}
@@ -280,13 +280,13 @@ export function FileContextMenu({
           <>
             {onNewDocument && (
               <ContextMenuItem onClick={onNewDocument}>
-                <FileText className="mr-2 h-4 w-4" />
+                <RiFileTextLine className="mr-2 h-4 w-4" />
                 New Document
               </ContextMenuItem>
             )}
             {onNewFolder && (
               <ContextMenuItem onClick={onNewFolder}>
-                <FolderPlus className="mr-2 h-4 w-4" />
+                <RiFolderAddLine className="mr-2 h-4 w-4" />
                 New Folder
               </ContextMenuItem>
             )}
@@ -295,20 +295,20 @@ export function FileContextMenu({
         )}
 
         <ContextMenuItem onClick={handleCopy}>
-          <Copy className="mr-2 h-4 w-4" />
+          <RiFileCopyLine className="mr-2 h-4 w-4" />
           Copy
           <ContextMenuShortcut>⌘C</ContextMenuShortcut>
         </ContextMenuItem>
 
         <ContextMenuItem onClick={handleCut}>
-          <Scissors className="mr-2 h-4 w-4" />
+          <RiScissorsCutLine className="mr-2 h-4 w-4" />
           Cut
           <ContextMenuShortcut>⌘X</ContextMenuShortcut>
         </ContextMenuItem>
 
         {canPaste && (
           <ContextMenuItem onClick={handlePaste}>
-            <ClipboardPaste className="mr-2 h-4 w-4" />
+            <RiClipboardFill className="mr-2 h-4 w-4" />
             Paste
             <ContextMenuShortcut>⌘V</ContextMenuShortcut>
           </ContextMenuItem>
@@ -317,14 +317,14 @@ export function FileContextMenu({
         <ContextMenuSeparator />
 
         <ContextMenuItem onClick={onRename}>
-          <Pencil className="mr-2 h-4 w-4" />
+          <RiPencilLine className="mr-2 h-4 w-4" />
           Rename
           <ContextMenuShortcut>F2</ContextMenuShortcut>
         </ContextMenuItem>
 
         {isFile && (
           <ContextMenuItem onClick={handleDuplicate}>
-            <Copy className="mr-2 h-4 w-4" />
+            <RiFileCopyLine className="mr-2 h-4 w-4" />
             Duplicate
           </ContextMenuItem>
         )}
@@ -332,12 +332,12 @@ export function FileContextMenu({
         <ContextMenuSeparator />
 
         <ContextMenuItem onClick={handleCopyPath}>
-          <Clipboard className="mr-2 h-4 w-4" />
+          <RiClipboardLine className="mr-2 h-4 w-4" />
           Copy Path
         </ContextMenuItem>
 
         <ContextMenuItem onClick={handleRevealInFinder}>
-          <FolderOpen className="mr-2 h-4 w-4" />
+          <RiFolderOpenLine className="mr-2 h-4 w-4" />
           Reveal in Finder
         </ContextMenuItem>
 
@@ -347,7 +347,7 @@ export function FileContextMenu({
           onClick={handleTrash}
           className="text-destructive focus:text-destructive"
         >
-          <Trash2 className="mr-2 h-4 w-4" />
+          <RiDeleteBinLine className="mr-2 h-4 w-4" />
           Delete
           <ContextMenuShortcut>Del</ContextMenuShortcut>
         </ContextMenuItem>

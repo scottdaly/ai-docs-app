@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { File, Search } from 'lucide-react';
+import { RiFileLine, RiSearchLine } from '@remixicon/react';
 import { useFileSystem } from '../../store/useFileSystem';
 import { FileNode } from '../../shared/types';
 
@@ -117,7 +117,7 @@ export function ContextPicker({ search, onSelect, onClose }: ContextPickerProps)
   if (filteredFiles.length === 0) {
     return (
       <div className="absolute bottom-full left-0 right-0 mb-1 bg-popover border border-border rounded-lg shadow-lg p-4 text-center text-sm text-muted-foreground">
-        <Search size={16} className="inline mr-2 opacity-50" />
+        <RiSearchLine size={16} className="inline mr-2 opacity-50" />
         No files matching "{search}"
       </div>
     );
@@ -142,7 +142,7 @@ export function ContextPicker({ search, onSelect, onClose }: ContextPickerProps)
             onClick={() => onSelect(file)}
             onMouseEnter={() => setSelectedIndex(index)}
           >
-            <File size={14} className="text-muted-foreground flex-shrink-0" />
+            <RiFileLine size={14} className="text-muted-foreground flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="truncate font-medium">
                 {file.displayName || file.name}

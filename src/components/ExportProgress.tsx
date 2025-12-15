@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FileText, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { RiFileTextLine, RiCheckboxCircleLine, RiCloseCircleLine, RiLoader4Line } from '@remixicon/react';
 
 interface ExportProgressProps {
   isVisible: boolean;
@@ -58,11 +58,11 @@ export function ExportProgress({ isVisible, onClose }: ExportProgressProps) {
       <div className="bg-background border border-border rounded-lg shadow-xl p-6 w-80">
         <div className="flex items-center gap-3 mb-4">
           {progress.error ? (
-            <XCircle className="w-6 h-6 text-destructive" />
+            <RiCloseCircleLine className="w-6 h-6 text-destructive" />
           ) : progress.complete ? (
-            <CheckCircle className="w-6 h-6 text-green-500" />
+            <RiCheckboxCircleLine className="w-6 h-6 text-green-500" />
           ) : (
-            <Loader2 className="w-6 h-6 text-primary animate-spin" />
+            <RiLoader4Line className="w-6 h-6 text-primary animate-spin" />
           )}
           <h3 className="font-semibold text-foreground">
             {progress.error ? 'Export Failed' : progress.complete ? 'Export Complete' : 'Exporting to DOCX'}
@@ -85,7 +85,7 @@ export function ExportProgress({ isVisible, onClose }: ExportProgressProps) {
         ) : (
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <FileText className="w-4 h-4" />
+              <RiFileTextLine className="w-4 h-4" />
               <span>{progress.phase}</span>
             </div>
 

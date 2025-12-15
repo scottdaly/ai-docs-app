@@ -1,4 +1,4 @@
-import { ChevronDown, Check } from 'lucide-react';
+import { RiArrowDownSLine, RiCheckLine } from '@remixicon/react';
 import { Editor } from '@tiptap/react';
 import { useState, useRef, useEffect } from 'react';
 
@@ -123,7 +123,7 @@ export function FontFamilyDropdown({ editor }: FontFamilyDropdownProps) {
         title="Font Family"
       >
         <span className="truncate">{activeFont.label}</span>
-        <ChevronDown size={14} className="opacity-50" />
+        <RiArrowDownSLine size={14} className="opacity-50" />
       </button>
 
       {isOpen && (
@@ -137,7 +137,7 @@ export function FontFamilyDropdown({ editor }: FontFamilyDropdownProps) {
               style={{ fontFamily: font.style }}
             >
               <span className="flex-1">{font.label}</span>
-              {editor.isActive('textStyle', { fontFamily: font.style }) && <Check size={14} className="ml-2 opacity-70" />}
+              {editor.isActive('textStyle', { fontFamily: font.style }) && <RiCheckLine size={14} className="ml-2 opacity-70" />}
             </button>
           ))}
         </div>

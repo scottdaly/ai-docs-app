@@ -1,5 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, Palette, Settings as SettingsIcon, Bot, Check, Type, History, User, LogOut, Mail, Loader2 } from 'lucide-react';
+import { RiCloseLine, RiPaletteLine, RiSettings3Line, RiRobot2Line, RiCheckLine, RiText, RiHistoryLine, RiUserLine, RiLogoutBoxLine, RiMailLine, RiLoader4Line } from '@remixicon/react';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useTheme, Theme } from '../store/useTheme';
 import { useFileSystem } from '../store/useFileSystem';
@@ -19,12 +19,12 @@ import {
 } from '../hooks/useWorkspaceConfig';
 
 const TABS = [
-  { id: 'general', label: 'General', icon: SettingsIcon },
-  { id: 'editor', label: 'Editor', icon: Type },
-  { id: 'versioning', label: 'Versioning', icon: History },
-  { id: 'appearance', label: 'Appearance', icon: Palette },
-  { id: 'ai', label: 'AI Models', icon: Bot },
-  { id: 'account', label: 'Account', icon: User },
+  { id: 'general', label: 'General', icon: RiSettings3Line },
+  { id: 'editor', label: 'Editor', icon: RiText },
+  { id: 'versioning', label: 'Versioning', icon: RiHistoryLine },
+  { id: 'appearance', label: 'Appearance', icon: RiPaletteLine },
+  { id: 'ai', label: 'AI Models', icon: RiRobot2Line },
+  { id: 'account', label: 'Account', icon: RiUserLine },
 ] as const;
 
 const THEMES: { 
@@ -257,7 +257,7 @@ export function SettingsModal() {
                     </p>
                 </div>
                 <Dialog.Close className="rounded-full p-2 opacity-70 ring-offset-background transition-all hover:bg-accent hover:opacity-100 focus:outline-none">
-                    <X size={20} />
+                    <RiCloseLine size={20} />
                     <span className="sr-only">Close</span>
                 </Dialog.Close>
              </div>
@@ -285,7 +285,7 @@ export function SettingsModal() {
                                                 {t.label}
                                                 {theme === t.value && (
                                                     <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
-                                                        <Check size={14} strokeWidth={2.5} />
+                                                        <RiCheckLine size={14} />
                                                     </div>
                                                 )}
                                             </div>
@@ -327,7 +327,7 @@ export function SettingsModal() {
 
                       {!hasWorkspace ? (
                         <div className="flex flex-col items-center justify-center h-48 text-center space-y-4 text-muted-foreground border-2 border-dashed rounded-xl">
-                          <SettingsIcon size={48} className="opacity-20" />
+                          <RiSettings3Line size={48} className="opacity-20" />
                           <p>Open a workspace to configure document defaults.</p>
                         </div>
                       ) : (
@@ -420,7 +420,7 @@ export function SettingsModal() {
 
                       {!hasWorkspace ? (
                         <div className="flex flex-col items-center justify-center h-48 text-center space-y-4 text-muted-foreground border-2 border-dashed rounded-xl">
-                          <Type size={48} className="opacity-20" />
+                          <RiText size={48} className="opacity-20" />
                           <p>Open a workspace to configure additional editor settings.</p>
                         </div>
                       ) : (
@@ -457,7 +457,7 @@ export function SettingsModal() {
                     <div className="space-y-8">
                       {!hasWorkspace ? (
                         <div className="flex flex-col items-center justify-center h-64 text-center space-y-4 text-muted-foreground border-2 border-dashed rounded-xl">
-                          <History size={48} className="opacity-20" />
+                          <RiHistoryLine size={48} className="opacity-20" />
                           <p>Open a workspace to configure versioning settings.</p>
                         </div>
                       ) : (
@@ -512,7 +512,7 @@ export function SettingsModal() {
 
                 {activeTab === 'ai' && (
                     <div className="flex flex-col items-center justify-center h-64 text-center space-y-4 text-muted-foreground border-2 border-dashed rounded-xl">
-                        <Bot size={48} className="opacity-20" />
+                        <RiRobot2Line size={48} className="opacity-20" />
                         <p>AI Model configuration coming in Phase 2.</p>
                     </div>
                 )}
@@ -531,7 +531,7 @@ export function SettingsModal() {
                                 />
                               ) : (
                                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                                  <User size={32} className="text-primary" />
+                                  <RiUserLine size={32} className="text-primary" />
                                 </div>
                               )}
                               <div className="space-y-1">
@@ -539,7 +539,7 @@ export function SettingsModal() {
                                   {user.displayName || 'Midlight User'}
                                 </p>
                                 <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-                                  <Mail size={14} />
+                                  <RiMailLine size={14} />
                                   {user.email}
                                 </p>
                               </div>
@@ -572,9 +572,9 @@ export function SettingsModal() {
                                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-lg transition-colors disabled:opacity-50"
                               >
                                 {isLoading ? (
-                                  <Loader2 size={16} className="animate-spin" />
+                                  <RiLoader4Line size={16} className="animate-spin" />
                                 ) : (
-                                  <LogOut size={16} />
+                                  <RiLogoutBoxLine size={16} />
                                 )}
                                 Sign Out
                               </button>
@@ -586,7 +586,7 @@ export function SettingsModal() {
                         </>
                       ) : (
                         <div className="flex flex-col items-center justify-center h-64 text-center space-y-4 text-muted-foreground border-2 border-dashed rounded-xl">
-                          <User size={48} className="opacity-20" />
+                          <RiUserLine size={48} className="opacity-20" />
                           <div>
                             <p className="font-medium">Not signed in</p>
                             <p className="text-sm">Sign in to access AI features and sync your settings.</p>

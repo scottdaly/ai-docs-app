@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Plus, List, Trash2, X } from 'lucide-react';
+import { RiAddLine, RiListUnordered, RiDeleteBinLine, RiCloseLine } from '@remixicon/react';
 import { useAIStore } from '../../store/useAIStore';
 import {
   DropdownMenu,
@@ -113,7 +113,7 @@ export function ConversationTabs({ onClose }: ConversationTabsProps) {
           className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
           title="New chat"
         >
-          <Plus size={14} />
+          <RiAddLine size={14} />
         </button>
 
         {/* History dropdown */}
@@ -123,7 +123,7 @@ export function ConversationTabs({ onClose }: ConversationTabsProps) {
               className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
               title="Chat history"
             >
-              <List size={14} />
+              <RiListUnordered size={14} />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
@@ -151,7 +151,7 @@ export function ConversationTabs({ onClose }: ConversationTabsProps) {
                       className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
                       title="Delete chat"
                     >
-                      <Trash2 size={12} />
+                      <RiDeleteBinLine size={12} />
                     </button>
                   </DropdownMenuItem>
                 ))}
@@ -166,7 +166,7 @@ export function ConversationTabs({ onClose }: ConversationTabsProps) {
           className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
           title="Close"
         >
-          <X size={14} />
+          <RiCloseLine size={14} />
         </button>
       </div>
     </div>

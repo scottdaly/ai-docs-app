@@ -1,4 +1,4 @@
-import { ChevronDown } from 'lucide-react';
+import { RiArrowDownSLine } from '@remixicon/react';
 import logoSvg from '../assets/logo.svg';
 import { useTheme, Theme } from '../store/useTheme';
 import { useSettingsStore } from '../store/useSettingsStore';
@@ -36,7 +36,7 @@ export function WindowsMenu() {
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-1 px-2 py-1 ml-2 hover:bg-accent rounded-md transition-colors">
           <img src={logoSvg} alt="Midlight" className="h-5 w-5 rounded" />
-          <ChevronDown className="h-3 w-3 text-muted-foreground" />
+          <RiArrowDownSLine className="h-3 w-3 text-muted-foreground" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-56">

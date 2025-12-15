@@ -1,12 +1,12 @@
 import { useToastStore, Toast, ToastType } from '../store/useToastStore';
-import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
+import { RiCloseLine, RiCheckboxCircleLine, RiErrorWarningLine, RiInformationLine, RiAlertLine } from '@remixicon/react';
 import { useEffect, useState } from 'react';
 
 const iconMap: Record<ToastType, React.ReactNode> = {
-  success: <CheckCircle size={18} className="text-green-500" />,
-  error: <AlertCircle size={18} className="text-red-500" />,
-  warning: <AlertTriangle size={18} className="text-yellow-500" />,
-  info: <Info size={18} className="text-blue-500" />,
+  success: <RiCheckboxCircleLine size={18} className="text-green-500" />,
+  error: <RiErrorWarningLine size={18} className="text-red-500" />,
+  warning: <RiAlertLine size={18} className="text-yellow-500" />,
+  info: <RiInformationLine size={18} className="text-blue-500" />,
 };
 
 const bgMap: Record<ToastType, string> = {
@@ -53,7 +53,7 @@ function ToastItem({ toast }: { toast: Toast }) {
         onClick={handleClose}
         className="p-1 rounded hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground"
       >
-        <X size={14} />
+        <RiCloseLine size={14} />
       </button>
     </div>
   );

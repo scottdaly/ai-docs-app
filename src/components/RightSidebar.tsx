@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { ChevronRight, MessageSquare, History, Save, Loader2, MoreHorizontal, RotateCcw, GitCompare, Pencil, LogIn, X } from 'lucide-react';
+import { RiArrowRightSLine, RiChat3Line, RiHistoryLine, RiSaveLine, RiLoader4Line, RiMoreLine, RiRefreshLine, RiGitBranchLine, RiPencilLine, RiLoginBoxLine, RiCloseLine } from '@remixicon/react';
 import { ChatInput } from './chat/ChatInput';
 import { ConversationTabs } from './chat/ConversationTabs';
 import { useVersionStore, Version } from '../store/useVersionStore';
@@ -152,11 +152,11 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
             className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
             title="Close"
           >
-            <X size={14} />
+            <RiCloseLine size={14} />
           </button>
         </div>
         <div className="flex-1 min-h-0 flex flex-col items-center justify-center p-6">
-          <Loader2 size={24} className="animate-spin text-muted-foreground" />
+          <RiLoader4Line size={24} className="animate-spin text-muted-foreground" />
         </div>
       </>
     );
@@ -173,13 +173,13 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
             className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
             title="Close"
           >
-            <X size={14} />
+            <RiCloseLine size={14} />
           </button>
         </div>
 
         <div className="flex-1 min-h-0 flex flex-col items-center justify-center p-6 text-center">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-            <LogIn size={24} className="text-primary" />
+            <RiLoginBoxLine size={24} className="text-primary" />
           </div>
           <h3 className="font-medium text-sm mb-2">Sign in to use AI</h3>
           <p className="text-xs text-muted-foreground mb-4">
@@ -206,7 +206,7 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
       <div ref={messagesContainerRef} className="flex-1 min-h-0 overflow-y-auto px-4 pt-4 pb-2 space-y-4">
         {chatHistory.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-            <MessageSquare size={40} className="mb-3 opacity-50" />
+            <RiChat3Line size={40} className="mb-3 opacity-50" />
             <p className="text-sm font-medium">Start a conversation</p>
             <p className="text-xs mt-1">Ask me to help with your writing</p>
             {activeFilePath && (
@@ -377,14 +377,14 @@ function VersionsPanel({
 
       <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
         <div className="flex items-center gap-2">
-          <History size={18} className="text-muted-foreground" />
+          <RiHistoryLine size={18} className="text-muted-foreground" />
           <h2 className="font-semibold text-sm">Versions</h2>
         </div>
         <button
           onClick={onClose}
           className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
         >
-          <ChevronRight size={18} />
+          <RiArrowRightSLine size={18} />
         </button>
       </div>
 
@@ -394,7 +394,7 @@ function VersionsPanel({
             <span className="text-xs text-blue-600 font-medium flex items-center gap-2">
               {isLoadingCompare ? (
                 <>
-                  <Loader2 size={12} className="animate-spin" />
+                  <RiLoader4Line size={12} className="animate-spin" />
                   Loading comparison...
                 </>
               ) : (
@@ -411,13 +411,13 @@ function VersionsPanel({
       <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-2">
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 size={20} className="animate-spin text-muted-foreground" />
+            <RiLoader4Line size={20} className="animate-spin text-muted-foreground" />
           </div>
         ) : error ? (
           <div className="text-center py-8 text-sm text-destructive">{error}</div>
         ) : versions.length === 0 ? (
           <div className="text-center py-8 text-sm text-muted-foreground">
-            <Save size={32} className="mx-auto mb-3 opacity-50" />
+            <RiSaveLine size={32} className="mx-auto mb-3 opacity-50" />
             <p className="font-medium">No versions saved yet</p>
             <p className="text-xs mt-1 px-4">
               Save a version when you reach a milestone—like completing a draft or before making big changes.
@@ -564,23 +564,23 @@ function VersionItem({
                 className="p-1 rounded hover:bg-muted transition-colors"
                 onClick={(e) => e.stopPropagation()}
               >
-                <MoreHorizontal size={14} className="text-muted-foreground" />
+                <RiMoreLine size={14} className="text-muted-foreground" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
               <DropdownMenuItem onClick={onRestore}>
-                <RotateCcw size={14} className="mr-2" />
+                <RiRefreshLine size={14} className="mr-2" />
                 Restore
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onCompare}>
-                <GitCompare size={14} className="mr-2" />
+                <RiGitBranchLine size={14} className="mr-2" />
                 Compare
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {
                 setNewName(version.name || '');
                 setIsRenaming(true);
               }}>
-                <Pencil size={14} className="mr-2" />
+                <RiPencilLine size={14} className="mr-2" />
                 Rename
               </DropdownMenuItem>
             </DropdownMenuContent>

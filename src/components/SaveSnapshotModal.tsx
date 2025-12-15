@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, Save, Loader2 } from 'lucide-react';
+import { RiCloseLine, RiSaveLine, RiLoader4Line } from '@remixicon/react';
 
 interface SaveSnapshotModalProps {
   open: boolean;
@@ -56,7 +56,7 @@ export function SaveSnapshotModal({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-2">
-            <Save size={20} className="text-primary" />
+            <RiSaveLine size={20} className="text-primary" />
             <h2 className="font-semibold text-lg">Create Snapshot</h2>
           </div>
           <button
@@ -64,7 +64,7 @@ export function SaveSnapshotModal({
             disabled={isSaving}
             className="p-2 rounded hover:bg-muted transition-colors disabled:opacity-50"
           >
-            <X size={20} />
+            <RiCloseLine size={20} />
           </button>
         </div>
 
@@ -126,12 +126,12 @@ export function SaveSnapshotModal({
             >
               {isSaving ? (
                 <>
-                  <Loader2 size={16} className="animate-spin" />
+                  <RiLoader4Line size={16} className="animate-spin" />
                   Saving...
                 </>
               ) : (
                 <>
-                  <Save size={16} />
+                  <RiSaveLine size={16} />
                   Save Snapshot
                 </>
               )}

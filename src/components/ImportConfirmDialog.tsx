@@ -7,7 +7,7 @@ import {
   AlertDialogTitle,
 } from './ui/alert-dialog';
 import { ImportableFileIcon } from './icons/ImportableFileIcon';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { RiLoader4Line, RiAlertLine } from '@remixicon/react';
 
 interface ImportConfirmDialogProps {
   open: boolean;
@@ -33,7 +33,7 @@ export function ImportConfirmDialog({
         <div className="flex flex-col items-center text-center gap-4">
           <div className="w-16 h-16 flex items-center justify-center">
             {error ? (
-              <AlertTriangle size={48} className="text-destructive" />
+              <RiAlertLine size={48} className="text-destructive" />
             ) : (
               <ImportableFileIcon size={56} />
             )}
@@ -45,7 +45,7 @@ export function ImportConfirmDialog({
               </span>
             ) : isImporting ? (
               <span className="flex items-center justify-center gap-2">
-                <Loader2 size={14} className="animate-spin" />
+                <RiLoader4Line size={14} className="animate-spin" />
                 Importing {fileName}...
               </span>
             ) : (

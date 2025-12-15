@@ -1,4 +1,4 @@
-import { ChevronDown } from 'lucide-react';
+import { RiArrowDownSLine } from '@remixicon/react';
 import { useAIStore } from '../../store/useAIStore';
 import {
   DropdownMenu,
@@ -56,7 +56,7 @@ export function ModelSelector() {
                      hover:bg-muted rounded transition-colors"
         >
           <span className="max-w-[120px] truncate">{getCurrentModelName()}</span>
-          <ChevronDown size={12} />
+          <RiArrowDownSLine size={12} />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-48">

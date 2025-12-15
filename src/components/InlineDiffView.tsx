@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { X, Check, RotateCcw, Copy, Sparkles } from 'lucide-react';
+import { RiCloseLine, RiCheckLine, RiRefreshLine, RiFileCopyLine, RiSparklingLine } from '@remixicon/react';
 import { diffWords } from 'diff';
 
 interface InlineDiffViewProps {
@@ -118,7 +118,7 @@ export function InlineDiffView({
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2 bg-muted/50 border-b">
         <div className="flex items-center gap-2 text-sm font-medium">
-          <Sparkles size={14} className="text-primary" />
+          <RiSparklingLine size={14} className="text-primary" />
           <span>AI Edit Result</span>
         </div>
         <div className="flex items-center gap-2">
@@ -149,7 +149,7 @@ export function InlineDiffView({
             onClick={onReject}
             className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
-            <X size={14} />
+            <RiCloseLine size={14} />
           </button>
         </div>
       </div>
@@ -208,14 +208,14 @@ export function InlineDiffView({
           onClick={onAccept}
           className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
         >
-          <Check size={16} />
+          <RiCheckLine size={16} />
           Accept
         </button>
         <button
           onClick={onReject}
           className="flex items-center justify-center gap-2 px-3 py-2 border rounded-lg hover:bg-muted transition-colors text-sm"
         >
-          <X size={16} />
+          <RiCloseLine size={16} />
           Reject
         </button>
         <button
@@ -223,14 +223,14 @@ export function InlineDiffView({
           className="flex items-center justify-center gap-2 px-3 py-2 border rounded-lg hover:bg-muted transition-colors text-sm"
           title="Try again with different prompt"
         >
-          <RotateCcw size={16} />
+          <RiRefreshLine size={16} />
         </button>
         <button
           onClick={handleCopy}
           className="flex items-center justify-center gap-2 px-3 py-2 border rounded-lg hover:bg-muted transition-colors text-sm"
           title="Copy result"
         >
-          {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+          {copied ? <RiCheckLine size={16} className="text-green-500" /> : <RiFileCopyLine size={16} />}
         </button>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { X, Loader2, Sparkles, Send } from 'lucide-react';
+import { RiCloseLine, RiLoader4Line, RiSparklingLine, RiSendPlaneLine } from '@remixicon/react';
 
 interface InlineEditPromptProps {
   position: { top: number; left: number };
@@ -107,14 +107,14 @@ export function InlineEditPrompt({
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2 bg-muted/50 border-b">
         <div className="flex items-center gap-2 text-sm font-medium">
-          <Sparkles size={14} className="text-primary" />
+          <RiSparklingLine size={14} className="text-primary" />
           <span>Edit with AI</span>
         </div>
         <button
           onClick={onCancel}
           className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
         >
-          <X size={14} />
+          <RiCloseLine size={14} />
         </button>
       </div>
 
@@ -142,9 +142,9 @@ export function InlineEditPrompt({
             className="px-3 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
-              <Loader2 size={16} className="animate-spin" />
+              <RiLoader4Line size={16} className="animate-spin" />
             ) : (
-              <Send size={16} />
+              <RiSendPlaneLine size={16} />
             )}
           </button>
         </div>

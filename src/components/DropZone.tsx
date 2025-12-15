@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { FolderOpen } from 'lucide-react';
+import { RiFolderOpenLine } from '@remixicon/react';
 
 interface DropZoneProps {
   children: React.ReactNode;
@@ -94,7 +94,7 @@ export function DropZone({ children, onFolderDrop, disabled = false }: DropZoneP
           <div className="bg-background border-2 border-dashed border-primary rounded-xl p-8 shadow-2xl">
             <div className="flex flex-col items-center gap-4 text-primary">
               <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
-                <FolderOpen size={32} />
+                <RiFolderOpenLine size={32} />
               </div>
               <div className="text-center">
                 <div className="font-semibold text-lg">Drop folder here</div>

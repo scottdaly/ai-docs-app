@@ -1,14 +1,5 @@
 import { Editor } from '@tiptap/react';
-import {
-  Italic,
-  Underline,
-  Strikethrough,
-  Code,
-  Subscript,
-  Superscript,
-  RemoveFormatting,
-  ChevronDown,
-} from 'lucide-react';
+import { RiItalic, RiUnderline, RiStrikethrough, RiCodeLine, RiSubscript, RiSuperscript, RiFormatClear, RiArrowDownSLine } from '@remixicon/react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,13 +41,13 @@ export function TextStyleDropdown({ editor }: TextStyleDropdownProps) {
 
   // Determine which icon to show (first active style, or default to Italic)
   const getActiveIcon = () => {
-    if (editor.isActive('italic')) return <Italic size={16} />;
-    if (editor.isActive('underline')) return <Underline size={16} />;
-    if (editor.isActive('strike')) return <Strikethrough size={16} />;
-    if (editor.isActive('code')) return <Code size={16} />;
-    if (editor.isActive('subscript')) return <Subscript size={16} />;
-    if (editor.isActive('superscript')) return <Superscript size={16} />;
-    return <Italic size={16} />;
+    if (editor.isActive('italic')) return <RiItalic size={16} />;
+    if (editor.isActive('underline')) return <RiUnderline size={16} />;
+    if (editor.isActive('strike')) return <RiStrikethrough size={16} />;
+    if (editor.isActive('code')) return <RiCodeLine size={16} />;
+    if (editor.isActive('subscript')) return <RiSubscript size={16} />;
+    if (editor.isActive('superscript')) return <RiSuperscript size={16} />;
+    return <RiItalic size={16} />;
   };
 
   return (
@@ -69,7 +60,7 @@ export function TextStyleDropdown({ editor }: TextStyleDropdownProps) {
           title="Text Styles"
         >
           {getActiveIcon()}
-          <ChevronDown size={12} />
+          <RiArrowDownSLine size={12} />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-56">
@@ -78,7 +69,7 @@ export function TextStyleDropdown({ editor }: TextStyleDropdownProps) {
           disabled={!editor.can().chain().focus().toggleItalic().run()}
           className={editor.isActive('italic') ? 'bg-accent' : ''}
         >
-          <Italic size={16} className="mr-2 shrink-0" />
+          <RiItalic size={16} className="mr-2 shrink-0" />
           <span className="flex-1">Italic</span>
           <DropdownMenuShortcut>{mod}I</DropdownMenuShortcut>
         </DropdownMenuItem>
@@ -87,7 +78,7 @@ export function TextStyleDropdown({ editor }: TextStyleDropdownProps) {
           disabled={!editor.can().chain().focus().toggleUnderline().run()}
           className={editor.isActive('underline') ? 'bg-accent' : ''}
         >
-          <Underline size={16} className="mr-2 shrink-0" />
+          <RiUnderline size={16} className="mr-2 shrink-0" />
           <span className="flex-1">Underline</span>
           <DropdownMenuShortcut>{mod}U</DropdownMenuShortcut>
         </DropdownMenuItem>
@@ -96,7 +87,7 @@ export function TextStyleDropdown({ editor }: TextStyleDropdownProps) {
           disabled={!editor.can().chain().focus().toggleStrike().run()}
           className={editor.isActive('strike') ? 'bg-accent' : ''}
         >
-          <Strikethrough size={16} className="mr-2 shrink-0" />
+          <RiStrikethrough size={16} className="mr-2 shrink-0" />
           <span className="flex-1">Strikethrough</span>
           <DropdownMenuShortcut>{mod}{shift}S</DropdownMenuShortcut>
         </DropdownMenuItem>
@@ -105,7 +96,7 @@ export function TextStyleDropdown({ editor }: TextStyleDropdownProps) {
           disabled={!editor.can().chain().focus().toggleCode().run()}
           className={editor.isActive('code') ? 'bg-accent' : ''}
         >
-          <Code size={16} className="mr-2 shrink-0" />
+          <RiCodeLine size={16} className="mr-2 shrink-0" />
           <span className="flex-1">Code</span>
           <DropdownMenuShortcut>{mod}E</DropdownMenuShortcut>
         </DropdownMenuItem>
@@ -114,7 +105,7 @@ export function TextStyleDropdown({ editor }: TextStyleDropdownProps) {
           disabled={!editor.can().chain().focus().toggleSubscript().run()}
           className={editor.isActive('subscript') ? 'bg-accent' : ''}
         >
-          <Subscript size={16} className="mr-2 shrink-0" />
+          <RiSubscript size={16} className="mr-2 shrink-0" />
           <span className="flex-1">Subscript</span>
           <DropdownMenuShortcut>{mod},</DropdownMenuShortcut>
         </DropdownMenuItem>
@@ -123,13 +114,13 @@ export function TextStyleDropdown({ editor }: TextStyleDropdownProps) {
           disabled={!editor.can().chain().focus().toggleSuperscript().run()}
           className={editor.isActive('superscript') ? 'bg-accent' : ''}
         >
-          <Superscript size={16} className="mr-2 shrink-0" />
+          <RiSuperscript size={16} className="mr-2 shrink-0" />
           <span className="flex-1">Superscript</span>
           <DropdownMenuShortcut>{mod}.</DropdownMenuShortcut>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={clearFormatting}>
-          <RemoveFormatting size={16} className="mr-2 shrink-0" />
+          <RiFormatClear size={16} className="mr-2 shrink-0" />
           <span className="flex-1">Clear formatting</span>
           <DropdownMenuShortcut>{mod}\</DropdownMenuShortcut>
         </DropdownMenuItem>

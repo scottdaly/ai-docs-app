@@ -1,4 +1,4 @@
-import { X, RotateCcw } from 'lucide-react';
+import { RiCloseLine, RiRefreshLine } from '@remixicon/react';
 import { diffWords } from 'diff';
 import { useMemo } from 'react';
 
@@ -83,7 +83,7 @@ export function CompareModal({
             onClick={onClose}
             className="p-2 rounded hover:bg-muted transition-colors"
           >
-            <X size={20} />
+            <RiCloseLine size={20} />
           </button>
         </div>
 
@@ -110,7 +110,7 @@ export function CompareModal({
                 onClick={onRestoreA}
                 className="flex items-center gap-1 text-xs px-2 py-1 rounded border hover:bg-muted transition-colors"
               >
-                <RotateCcw size={12} />
+                <RiRefreshLine size={12} />
                 Restore
               </button>
             </div>
@@ -129,7 +129,7 @@ export function CompareModal({
                 onClick={onRestoreB}
                 className="flex items-center gap-1 text-xs px-2 py-1 rounded border hover:bg-muted transition-colors"
               >
-                <RotateCcw size={12} />
+                <RiRefreshLine size={12} />
                 Restore
               </button>
             </div>

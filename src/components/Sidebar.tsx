@@ -1,4 +1,4 @@
-import { ChevronRight, ChevronDown, Settings, Plus } from 'lucide-react';
+import { RiArrowRightSLine, RiArrowDownSLine, RiSettings3Line, RiAddLine } from '@remixicon/react';
 import { MidlightFileIcon } from './icons/MidlightFileIcon';
 import { ImportableFileIcon } from './icons/ImportableFileIcon';
 import { FolderIcon } from './icons/FolderIcon';
@@ -382,7 +382,7 @@ function FileTreeItem({ node, level = 0, onCreateInFolder, selectedPaths, onSele
     >
       <span className={`mr-1 ${isActive ? 'text-accent-foreground/70' : 'text-foreground/50'}`}>
           {node.type === 'directory' ? (
-              isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />
+              isOpen ? <RiArrowDownSLine size={14} /> : <RiArrowRightSLine size={14} />
           ) : <span className="w-3.5 inline-block" />}
       </span>
       <span className={`mr-2 ${iconClass}`}>
@@ -846,7 +846,7 @@ export function Sidebar() {
                className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
                title="New Document"
              >
-               <Plus size={14} />
+               <RiAddLine size={14} />
              </button>
            )}
         </div>
@@ -894,7 +894,7 @@ export function Sidebar() {
               onClick={() => openSettings()}
               className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 px-2 py-1.5 rounded w-full transition-colors"
           >
-              <Settings size={14} />
+              <RiSettings3Line size={14} />
               <span>Settings</span>
           </button>
         </div>
