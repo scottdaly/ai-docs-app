@@ -483,6 +483,7 @@ async function exchangeCode(code: string): Promise<{ accessToken: string; expire
     const request = net.request({
       method: 'POST',
       url,
+      useSessionCookies: true, // Important: Store cookies from response
     });
 
     request.setHeader('Content-Type', 'application/json');
@@ -492,6 +493,11 @@ async function exchangeCode(code: string): Promise<{ accessToken: string; expire
 
     request.on('response', (response) => {
       console.log('[Auth] Exchange response status:', response.statusCode);
+
+      // Debug: Log Set-Cookie headers
+      const setCookieHeaders = response.headers['set-cookie'];
+      console.log('[Auth] Exchange Set-Cookie headers:', setCookieHeaders || 'none');
+
       response.on('data', (chunk) => {
         responseData += chunk.toString();
       });
@@ -725,6 +731,7 @@ async function makeAuthenticatedRequest(
     const request = net.request({
       method: options.method || 'GET',
       url,
+      useSessionCookies: true,
     });
 
     request.setHeader('Content-Type', 'application/json');
