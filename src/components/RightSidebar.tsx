@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { ChevronRight, MessageSquare, Sparkles, History, Save, Loader2, MoreHorizontal, RotateCcw, GitCompare, Pencil, LogIn } from 'lucide-react';
+import { ChevronRight, MessageSquare, History, Save, Loader2, MoreHorizontal, RotateCcw, GitCompare, Pencil, LogIn, X } from 'lucide-react';
 import { ChatInput } from './chat/ChatInput';
 import { ConversationTabs } from './chat/ConversationTabs';
 import { useVersionStore, Version } from '../store/useVersionStore';
@@ -146,16 +146,14 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
   if (!isAuthenticated) {
     return (
       <>
-        <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
-          <div className="flex items-center gap-2">
-            <Sparkles size={18} className="text-primary" />
-            <h2 className="font-semibold text-sm">AI Assistant</h2>
-          </div>
+        {/* Simple header with close button */}
+        <div className="flex items-center justify-end px-2 py-2 border-b border-border bg-muted/10">
           <button
             onClick={onClose}
-            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            title="Close"
           >
-            <ChevronRight size={18} />
+            <X size={14} />
           </button>
         </div>
 
