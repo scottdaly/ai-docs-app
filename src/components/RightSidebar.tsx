@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { ChevronRight, MessageSquare, Sparkles, History, Save, Loader2, MoreHorizontal, RotateCcw, GitCompare, Pencil, Trash2, LogIn } from 'lucide-react';
+import { ChevronRight, MessageSquare, Sparkles, History, Save, Loader2, MoreHorizontal, RotateCcw, GitCompare, Pencil, LogIn } from 'lucide-react';
 import { ChatInput } from './chat/ChatInput';
 import { ConversationTabs } from './chat/ConversationTabs';
 import { useVersionStore, Version } from '../store/useVersionStore';
@@ -74,7 +74,6 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
   const {
     isStreaming,
     sendChatMessage,
-    clearChatHistory,
     cleanupStream,
     fetchAvailableModels,
     getActiveConversation,
@@ -143,13 +142,6 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
     }
   }, [isOnline, getDocumentContext, sendChatMessage]);
 
-  const handleClearHistory = () => {
-    if (chatHistory.length > 0) {
-      clearChatHistory();
-      toast.success('Chat history cleared');
-    }
-  };
-
   // Not authenticated - show login prompt
   if (!isAuthenticated) {
     return (
@@ -190,32 +182,8 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
 
   return (
     <>
-      <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
-        <div className="flex items-center gap-2">
-          <Sparkles size={18} className="text-primary" />
-          <h2 className="font-semibold text-sm">AI Assistant</h2>
-        </div>
-        <div className="flex items-center gap-1">
-          {chatHistory.length > 0 && (
-            <button
-              onClick={handleClearHistory}
-              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              title="Clear chat history"
-            >
-              <Trash2 size={16} />
-            </button>
-          )}
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-          >
-            <ChevronRight size={18} />
-          </button>
-        </div>
-      </div>
-
-      {/* Conversation tabs */}
-      <ConversationTabs />
+      {/* Conversation tabs with close button */}
+      <ConversationTabs onClose={onClose} />
 
       <div ref={messagesContainerRef} className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
         {chatHistory.length === 0 ? (

@@ -62,6 +62,9 @@ interface AIState {
   // Context items (@ mentions for files)
   contextItems: ContextItem[];
 
+  // Auto-conversation settings
+  autoNewConversationAfterHours: number | null; // null = disabled, e.g., 4 = 4 hours of inactivity
+
   // Conversation actions
   createConversation: () => string;
   deleteConversation: (id: string) => void;
@@ -90,11 +93,38 @@ interface AIState {
   addContextItem: (item: Omit<ContextItem, 'id'>) => void;
   removeContextItem: (id: string) => void;
   clearContextItems: () => void;
+
+  // Auto-conversation actions
+  setAutoNewConversationAfterHours: (hours: number | null) => void;
 }
 
 // Generate unique ID
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
+
+// Extract new conversation prefix from message (e.g., "New:", "/new ", "New topic:")
+function extractNewConversationPrefix(content: string): { isNew: boolean; cleanContent: string } {
+  const prefixes = [
+    /^new:\s*/i,
+    /^\/new\s+/i,
+    /^new topic:\s*/i,
+  ];
+
+  for (const pattern of prefixes) {
+    if (pattern.test(content)) {
+      const cleanContent = content.replace(pattern, '').trim();
+      // Only trigger if there's actual content after the prefix
+      if (cleanContent.length > 0) {
+        return {
+          isNew: true,
+          cleanContent,
+        };
+      }
+    }
+  }
+
+  return { isNew: false, cleanContent: content };
 }
 
 // Generate title from first message (truncate at word boundary)
@@ -157,6 +187,9 @@ export const useAIStore = create<AIState>()(
       availableModels: null,
 
       contextItems: [],
+
+      // Auto-conversation settings (null = disabled)
+      autoNewConversationAfterHours: null,
 
       // Conversation actions
       createConversation: () => {
@@ -230,7 +263,12 @@ export const useAIStore = create<AIState>()(
 
       // Chat actions
       sendChatMessage: async (content: string, documentContext?: string) => {
-        let { conversations, activeConversationId, selectedProvider, selectedModel, temperature, contextItems } = get();
+        let { conversations, activeConversationId, selectedProvider, selectedModel, temperature, contextItems, autoNewConversationAfterHours } = get();
+
+        // Check for explicit "new conversation" prefix (e.g., "New:", "/new ", "New topic:")
+        const { isNew: hasNewPrefix, cleanContent } = extractNewConversationPrefix(content);
+        let shouldCreateNew = hasNewPrefix;
+        let messageContent = hasNewPrefix ? cleanContent : content;
 
         // Ensure we have an active conversation
         if (!activeConversationId || !conversations.find((c) => c.id === activeConversationId)) {
@@ -240,13 +278,30 @@ export const useAIStore = create<AIState>()(
           set({ conversations, activeConversationId });
         }
 
-        const activeConversation = conversations.find((c) => c.id === activeConversationId)!;
+        let activeConversation = conversations.find((c) => c.id === activeConversationId)!;
 
-        // Add user message
+        // Check for time-based auto-split (if setting is enabled)
+        if (!shouldCreateNew && autoNewConversationAfterHours !== null && activeConversation.messages.length > 0) {
+          const hoursSinceUpdate = (Date.now() - activeConversation.updatedAt) / (1000 * 60 * 60);
+          if (hoursSinceUpdate >= autoNewConversationAfterHours) {
+            shouldCreateNew = true;
+          }
+        }
+
+        // Create new conversation if triggered
+        if (shouldCreateNew) {
+          const newConversation = createNewConversation();
+          conversations = [...conversations, newConversation];
+          activeConversationId = newConversation.id;
+          activeConversation = newConversation;
+          set({ conversations, activeConversationId });
+        }
+
+        // Add user message (use cleaned content if prefix was stripped)
         const userMessage: Message = {
           id: generateId(),
           role: 'user',
-          content,
+          content: messageContent,
           timestamp: Date.now(),
         };
 
@@ -261,7 +316,7 @@ export const useAIStore = create<AIState>()(
 
         // Generate title from first user message if conversation has default title
         const isFirstMessage = activeConversation.messages.length === 0;
-        const newTitle = isFirstMessage ? generateTitleFromMessage(content) : activeConversation.title;
+        const newTitle = isFirstMessage ? generateTitleFromMessage(messageContent) : activeConversation.title;
 
         // Update conversation with new messages
         set((state) => ({
@@ -341,7 +396,7 @@ Help the user with their request.`,
         // Add current user message
         messages.push({
           role: 'user',
-          content,
+          content: messageContent,
         });
 
         // Start streaming
@@ -636,6 +691,11 @@ Respond ONLY with the modified text. Do not include the XML tags in your respons
       clearContextItems: () => {
         set({ contextItems: [] });
       },
+
+      // Auto-conversation actions
+      setAutoNewConversationAfterHours: (hours) => {
+        set({ autoNewConversationAfterHours: hours });
+      },
     }),
     {
       name: 'midlight-ai',
@@ -644,6 +704,7 @@ Respond ONLY with the modified text. Do not include the XML tags in your respons
         selectedProvider: state.selectedProvider,
         selectedModel: state.selectedModel,
         temperature: state.temperature,
+        autoNewConversationAfterHours: state.autoNewConversationAfterHours,
         // Keep last 10 conversations, each with last 50 messages
         conversations: state.conversations.slice(-10).map((c) => ({
           ...c,
