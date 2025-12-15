@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog, Menu, MenuItemConstructorOptions, shell } from 'electron'
 import path from 'node:path'
 import fs from 'node:fs/promises'
+import { execSync } from 'node:child_process'
 import mammoth from 'mammoth'
 import { Worker } from 'worker_threads'
 import {
@@ -98,6 +99,37 @@ const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 const isMac = process.platform === 'darwin';
 const isWindows = process.platform === 'win32';
 
+// Check Windows registry for installer login preference
+function checkInstallerLoginPreference(): boolean {
+  if (!isWindows) return false;
+
+  try {
+    const result = execSync(
+      'reg query "HKCU\\Software\\Midlight" /v ShowLoginOnStart',
+      { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
+    );
+    // Registry value format: "    ShowLoginOnStart    REG_SZ    1"
+    return result.includes('0x1') || result.includes('REG_SZ    1');
+  } catch {
+    // Key doesn't exist or error reading - that's fine, just skip
+    return false;
+  }
+}
+
+// Clear the installer login preference after reading it (one-time prompt)
+function clearInstallerLoginPreference(): void {
+  if (!isWindows) return;
+
+  try {
+    execSync(
+      'reg delete "HKCU\\Software\\Midlight" /v ShowLoginOnStart /f',
+      { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
+    );
+  } catch {
+    // Ignore errors - key might not exist
+  }
+}
+
 function createWindow() {
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC || '', 'electron-vite.svg'),
@@ -127,6 +159,17 @@ function createWindow() {
   // Test active push message to Renderer-process.
   win.webContents.on('did-finish-load', () => {
     win?.webContents.send('main-process-message', (new Date).toLocaleString())
+
+    // Check if Windows installer set the "show login" preference
+    if (checkInstallerLoginPreference()) {
+      // Clear it so it only shows once
+      clearInstallerLoginPreference();
+      // Send message to renderer to show login modal
+      // Small delay to ensure app is fully initialized
+      setTimeout(() => {
+        win?.webContents.send('show-login-prompt');
+      }, 1000);
+    }
   })
 
   if (VITE_DEV_SERVER_URL) {

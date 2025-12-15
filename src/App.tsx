@@ -255,6 +255,14 @@ function App() {
     return unsubscribe;
   }, []);
 
+  // Handle installer login prompt (Windows only - set during installation)
+  useEffect(() => {
+    const unsubscribe = window.electronAPI.onShowLoginPrompt(() => {
+      setAuthModalOpen(true);
+    });
+    return unsubscribe;
+  }, []);
+
   // Handle network status changes - show toasts and update store
   useEffect(() => {
     const handleOnline = () => {

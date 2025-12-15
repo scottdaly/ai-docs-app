@@ -172,6 +172,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.on('update-theme', subscription);
       return () => ipcRenderer.off('update-theme', subscription);
   },
+  onShowLoginPrompt: (callback: () => void) => {
+      const subscription = () => callback();
+      ipcRenderer.on('show-login-prompt', subscription);
+      return () => ipcRenderer.off('show-login-prompt', subscription);
+  },
   onDocxExportProgress: (callback: (progress: { current?: number; total?: number; phase?: string; complete?: boolean; error?: string }) => void) => {
       const subscription = (_: any, progress: any) => callback(progress);
       ipcRenderer.on('docx-export-progress', subscription);

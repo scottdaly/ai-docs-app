@@ -489,6 +489,7 @@ interface IElectronAPI {
   // Listeners
   onMenuAction: (callback: (action: string) => void) => () => void;
   onUpdateTheme: (callback: (theme: string) => void) => () => void;
+  onShowLoginPrompt: (callback: () => void) => () => void;
   onDocxExportProgress: (callback: (progress: DocxExportProgress) => void) => () => void;
   onFileChangedExternally: (callback: (event: ExternalChangeEvent) => void) => () => void;
   onImportProgress: (callback: (progress: ImportProgress) => void) => () => void;
