@@ -68,6 +68,10 @@ export function ConversationTabs({ onClose }: ConversationTabsProps) {
   };
 
   const handleNewChat = () => {
+    // Don't create a new conversation if the current one is empty
+    if (activeConversation && activeConversation.messages.length === 0) {
+      return;
+    }
     createConversation();
   };
 
@@ -92,7 +96,7 @@ export function ConversationTabs({ onClose }: ConversationTabsProps) {
           />
         ) : (
           <h2
-            className="font-medium text-sm truncate cursor-pointer hover:text-primary transition-colors"
+            className="font-medium truncate cursor-pointer hover:text-primary transition-colors"
             onClick={handleStartRename}
             title={activeConversation?.title || 'New chat'}
           >

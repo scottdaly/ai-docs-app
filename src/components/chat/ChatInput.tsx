@@ -154,7 +154,7 @@ export function ChatInput({ onSubmit, isStreaming, placeholder }: ChatInputProps
           />
         )}
 
-        <div className="rounded-lg bg-background border border-border overflow-hidden focus-within:ring-2 focus-within:ring-primary/50">
+        <div className="rounded-lg bg-muted/30 border border-border overflow-hidden focus-within:ring-2 focus-within:ring-primary/50">
           {/* Textarea */}
           <textarea
             ref={inputRef}
@@ -176,7 +176,7 @@ export function ChatInput({ onSubmit, isStreaming, placeholder }: ChatInputProps
           />
 
           {/* Bottom Toolbar */}
-          <div className="flex items-center justify-between px-2 py-1.5 bg-muted/30">
+          <div className="flex items-center justify-between px-2 py-1.5">
             {/* Left side - Model selector */}
             <div className="flex items-center gap-2">
               <ModelSelector />
@@ -202,7 +202,7 @@ export function ChatInput({ onSubmit, isStreaming, placeholder }: ChatInputProps
               <button
                 type="submit"
                 disabled={!input.trim() || isStreaming}
-                className="p-1.5 rounded bg-primary text-primary-foreground hover:bg-primary/90
+                className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted
                            disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isStreaming ? (

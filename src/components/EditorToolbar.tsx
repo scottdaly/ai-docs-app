@@ -383,7 +383,7 @@ export function EditorToolbar({ editor, rightPanelMode, onSetRightPanelMode }: E
         <button
           onClick={() => onSetRightPanelMode(rightPanelMode === 'ai' ? null : 'ai')}
           className={`p-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors ${
-            rightPanelMode === 'ai' ? 'bg-primary/20 text-primary' : 'text-muted-foreground'
+            rightPanelMode === 'ai' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
           }`}
           title="AI Assistant"
         >

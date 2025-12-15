@@ -236,25 +236,28 @@ function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === 'user';
   const isStreaming = message.isStreaming && !message.content;
 
-  return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <div
-        className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
-          isUser
-            ? 'bg-primary text-primary-foreground'
-            : 'bg-muted text-foreground'
-        }`}
-      >
-        {isStreaming ? (
-          <div className="flex gap-1">
-            <span className="w-2 h-2 bg-current opacity-50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-            <span className="w-2 h-2 bg-current opacity-50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-            <span className="w-2 h-2 bg-current opacity-50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-          </div>
-        ) : (
+  if (isUser) {
+    return (
+      <div className="flex justify-end">
+        <div className="max-w-[85%] rounded-lg px-3 py-2 text-sm bg-muted text-foreground">
           <div className="whitespace-pre-wrap">{message.content}</div>
-        )}
+        </div>
       </div>
+    );
+  }
+
+  // Assistant message - no background, sits directly on page
+  return (
+    <div className="text-sm">
+      {isStreaming ? (
+        <div className="flex gap-1">
+          <span className="w-2 h-2 bg-muted-foreground opacity-50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+          <span className="w-2 h-2 bg-muted-foreground opacity-50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+          <span className="w-2 h-2 bg-muted-foreground opacity-50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+        </div>
+      ) : (
+        <div className="whitespace-pre-wrap">{message.content}</div>
+      )}
     </div>
   );
 }
