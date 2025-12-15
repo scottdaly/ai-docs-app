@@ -12,12 +12,24 @@ Var Dialog
 Var LoginRadio
 Var SkipRadio
 Var ShouldLogin
+Var IsUpdate
 
 !macro preInit
-  ; Detect if this is an update and run silently
-  ${if} ${isUpdated}
+  ; Detect if this is an update by checking for existing installation in registry
+  ; Check both HKCU and HKLM for the uninstall key
+  ReadRegStr $0 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINSTALL_APP_KEY}" "UninstallString"
+  ${If} $0 != ""
+    StrCpy $IsUpdate "1"
     SetSilent silent
-  ${endIf}
+  ${Else}
+    ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINSTALL_APP_KEY}" "UninstallString"
+    ${If} $0 != ""
+      StrCpy $IsUpdate "1"
+      SetSilent silent
+    ${Else}
+      StrCpy $IsUpdate "0"
+    ${EndIf}
+  ${EndIf}
 !macroend
 
 !macro customInit
@@ -28,9 +40,9 @@ Var ShouldLogin
 ; Custom page function - Create the login choice page
 Function LoginPageCreate
   ; Skip this page for updates
-  ${if} ${isUpdated}
+  ${If} $IsUpdate == "1"
     Abort
-  ${endIf}
+  ${EndIf}
 
   !insertmacro MUI_HEADER_TEXT "Account Setup" "Would you like to sign in to your Midlight account?"
 
@@ -86,14 +98,14 @@ FunctionEnd
   WriteRegStr SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_ID}" \
     "HelpLink" "https://midlight.ai/support"
 
-  ; Store login preference for the app to read on first launch
-  ${ifNot} ${isUpdated}
+  ; Store login preference for the app to read on first launch (only for fresh installs)
+  ${If} $IsUpdate != "1"
     ${If} $ShouldLogin == "1"
       WriteRegStr SHCTX "Software\Midlight" "ShowLoginOnStart" "1"
     ${Else}
       WriteRegStr SHCTX "Software\Midlight" "ShowLoginOnStart" "0"
     ${EndIf}
-  ${endIf}
+  ${EndIf}
 !macroend
 
 !macro customInstallMode
@@ -103,17 +115,15 @@ FunctionEnd
 
 !macro customUnInit
   ; Custom uninstaller initialization
-  ; Skip confirmation dialogs during updates
-  ${if} ${isUpdated}
-    SetSilent silent
-  ${endIf}
+  ; Check if being run during update (silent uninstall)
+  ${If} ${Silent}
+    ; Already silent, likely an update
+  ${EndIf}
 !macroend
 
 !macro customUnInstall
   ; Custom uninstall actions
-  ; Only run for manual uninstalls, not during updates
-  ${ifNot} ${isUpdated}
-    ; Clean up registry entries
-    DeleteRegKey SHCTX "Software\Midlight"
-  ${endIf}
+  ; Clean up registry entries (this runs for manual uninstalls)
+  ; During updates, the old version is uninstalled silently first
+  DeleteRegKey SHCTX "Software\Midlight"
 !macroend
