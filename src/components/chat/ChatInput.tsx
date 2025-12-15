@@ -120,7 +120,7 @@ export function ChatInput({ onSubmit, isStreaming, placeholder }: ChatInputProps
   };
 
   return (
-    <div className="flex-shrink-0 border-t border-border bg-muted/20">
+    <div className="flex-shrink-0 bg-muted/20">
       {/* Context Chips Row */}
       {contextItems.length > 0 && (
         <div className="flex flex-wrap gap-1.5 px-3 pt-2">
@@ -154,7 +154,7 @@ export function ChatInput({ onSubmit, isStreaming, placeholder }: ChatInputProps
           />
         )}
 
-        <div className="rounded-lg bg-background overflow-hidden focus-within:ring-2 focus-within:ring-primary/50">
+        <div className="rounded-lg bg-background border border-border overflow-hidden focus-within:ring-2 focus-within:ring-primary/50">
           {/* Textarea */}
           <textarea
             ref={inputRef}
@@ -176,7 +176,7 @@ export function ChatInput({ onSubmit, isStreaming, placeholder }: ChatInputProps
           />
 
           {/* Bottom Toolbar */}
-          <div className="flex items-center justify-between px-2 py-1.5 border-t border-border bg-muted/30">
+          <div className="flex items-center justify-between px-2 py-1.5 bg-muted/30">
             {/* Left side - Model selector */}
             <div className="flex items-center gap-2">
               <ModelSelector />

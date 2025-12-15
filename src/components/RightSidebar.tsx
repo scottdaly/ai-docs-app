@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { ChevronRight, MessageSquare, Sparkles, History, Save, Loader2, MoreHorizontal, RotateCcw, GitCompare, Pencil, Trash2, LogIn } from 'lucide-react';
 import { ChatInput } from './chat/ChatInput';
+import { ConversationTabs } from './chat/ConversationTabs';
 import { useVersionStore, Version } from '../store/useVersionStore';
 import { useFileSystem } from '../store/useFileSystem';
 import { useAIStore, Message } from '../store/useAIStore';
@@ -71,13 +72,17 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
   const { isAuthenticated, checkAuth } = useAuthStore();
   const { isOnline } = useNetworkStore();
   const {
-    chatHistory,
     isStreaming,
     sendChatMessage,
     clearChatHistory,
     cleanupStream,
     fetchAvailableModels,
+    getActiveConversation,
   } = useAIStore();
+
+  // Get messages from active conversation
+  const activeConversation = getActiveConversation();
+  const chatHistory = activeConversation?.messages || [];
 
   // Cleanup stream listeners on unmount
   useEffect(() => {
@@ -208,6 +213,9 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
           </button>
         </div>
       </div>
+
+      {/* Conversation tabs */}
+      <ConversationTabs />
 
       <div ref={messagesContainerRef} className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
         {chatHistory.length === 0 ? (

@@ -9,6 +9,14 @@ export interface Message {
   isStreaming?: boolean;
 }
 
+export interface Conversation {
+  id: string;
+  title: string;
+  messages: Message[];
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface AvailableModels {
   openai: Array<{ id: string; name: string; tier: string }>;
   anthropic: Array<{ id: string; name: string; tier: string }>;
@@ -22,8 +30,14 @@ export interface ContextItem {
 }
 
 interface AIState {
-  // Chat state
+  // Conversations state
+  conversations: Conversation[];
+  activeConversationId: string | null;
+
+  // Legacy - kept for migration, will be removed
   chatHistory: Message[];
+
+  // Streaming state
   isStreaming: boolean;
   currentStreamText: string;
 
@@ -48,7 +62,14 @@ interface AIState {
   // Context items (@ mentions for files)
   contextItems: ContextItem[];
 
-  // Actions
+  // Conversation actions
+  createConversation: () => string;
+  deleteConversation: (id: string) => void;
+  switchConversation: (id: string) => void;
+  renameConversation: (id: string, title: string) => void;
+  getActiveConversation: () => Conversation | null;
+
+  // Chat actions
   sendChatMessage: (content: string, documentContext?: string) => Promise<void>;
   clearChatHistory: () => void;
   cleanupStream: () => void;
@@ -71,26 +92,64 @@ interface AIState {
   clearContextItems: () => void;
 }
 
-// Generate unique message ID
+// Generate unique ID
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
+
+// Generate title from first message (truncate at word boundary)
+function generateTitleFromMessage(content: string, maxLength: number = 40): string {
+  const trimmed = content.trim();
+  if (trimmed.length <= maxLength) {
+    return trimmed;
+  }
+
+  // Find last space before maxLength
+  const truncated = trimmed.slice(0, maxLength);
+  const lastSpace = truncated.lastIndexOf(' ');
+
+  if (lastSpace > maxLength * 0.5) {
+    return truncated.slice(0, lastSpace) + '...';
+  }
+
+  return truncated + '...';
+}
+
+// Create a new conversation object
+function createNewConversation(title: string = 'New chat'): Conversation {
+  const now = Date.now();
+  return {
+    id: generateId(),
+    title,
+    messages: [],
+    createdAt: now,
+    updatedAt: now,
+  };
 }
 
 export const useAIStore = create<AIState>()(
   persist(
     (set, get) => ({
-      // Initial state
+      // Initial state - conversations
+      conversations: [],
+      activeConversationId: null,
+
+      // Legacy - kept for migration
       chatHistory: [],
+
+      // Streaming state
       isStreaming: false,
       currentStreamText: '',
       streamCleanup: null,
 
+      // Inline editing state
       inlineEditMode: false,
       inlineSelection: null,
       inlinePrompt: '',
       inlineResult: null,
       inlineLoading: false,
 
+      // Settings
       selectedProvider: 'openai',
       selectedModel: 'gpt-4o-mini',
       temperature: 0.7,
@@ -99,9 +158,89 @@ export const useAIStore = create<AIState>()(
 
       contextItems: [],
 
+      // Conversation actions
+      createConversation: () => {
+        const newConversation = createNewConversation();
+        set((state) => ({
+          conversations: [...state.conversations, newConversation],
+          activeConversationId: newConversation.id,
+        }));
+        return newConversation.id;
+      },
+
+      deleteConversation: (id: string) => {
+        const { conversations, activeConversationId, streamCleanup } = get();
+
+        // Cleanup any active stream
+        if (streamCleanup) {
+          streamCleanup();
+        }
+
+        const remaining = conversations.filter((c) => c.id !== id);
+
+        // If deleting the active conversation, switch to another or create new
+        let newActiveId = activeConversationId;
+        if (activeConversationId === id) {
+          if (remaining.length > 0) {
+            // Switch to the most recent conversation
+            newActiveId = remaining[remaining.length - 1].id;
+          } else {
+            // Create a new conversation if none left
+            const newConversation = createNewConversation();
+            remaining.push(newConversation);
+            newActiveId = newConversation.id;
+          }
+        }
+
+        set({
+          conversations: remaining,
+          activeConversationId: newActiveId,
+          isStreaming: false,
+          currentStreamText: '',
+        });
+      },
+
+      switchConversation: (id: string) => {
+        const { streamCleanup } = get();
+
+        // Cleanup any active stream before switching
+        if (streamCleanup) {
+          streamCleanup();
+        }
+
+        set({
+          activeConversationId: id,
+          isStreaming: false,
+          currentStreamText: '',
+        });
+      },
+
+      renameConversation: (id: string, title: string) => {
+        set((state) => ({
+          conversations: state.conversations.map((c) =>
+            c.id === id ? { ...c, title, updatedAt: Date.now() } : c
+          ),
+        }));
+      },
+
+      getActiveConversation: () => {
+        const { conversations, activeConversationId } = get();
+        return conversations.find((c) => c.id === activeConversationId) || null;
+      },
+
       // Chat actions
       sendChatMessage: async (content: string, documentContext?: string) => {
-        const { chatHistory, selectedProvider, selectedModel, temperature, contextItems } = get();
+        let { conversations, activeConversationId, selectedProvider, selectedModel, temperature, contextItems } = get();
+
+        // Ensure we have an active conversation
+        if (!activeConversationId || !conversations.find((c) => c.id === activeConversationId)) {
+          const newConversation = createNewConversation();
+          conversations = [...conversations, newConversation];
+          activeConversationId = newConversation.id;
+          set({ conversations, activeConversationId });
+        }
+
+        const activeConversation = conversations.find((c) => c.id === activeConversationId)!;
 
         // Add user message
         const userMessage: Message = {
@@ -120,11 +259,28 @@ export const useAIStore = create<AIState>()(
           isStreaming: true,
         };
 
-        set({
-          chatHistory: [...chatHistory, userMessage, assistantMessage],
+        // Generate title from first user message if conversation has default title
+        const isFirstMessage = activeConversation.messages.length === 0;
+        const newTitle = isFirstMessage ? generateTitleFromMessage(content) : activeConversation.title;
+
+        // Update conversation with new messages
+        set((state) => ({
+          conversations: state.conversations.map((c) =>
+            c.id === activeConversationId
+              ? {
+                  ...c,
+                  title: newTitle,
+                  messages: [...c.messages, userMessage, assistantMessage],
+                  updatedAt: Date.now(),
+                }
+              : c
+          ),
           isStreaming: true,
           currentStreamText: '',
-        });
+        }));
+
+        // Get the updated chat history for building the API messages
+        const chatHistory = [...activeConversation.messages, userMessage];
 
         // Build additional context from @ mentioned files
         let additionalContext = '';
@@ -206,12 +362,19 @@ Help the user with their request.`,
           streamedContent += data.content;
           set({ currentStreamText: streamedContent });
 
-          // Update the assistant message in chat history
+          // Update the assistant message in the active conversation
           set((state) => ({
-            chatHistory: state.chatHistory.map((msg) =>
-              msg.id === assistantMessage.id
-                ? { ...msg, content: streamedContent }
-                : msg
+            conversations: state.conversations.map((c) =>
+              c.id === activeConversationId
+                ? {
+                    ...c,
+                    messages: c.messages.map((msg) =>
+                      msg.id === assistantMessage.id
+                        ? { ...msg, content: streamedContent }
+                        : msg
+                    ),
+                  }
+                : c
             ),
           }));
         });
@@ -219,10 +382,18 @@ Help the user with their request.`,
         const unsubDone = window.electronAPI.llm.onStreamDone(channelId, () => {
           // Finalize the message
           set((state) => ({
-            chatHistory: state.chatHistory.map((msg) =>
-              msg.id === assistantMessage.id
-                ? { ...msg, isStreaming: false }
-                : msg
+            conversations: state.conversations.map((c) =>
+              c.id === activeConversationId
+                ? {
+                    ...c,
+                    messages: c.messages.map((msg) =>
+                      msg.id === assistantMessage.id
+                        ? { ...msg, isStreaming: false }
+                        : msg
+                    ),
+                    updatedAt: Date.now(),
+                  }
+                : c
             ),
             isStreaming: false,
             currentStreamText: '',
@@ -238,12 +409,19 @@ Help the user with their request.`,
         const unsubError = window.electronAPI.llm.onStreamError(channelId, (data) => {
           console.error('Stream error:', data.error);
 
-          // Update message with error
+          // Update message with error in the active conversation
           set((state) => ({
-            chatHistory: state.chatHistory.map((msg) =>
-              msg.id === assistantMessage.id
-                ? { ...msg, content: `Error: ${data.error}`, isStreaming: false }
-                : msg
+            conversations: state.conversations.map((c) =>
+              c.id === activeConversationId
+                ? {
+                    ...c,
+                    messages: c.messages.map((msg) =>
+                      msg.id === assistantMessage.id
+                        ? { ...msg, content: `Error: ${data.error}`, isStreaming: false }
+                        : msg
+                    ),
+                  }
+                : c
             ),
             isStreaming: false,
             currentStreamText: '',
@@ -272,11 +450,21 @@ Help the user with their request.`,
 
       clearChatHistory: () => {
         // Cleanup any active stream before clearing
-        const { streamCleanup } = get();
+        const { streamCleanup, activeConversationId } = get();
         if (streamCleanup) {
           streamCleanup();
         }
-        set({ chatHistory: [], currentStreamText: '', isStreaming: false });
+
+        // Clear messages in the active conversation and reset title
+        set((state) => ({
+          conversations: state.conversations.map((c) =>
+            c.id === activeConversationId
+              ? { ...c, messages: [], title: 'New chat', updatedAt: Date.now() }
+              : c
+          ),
+          currentStreamText: '',
+          isStreaming: false,
+        }));
       },
 
       cleanupStream: () => {
@@ -452,12 +640,50 @@ Respond ONLY with the modified text. Do not include the XML tags in your respons
     {
       name: 'midlight-ai',
       partialize: (state) => ({
-        // Persist settings and chat history
+        // Persist settings and conversations
         selectedProvider: state.selectedProvider,
         selectedModel: state.selectedModel,
         temperature: state.temperature,
-        chatHistory: state.chatHistory.slice(-50), // Keep last 50 messages
+        // Keep last 10 conversations, each with last 50 messages
+        conversations: state.conversations.slice(-10).map((c) => ({
+          ...c,
+          messages: c.messages.slice(-50),
+        })),
+        activeConversationId: state.activeConversationId,
+        // Legacy - keep for potential migration
+        chatHistory: state.chatHistory?.slice(-50) || [],
       }),
+      // Migration: convert old chatHistory to conversations
+      onRehydrateStorage: () => (state) => {
+        if (!state) return;
+
+        // Migrate legacy chatHistory to conversations if needed
+        if (state.chatHistory?.length > 0 && state.conversations?.length === 0) {
+          const migratedConversation: Conversation = {
+            id: generateId(),
+            title: 'Previous chat',
+            messages: state.chatHistory,
+            createdAt: state.chatHistory[0]?.timestamp || Date.now(),
+            updatedAt: state.chatHistory[state.chatHistory.length - 1]?.timestamp || Date.now(),
+          };
+
+          state.conversations = [migratedConversation];
+          state.activeConversationId = migratedConversation.id;
+          state.chatHistory = []; // Clear legacy
+        }
+
+        // Ensure there's always at least one conversation
+        if (!state.conversations || state.conversations.length === 0) {
+          const newConversation = createNewConversation();
+          state.conversations = [newConversation];
+          state.activeConversationId = newConversation.id;
+        }
+
+        // Ensure activeConversationId is valid
+        if (!state.activeConversationId || !state.conversations.find((c) => c.id === state.activeConversationId)) {
+          state.activeConversationId = state.conversations[state.conversations.length - 1].id;
+        }
+      },
     }
   )
 );
