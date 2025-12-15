@@ -129,7 +129,7 @@ export function TabBar() {
         )}
         <div
           ref={scrollContainerRef}
-          className="flex overflow-x-auto overflow-y-visible scrollbar-hide items-end pb-0.5"
+          className="flex overflow-x-auto overflow-y-visible scrollbar-hide items-end pb-0.5 pr-2"
         >
         {openFiles.map((file, index) => {
               const isActive = file.path === activeFilePath;

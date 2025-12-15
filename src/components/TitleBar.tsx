@@ -68,7 +68,7 @@ export function TitleBar() {
       )}
 
       {/* Centered search bar - use absolute positioning for true center */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none pt-1">
         <div className="pointer-events-auto">
           <SearchBar />
         </div>

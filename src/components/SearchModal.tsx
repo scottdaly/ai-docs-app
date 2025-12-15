@@ -55,12 +55,12 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
 
   const filteredFiles = useMemo(() => {
     if (!query.trim()) {
-      return allFiles.slice(0, 20); // Show first 20 files when no query
+      return allFiles.slice(0, 15); // Show first 15 files when no query
     }
     const lowerQuery = query.toLowerCase();
     return allFiles
       .filter(file => file.name.toLowerCase().includes(lowerQuery))
-      .slice(0, 20); // Limit to 20 results
+      .slice(0, 15); // Limit to 15 results
   }, [allFiles, query]);
 
   // Reset state when modal opens
@@ -68,7 +68,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
     if (open) {
       setQuery('');
       setSelectedIndex(0);
-      setTimeout(() => inputRef.current?.focus(), 50);
+      setTimeout(() => inputRef.current?.focus(), 10);
     }
   }, [open]);
 
@@ -116,17 +116,11 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
   if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] bg-black/50"
-      onClick={onClose}
-    >
-      <div
-        className="bg-background border rounded-lg shadow-2xl w-full max-w-lg overflow-hidden"
-        onClick={e => e.stopPropagation()}
-      >
+    <div className="absolute top-full left-0 right-0 mt-1 z-50">
+      <div className="bg-background border rounded-lg shadow-xl overflow-hidden">
         {/* Search input */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b">
-          <RiSearchLine size={18} className="text-muted-foreground shrink-0" />
+        <div className="flex items-center gap-3 px-3 py-2 border-b">
+          <RiSearchLine size={16} className="text-muted-foreground shrink-0" />
           <input
             ref={inputRef}
             type="text"
@@ -134,14 +128,14 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
             onChange={e => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search files..."
-            className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+            className="flex-1 bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground"
           />
         </div>
 
         {/* Results list */}
-        <div ref={listRef} className="max-h-80 overflow-y-auto">
+        <div ref={listRef} className="max-h-72 overflow-y-auto">
           {filteredFiles.length === 0 ? (
-            <div className="px-4 py-8 text-center text-muted-foreground">
+            <div className="px-3 py-6 text-center text-sm text-muted-foreground">
               {query ? 'No files found' : 'No files in workspace'}
             </div>
           ) : (
@@ -157,18 +151,18 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
                   key={file.path}
                   data-index={index}
                   onClick={() => handleSelect(file)}
-                  className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors ${
                     index === selectedIndex
                       ? 'bg-accent text-accent-foreground'
                       : 'hover:bg-muted/50'
                   }`}
                 >
-                  <Icon size={16} className="shrink-0 text-muted-foreground" />
+                  <Icon size={14} className="shrink-0 text-muted-foreground" />
                   <div className="flex-1 min-w-0">
-                    <div className="truncate font-medium">{fileName}</div>
+                    <div className="truncate text-sm">{fileName}</div>
                     {folderPath && (
                       <div className="flex items-center gap-1 text-xs text-muted-foreground truncate">
-                        <RiFolderLine size={12} />
+                        <RiFolderLine size={10} />
                         <span>{folderPath}</span>
                       </div>
                     )}
@@ -180,10 +174,10 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
         </div>
 
         {/* Footer hint */}
-        <div className="px-4 py-2 border-t text-xs text-muted-foreground flex items-center gap-4">
-          <span><kbd className="px-1.5 py-0.5 bg-muted rounded">↑↓</kbd> Navigate</span>
-          <span><kbd className="px-1.5 py-0.5 bg-muted rounded">Enter</kbd> Open</span>
-          <span><kbd className="px-1.5 py-0.5 bg-muted rounded">Esc</kbd> Close</span>
+        <div className="px-3 py-1.5 border-t text-xs text-muted-foreground flex items-center gap-3">
+          <span><kbd className="px-1 py-0.5 bg-muted rounded text-[10px]">↑↓</kbd> Navigate</span>
+          <span><kbd className="px-1 py-0.5 bg-muted rounded text-[10px]">↵</kbd> Open</span>
+          <span><kbd className="px-1 py-0.5 bg-muted rounded text-[10px]">Esc</kbd> Close</span>
         </div>
       </div>
     </div>
