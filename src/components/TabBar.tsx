@@ -160,7 +160,7 @@ export function TabBar() {
                     className={`
                       relative flex items-center min-w-[120px] max-w-[200px] px-3 text-sm select-none cursor-pointer group transition-all
                       h-7 rounded-md ${isActive
-                        ? 'bg-background/90 text-foreground font-medium shadow-sm'
+                        ? 'bg-background text-foreground font-medium shadow-md'
                         : 'text-muted-foreground hover:bg-white/10'
                       }
                     `}
