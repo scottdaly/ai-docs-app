@@ -53,7 +53,7 @@ export function TitleBar() {
   return (
     <div
       className={cn(
-        "h-10 bg-secondary flex items-center justify-center select-none draggable app-region-drag relative",
+        "h-10 bg-secondary flex items-center select-none draggable app-region-drag relative",
         // macOS: leave space for traffic lights on the left
         isMac && "pl-20",
         // Windows: leave space for overlay controls on the right
@@ -62,13 +62,17 @@ export function TitleBar() {
     >
       {/* Menu button for Windows/Linux */}
       {!isMac && (
-        <div className="absolute left-0 top-0 h-full flex items-center app-region-no-drag">
+        <div className="flex items-center app-region-no-drag">
           <WindowsMenu />
         </div>
       )}
 
-      {/* Centered search bar */}
-      <SearchBar />
+      {/* Centered search bar - use absolute positioning for true center */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="pointer-events-auto">
+          <SearchBar />
+        </div>
+      </div>
     </div>
   );
 }

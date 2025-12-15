@@ -116,7 +116,7 @@ export function TabBar() {
   const showScrollButtons = canScrollLeft || canScrollRight;
 
   return (
-    <div className="flex w-full h-9 items-center bg-secondary border-b px-2">
+    <div className="flex w-full h-9 items-center bg-secondary border-b px-2 overflow-visible">
       {/* Scrollable tabs container */}
       <div className="relative flex-1 min-w-0 flex items-center">
         {/* Left fade indicator */}
@@ -129,7 +129,7 @@ export function TabBar() {
         )}
         <div
           ref={scrollContainerRef}
-          className="flex overflow-x-auto overflow-y-hidden scrollbar-hide items-center"
+          className="flex overflow-x-auto overflow-y-visible scrollbar-hide items-end pb-0.5"
         >
         {openFiles.map((file, index) => {
               const isActive = file.path === activeFilePath;
@@ -159,7 +159,7 @@ export function TabBar() {
                     title={displayName}
                     className={`
                       relative flex items-center min-w-[120px] max-w-[200px] px-3 text-sm select-none cursor-pointer group transition-all
-                      h-7 rounded-md ${isActive
+                      h-8 rounded-md ${isActive
                         ? 'bg-background text-foreground font-medium shadow-md'
                         : 'text-muted-foreground hover:bg-white/10'
                       }

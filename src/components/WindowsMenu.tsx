@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { useTheme, Theme } from '../store/useTheme';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useExportStore } from '../store/useExportStore';
@@ -15,13 +16,17 @@ import {
   DropdownMenuShortcut,
 } from './ui/dropdown-menu';
 
-function MenuButton({ children }: { children: React.ReactNode }) {
-  return (
-    <button className="px-2.5 py-1 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded transition-colors">
+const MenuButton = forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement>>(
+  ({ children, ...props }, ref) => (
+    <button
+      ref={ref}
+      className="px-2.5 py-1 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded transition-colors"
+      {...props}
+    >
       {children}
     </button>
-  );
-}
+  )
+);
 
 export function WindowsMenu() {
   const { theme, setTheme } = useTheme();
