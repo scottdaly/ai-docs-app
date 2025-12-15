@@ -8,7 +8,7 @@
  * - Automatic token refresh
  */
 
-import { app, net, shell, session } from 'electron';
+import { app, net, shell } from 'electron';
 import http from 'http';
 import { URL } from 'url';
 // @ts-ignore - electron-store has no type declarations
@@ -123,29 +123,17 @@ export function emitAuthEvent(event: AuthEvent): void {
 export async function initAuth(): Promise<void> {
   const storedUser = store.get('user');
 
-  // Debug: Log all cookies for midlight.ai
-  try {
-    const cookies = await session.defaultSession.cookies.get({ url: API_BASE });
-    console.log('[Auth] Cookies for', API_BASE, ':', cookies.map(c => ({ name: c.name, path: c.path, httpOnly: c.httpOnly, secure: c.secure })));
-  } catch (err) {
-    console.error('[Auth] Failed to get cookies:', err);
-  }
-
   if (storedUser) {
-    console.log('[Auth] Previous session detected, attempting background refresh');
     // Try to restore session using refresh token cookie
     // Don't emit sessionExpired during init - user hasn't interacted yet
     const success = await refreshAccessToken(false);
     if (success) {
-      console.log('[Auth] Background refresh succeeded');
       setAuthState('authenticated');
     } else {
-      console.log('[Auth] Background refresh failed, user must re-login');
       clearAuth();
       setAuthState('unauthenticated');
     }
   } else {
-    console.log('[Auth] No previous session');
     setAuthState('unauthenticated');
   }
 }
@@ -221,20 +209,6 @@ export async function login(email: string, password: string): Promise<AuthResult
   store.set('user', data.user);
   setAuthState('authenticated');
 
-  // Debug: Verify refresh cookie was set after login
-  setTimeout(async () => {
-    try {
-      const cookies = await session.defaultSession.cookies.get({ url: API_BASE });
-      const refreshCookie = cookies.find(c => c.name === 'refreshToken');
-      console.log('[Auth] After login - refresh cookie present:', !!refreshCookie);
-      if (refreshCookie) {
-        console.log('[Auth] Cookie details:', { path: refreshCookie.path, httpOnly: refreshCookie.httpOnly, secure: refreshCookie.secure, session: refreshCookie.session });
-      }
-    } catch (err) {
-      console.error('[Auth] Failed to verify cookie after login:', err);
-    }
-  }, 500);
-
   return data;
 }
 
@@ -245,27 +219,11 @@ export async function login(email: string, password: string): Promise<AuthResult
  */
 export async function refreshAccessToken(emitExpiredEvent: boolean = true): Promise<boolean> {
   try {
-    // Debug: Log cookies before refresh
-    try {
-      const cookies = await session.defaultSession.cookies.get({ url: API_BASE });
-      const refreshCookie = cookies.find(c => c.name === 'refreshToken');
-      console.log('[Auth] Refresh cookie present:', !!refreshCookie, refreshCookie ? `(path: ${refreshCookie.path})` : '');
-    } catch (err) {
-      console.error('[Auth] Failed to check cookies before refresh:', err);
-    }
-
     const response = await makeRequest('/api/auth/refresh', {
       method: 'POST',
     });
 
     if (!response.ok) {
-      // Try to get error details
-      try {
-        const errorData = await response.json();
-        console.log('[Auth] Token refresh failed with status:', response.status, 'error:', errorData);
-      } catch {
-        console.log('[Auth] Token refresh failed with status:', response.status);
-      }
       if (emitExpiredEvent && authState === 'authenticated') {
         emitAuthEvent('sessionExpired');
       }
@@ -478,7 +436,6 @@ export async function handleOAuthProtocolCallback(url: string): Promise<void> {
 async function exchangeCode(code: string): Promise<{ accessToken: string; expiresIn: number }> {
   return new Promise((resolve, reject) => {
     const url = `${API_BASE}/api/auth/exchange`;
-    console.log('[Auth] Exchanging code at:', url);
 
     const request = net.request({
       method: 'POST',
@@ -492,12 +449,6 @@ async function exchangeCode(code: string): Promise<{ accessToken: string; expire
     let responseData = '';
 
     request.on('response', (response) => {
-      console.log('[Auth] Exchange response status:', response.statusCode);
-
-      // Debug: Log Set-Cookie headers
-      const setCookieHeaders = response.headers['set-cookie'];
-      console.log('[Auth] Exchange Set-Cookie headers:', setCookieHeaders || 'none');
-
       response.on('data', (chunk) => {
         responseData += chunk.toString();
       });
@@ -506,14 +457,13 @@ async function exchangeCode(code: string): Promise<{ accessToken: string; expire
         try {
           const data = JSON.parse(responseData);
           if (response.statusCode >= 200 && response.statusCode < 300) {
-            console.log('[Auth] Exchange successful');
             resolve(data);
           } else {
             console.error('[Auth] Exchange failed:', data.error);
             reject(new Error(data.error || 'Code exchange failed'));
           }
         } catch {
-          console.error('[Auth] Failed to parse exchange response:', responseData);
+          console.error('[Auth] Failed to parse exchange response');
           reject(new Error('Failed to parse exchange response'));
         }
       });
@@ -685,12 +635,6 @@ function makeRequest(
     let responseData = '';
 
     request.on('response', (response) => {
-      // Debug: Log Set-Cookie headers for auth endpoints
-      if (path.includes('/auth/')) {
-        const setCookieHeaders = response.headers['set-cookie'];
-        console.log(`[Auth] ${path} Set-Cookie headers:`, setCookieHeaders || 'none');
-      }
-
       response.on('data', (chunk) => {
         responseData += chunk.toString();
       });

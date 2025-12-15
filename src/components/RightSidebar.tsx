@@ -69,7 +69,7 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const { editorContent, activeFilePath } = useFileSystem();
-  const { isAuthenticated, checkAuth } = useAuthStore();
+  const { isAuthenticated, isInitializing, checkAuth } = useAuthStore();
   const { isOnline } = useNetworkStore();
   const {
     isStreaming,
@@ -141,6 +141,26 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
       toast.error(error.message || 'Failed to send message');
     }
   }, [isOnline, getDocumentContext, sendChatMessage]);
+
+  // Show loading state while checking auth
+  if (isInitializing) {
+    return (
+      <>
+        <div className="flex items-center justify-end px-2 py-2 border-b border-border bg-muted/10">
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            title="Close"
+          >
+            <X size={14} />
+          </button>
+        </div>
+        <div className="flex-1 min-h-0 flex flex-col items-center justify-center p-6">
+          <Loader2 size={24} className="animate-spin text-muted-foreground" />
+        </div>
+      </>
+    );
+  }
 
   // Not authenticated - show login prompt
   if (!isAuthenticated) {

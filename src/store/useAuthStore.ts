@@ -27,6 +27,7 @@ interface AuthState {
   subscription: Subscription | null;
   quota: QuotaInfo | null;
   isLoading: boolean;
+  isInitializing: boolean; // True while checking auth on app start
   error: string | null;
 
   // Computed
@@ -53,6 +54,7 @@ export const useAuthStore = create<AuthState>()(
       subscription: null,
       quota: null,
       isLoading: false,
+      isInitializing: true, // Start as true, set to false after checkAuth
       error: null,
       isAuthenticated: false,
 
@@ -187,10 +189,10 @@ export const useAuthStore = create<AuthState>()(
                   get().fetchUser();
                   get().fetchSubscription();
                   get().fetchQuota();
-                  set({ isAuthenticated: true });
+                  set({ isAuthenticated: true, isInitializing: false });
                   resolve(true);
                 } else {
-                  set({ isAuthenticated: false, user: null });
+                  set({ isAuthenticated: false, user: null, isInitializing: false });
                   resolve(false);
                 }
               });
@@ -201,14 +203,15 @@ export const useAuthStore = create<AuthState>()(
             await get().fetchUser();
             await get().fetchSubscription();
             await get().fetchQuota();
-            set({ isAuthenticated: true });
+            set({ isAuthenticated: true, isInitializing: false });
             return true;
           }
 
-          set({ isAuthenticated: false });
+          set({ isAuthenticated: false, isInitializing: false });
           return false;
         } catch (error) {
           console.error('Check auth error:', error);
+          set({ isInitializing: false });
           return false;
         }
       },
