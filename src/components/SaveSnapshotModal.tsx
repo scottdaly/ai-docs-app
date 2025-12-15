@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { RiCloseLine, RiSaveLine, RiLoader4Line } from '@remixicon/react';
+import { RiCloseLine, RiSave3Line, RiLoader4Line } from '@remixicon/react';
 
 interface SaveSnapshotModalProps {
   open: boolean;
@@ -56,7 +56,7 @@ export function SaveSnapshotModal({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-2">
-            <RiSaveLine size={20} className="text-primary" />
+            <RiSave3Line size={20} className="text-primary" />
             <h2 className="font-semibold text-lg">Create Snapshot</h2>
           </div>
           <button
@@ -131,7 +131,7 @@ export function SaveSnapshotModal({
                 </>
               ) : (
                 <>
-                  <RiSaveLine size={16} />
+                  <RiSave3Line size={16} />
                   Save Snapshot
                 </>
               )}

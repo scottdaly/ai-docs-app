@@ -2,7 +2,7 @@ import { useTheme } from '../store/useTheme';
 import { useEffect } from 'react';
 import { getTitleBarOverlayColors } from '../utils/titleBarColors';
 import { WindowsMenu } from './WindowsMenu';
-import { TabBar } from './TabBar';
+import { SearchBar } from './SearchBar';
 import { cn } from '../lib/utils';
 
 // Platform detection (safe for SSR/non-Electron environments)
@@ -53,7 +53,7 @@ export function TitleBar() {
   return (
     <div
       className={cn(
-        "h-10 bg-secondary flex items-center select-none draggable app-region-drag",
+        "h-10 bg-secondary flex items-center justify-center select-none draggable app-region-drag relative",
         // macOS: leave space for traffic lights on the left
         isMac && "pl-20",
         // Windows: leave space for overlay controls on the right
@@ -62,15 +62,13 @@ export function TitleBar() {
     >
       {/* Menu button for Windows/Linux */}
       {!isMac && (
-        <div className="app-region-no-drag">
+        <div className="absolute left-0 top-0 h-full flex items-center app-region-no-drag">
           <WindowsMenu />
         </div>
       )}
 
-      {/* Tab bar in title bar */}
-      <div className="flex-1 min-w-0 h-full app-region-no-drag">
-        <TabBar inTitleBar />
-      </div>
+      {/* Centered search bar */}
+      <SearchBar />
     </div>
   );
 }

@@ -894,7 +894,7 @@ export function Sidebar() {
               onClick={() => openSettings()}
               className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 px-2 py-1.5 rounded w-full transition-colors"
           >
-              <RiSettings3Line size={14} />
+              <RiSettings3Line size={18} />
               <span>Settings</span>
           </button>
         </div>

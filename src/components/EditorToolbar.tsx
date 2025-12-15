@@ -1,5 +1,5 @@
 import { Editor } from '@tiptap/react';
-import { RiBold, RiImageLine, RiSubtractLine, RiHistoryLine, RiSaveLine, RiSparklingLine, RiMore2Line, RiCheckLine, RiCloudLine } from '@remixicon/react';
+import { RiBold, RiImageLine, RiSubtractLine, RiHistoryLine, RiSave3Line, RiSparklingLine, RiMore2Line, RiCheckLine, RiCloudLine } from '@remixicon/react';
 import { BlockTypeDropdown } from './BlockTypeDropdown';
 import { FontFamilyDropdown } from './FontFamilyDropdown';
 import { FontSizeDropdown } from './FontSizeDropdown';
@@ -352,7 +352,7 @@ export function EditorToolbar({ editor, rightPanelMode, onSetRightPanelMode }: E
           className="p-1.5 rounded hover:bg-accent hover:text-accent-foreground transition-colors text-muted-foreground"
           title="Create Snapshot"
         >
-          <RiSaveLine size={16} />
+          <RiSave3Line size={16} />
         </button>
 
         <div className="w-px h-4 bg-border mx-1" />

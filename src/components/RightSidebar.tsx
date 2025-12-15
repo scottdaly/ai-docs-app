@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { RiArrowRightSLine, RiChat3Line, RiHistoryLine, RiSaveLine, RiLoader4Line, RiMoreLine, RiRefreshLine, RiGitBranchLine, RiPencilLine, RiLoginBoxLine, RiCloseLine } from '@remixicon/react';
+import { RiArrowRightSLine, RiChat3Line, RiHistoryLine, RiSave3Line, RiLoader4Line, RiMoreLine, RiRefreshLine, RiGitBranchLine, RiPencilLine, RiLoginBoxLine, RiCloseLine } from '@remixicon/react';
 import { ChatInput } from './chat/ChatInput';
 import { ConversationTabs } from './chat/ConversationTabs';
 import { useVersionStore, Version } from '../store/useVersionStore';
@@ -417,7 +417,7 @@ function VersionsPanel({
           <div className="text-center py-8 text-sm text-destructive">{error}</div>
         ) : versions.length === 0 ? (
           <div className="text-center py-8 text-sm text-muted-foreground">
-            <RiSaveLine size={32} className="mx-auto mb-3 opacity-50" />
+            <RiSave3Line size={32} className="mx-auto mb-3 opacity-50" />
             <p className="font-medium">No versions saved yet</p>
             <p className="text-xs mt-1 px-4">
               Save a version when you reach a milestone—like completing a draft or before making big changes.

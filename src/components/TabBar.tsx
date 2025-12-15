@@ -3,11 +3,7 @@ import { useFileSystem } from '../store/useFileSystem';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { FileNode } from '../shared/types';
 
-interface TabBarProps {
-  inTitleBar?: boolean;
-}
-
-export function TabBar({ inTitleBar = false }: TabBarProps) {
+export function TabBar() {
   const { openFiles, activeFilePath, selectFile, closeFile, createFile, openFile, renameFile, rootDir } = useFileSystem();
   const [renamingPath, setRenamingPath] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
@@ -120,20 +116,20 @@ export function TabBar({ inTitleBar = false }: TabBarProps) {
   const showScrollButtons = canScrollLeft || canScrollRight;
 
   return (
-    <div className={`flex w-full ${inTitleBar ? 'h-full items-center' : 'bg-muted/50 dark:bg-muted/30 pt-2 items-end'}`}>
+    <div className="flex w-full h-9 items-center bg-secondary border-b px-2">
       {/* Scrollable tabs container */}
-      <div className={`relative flex-1 min-w-0 ${inTitleBar ? 'flex items-center' : 'h-full'}`}>
+      <div className="relative flex-1 min-w-0 flex items-center">
         {/* Left fade indicator */}
         {canScrollLeft && (
-          <div className={`absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r ${inTitleBar ? 'from-secondary' : 'from-muted/80'} to-transparent pointer-events-none z-10`} />
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-secondary to-transparent pointer-events-none z-10" />
         )}
         {/* Right fade indicator */}
         {canScrollRight && (
-          <div className={`absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l ${inTitleBar ? 'from-secondary' : 'from-muted/80'} to-transparent pointer-events-none z-10`} />
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-secondary to-transparent pointer-events-none z-10" />
         )}
         <div
           ref={scrollContainerRef}
-          className={`flex overflow-x-auto overflow-y-hidden scrollbar-hide ${inTitleBar ? 'items-center' : 'h-full items-end'}`}
+          className="flex overflow-x-auto overflow-y-hidden scrollbar-hide items-center"
         >
         {openFiles.map((file, index) => {
               const isActive = file.path === activeFilePath;
@@ -151,10 +147,10 @@ export function TabBar({ inTitleBar = false }: TabBarProps) {
               const showDivider = index > 0 && !isActive && !isPrevActive;
 
               return (
-                <div key={file.path} className={`flex ${inTitleBar ? 'items-center' : 'items-end'}`}>
+                <div key={file.path} className="flex items-center">
                   {/* Divider between inactive tabs */}
                   {showDivider && (
-                    <div className={`w-px bg-muted-foreground/30 ${inTitleBar ? 'h-4' : 'h-5 mb-2'}`} />
+                    <div className="w-px h-4 bg-muted-foreground/30" />
                   )}
                   <div
                     data-tab-path={file.path}
@@ -163,15 +159,9 @@ export function TabBar({ inTitleBar = false }: TabBarProps) {
                     title={displayName}
                     className={`
                       relative flex items-center min-w-[120px] max-w-[200px] px-3 text-sm select-none cursor-pointer group transition-all
-                      ${inTitleBar
-                        ? `h-8 rounded-md ${isActive
-                            ? 'bg-background/90 text-foreground font-medium shadow-sm'
-                            : 'text-muted-foreground hover:bg-white/10'
-                          }`
-                        : `h-9 rounded-t-lg ${isActive
-                            ? 'bg-background text-foreground font-medium z-20 relative shadow-sm'
-                            : 'bg-transparent border-transparent text-muted-foreground hover:bg-black/10 dark:hover:bg-white/10 mb-0 border-b-0'
-                          }`
+                      h-7 rounded-md ${isActive
+                        ? 'bg-background/90 text-foreground font-medium shadow-sm'
+                        : 'text-muted-foreground hover:bg-white/10'
                       }
                     `}
                   >
@@ -239,13 +229,13 @@ export function TabBar({ inTitleBar = false }: TabBarProps) {
 
       {/* Scroll arrows - both on the right */}
       {showScrollButtons && (
-        <div className={`flex items-center flex-shrink-0 ${inTitleBar ? 'h-full' : 'h-9'}`}>
+        <div className="flex items-center flex-shrink-0 h-full">
           <button
             onClick={scrollLeft}
             disabled={!canScrollLeft}
             className={`p-1 rounded transition-colors ${
               canScrollLeft
-                ? `text-muted-foreground hover:text-foreground ${inTitleBar ? 'hover:bg-white/10' : 'hover:bg-muted/60'}`
+                ? 'text-muted-foreground hover:text-foreground hover:bg-white/10'
                 : 'text-muted-foreground/30 cursor-default'
             }`}
           >
@@ -256,7 +246,7 @@ export function TabBar({ inTitleBar = false }: TabBarProps) {
             disabled={!canScrollRight}
             className={`p-1 rounded transition-colors ${
               canScrollRight
-                ? `text-muted-foreground hover:text-foreground ${inTitleBar ? 'hover:bg-white/10' : 'hover:bg-muted/60'}`
+                ? 'text-muted-foreground hover:text-foreground hover:bg-white/10'
                 : 'text-muted-foreground/30 cursor-default'
             }`}
           >
@@ -266,21 +256,21 @@ export function TabBar({ inTitleBar = false }: TabBarProps) {
       )}
 
       {rootDir && (
-        <div className={`flex items-center ml-1 flex-shrink-0 ${inTitleBar ? 'h-full' : 'h-9'}`}>
+        <div className="flex items-center ml-1 flex-shrink-0 h-full">
           {/* Divider before + button */}
-          <div className={`w-px bg-muted-foreground/30 mr-1 ${inTitleBar ? 'h-4' : 'h-5'}`} />
+          <div className="w-px h-4 bg-muted-foreground/30 mr-1" />
           <button
             onClick={handleCreateDocument}
-            className={`p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors ${inTitleBar ? 'hover:bg-white/10' : 'hover:bg-muted/60'}`}
+            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
             title="New Document"
           >
             <RiAddLine size={16} />
           </button>
           {/* Divider between + and folder buttons */}
-          <div className={`w-px bg-muted-foreground/30 mx-0.5 ${inTitleBar ? 'h-4' : 'h-5'}`} />
+          <div className="w-px h-4 bg-muted-foreground/30 mx-0.5" />
           <button
             onClick={handleOpenFile}
-            className={`p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors ${inTitleBar ? 'hover:bg-white/10' : 'hover:bg-muted/60'}`}
+            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
             title="Open File"
           >
             <RiFolderOpenLine size={16} />

@@ -1,4 +1,5 @@
 import { TitleBar } from './components/TitleBar'
+import { TabBar } from './components/TabBar'
 import { Sidebar } from './components/Sidebar'
 import { Editor } from './components/Editor'
 import { EditorToolbar } from './components/EditorToolbar'
@@ -342,6 +343,7 @@ function App() {
     <DropZone onFolderDrop={handleFolderDrop}>
       <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden">
         <TitleBar />
+        {rootDir && <TabBar />}
         {rootDir ? (
           // Workspace is open - show normal layout
           <>
