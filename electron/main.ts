@@ -99,16 +99,16 @@ const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 const isMac = process.platform === 'darwin';
 const isWindows = process.platform === 'win32';
 
-// Check Windows registry for installer login preference
-function checkInstallerLoginPreference(): boolean {
+// Check Windows registry for first run (fresh install from installer)
+function checkFirstRun(): boolean {
   if (!isWindows) return false;
 
   try {
     const result = execSync(
-      'reg query "HKCU\\Software\\Midlight" /v ShowLoginOnStart',
+      'reg query "HKCU\\Software\\Midlight" /v FirstRun',
       { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
     );
-    // Registry value format: "    ShowLoginOnStart    REG_SZ    1"
+    // Registry value format: "    FirstRun    REG_SZ    1"
     return result.includes('0x1') || result.includes('REG_SZ    1');
   } catch {
     // Key doesn't exist or error reading - that's fine, just skip
@@ -116,13 +116,13 @@ function checkInstallerLoginPreference(): boolean {
   }
 }
 
-// Clear the installer login preference after reading it (one-time prompt)
-function clearInstallerLoginPreference(): void {
+// Clear the first run flag after reading it (one-time prompt)
+function clearFirstRun(): void {
   if (!isWindows) return;
 
   try {
     execSync(
-      'reg delete "HKCU\\Software\\Midlight" /v ShowLoginOnStart /f',
+      'reg delete "HKCU\\Software\\Midlight" /v FirstRun /f',
       { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
     );
   } catch {
@@ -160,10 +160,10 @@ function createWindow() {
   win.webContents.on('did-finish-load', () => {
     win?.webContents.send('main-process-message', (new Date).toLocaleString())
 
-    // Check if Windows installer set the "show login" preference
-    if (checkInstallerLoginPreference()) {
+    // Check if this is first run after fresh Windows install
+    if (checkFirstRun()) {
       // Clear it so it only shows once
-      clearInstallerLoginPreference();
+      clearFirstRun();
       // Send message to renderer to show login modal
       // Small delay to ensure app is fully initialized
       setTimeout(() => {

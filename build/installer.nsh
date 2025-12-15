@@ -1,17 +1,12 @@
 ; Midlight Custom Installer Script
 ; =================================
 ; Customizes NSIS installer behavior:
-; - Fresh installs: Show full branded wizard with login option
+; - Fresh installs: Show wizard
 ; - Updates: Run silently without UI
 
-!include "nsDialogs.nsh"
 !include "LogicLib.nsh"
 
-; Variables for custom page
-Var Dialog
-Var LoginRadio
-Var SkipRadio
-Var ShouldLogin
+; Variable to track if this is an update
 Var IsUpdate
 
 !macro preInit
@@ -33,62 +28,17 @@ Var IsUpdate
 !macroend
 
 !macro customInit
-  ; Initialize login preference (default to skip)
-  StrCpy $ShouldLogin "0"
+  ; No custom initialization needed
 !macroend
 
-; Custom page function - Create the login choice page
-Function LoginPageCreate
-  ; Skip this page for updates
-  ${If} $IsUpdate == "1"
-    Abort
-  ${EndIf}
-
-  !insertmacro MUI_HEADER_TEXT "Account Setup" "Would you like to sign in to your Midlight account?"
-
-  nsDialogs::Create 1018
-  Pop $Dialog
-  ${If} $Dialog == error
-    Abort
-  ${EndIf}
-
-  ; Description text
-  ${NSD_CreateLabel} 0 0 100% 40u "Signing in enables cloud sync, AI features, and more.$\r$\n$\r$\nYou can always sign in later from the app settings."
-  Pop $0
-
-  ; Radio buttons
-  ${NSD_CreateRadioButton} 0 50u 100% 12u "Sign in after installation"
-  Pop $LoginRadio
-
-  ${NSD_CreateRadioButton} 0 65u 100% 12u "Skip for now"
-  Pop $SkipRadio
-
-  ; Default to "Skip for now"
-  ${NSD_Check} $SkipRadio
-
-  nsDialogs::Show
-FunctionEnd
-
-; Custom page function - Save the login choice
-Function LoginPageLeave
-  ${NSD_GetState} $LoginRadio $ShouldLogin
-FunctionEnd
-
-; Register the custom page
+; Customize welcome page text
 !macro customWelcomePage
-  ; Welcome page text customization
   !define MUI_WELCOMEPAGE_TITLE "Welcome to Midlight"
   !define MUI_WELCOMEPAGE_TEXT "Midlight is a local-first, AI-native document editor.$\r$\n$\r$\nThis wizard will guide you through the installation.$\r$\n$\r$\nClick Next to continue."
 !macroend
 
-; Insert custom page after welcome, before install
-!macro customPageAfterWelcome
-  Page custom LoginPageCreate LoginPageLeave
-!macroend
-
 !macro customInstall
   ; Custom actions after files are installed
-  ; Runs for BOTH fresh installs and updates
 
   ; Add enhanced registry information for Add/Remove Programs
   WriteRegStr SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_ID}" \
@@ -98,13 +48,9 @@ FunctionEnd
   WriteRegStr SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_ID}" \
     "HelpLink" "https://midlight.ai/support"
 
-  ; Store login preference for the app to read on first launch (only for fresh installs)
+  ; Mark as fresh install so app can show login prompt on first launch
   ${If} $IsUpdate != "1"
-    ${If} $ShouldLogin == "1"
-      WriteRegStr SHCTX "Software\Midlight" "ShowLoginOnStart" "1"
-    ${Else}
-      WriteRegStr SHCTX "Software\Midlight" "ShowLoginOnStart" "0"
-    ${EndIf}
+    WriteRegStr SHCTX "Software\Midlight" "FirstRun" "1"
   ${EndIf}
 !macroend
 
@@ -113,17 +59,7 @@ FunctionEnd
   StrCpy $isForceCurrentInstall "1"
 !macroend
 
-!macro customUnInit
-  ; Custom uninstaller initialization
-  ; Check if being run during update (silent uninstall)
-  ${If} ${Silent}
-    ; Already silent, likely an update
-  ${EndIf}
-!macroend
-
 !macro customUnInstall
-  ; Custom uninstall actions
-  ; Clean up registry entries (this runs for manual uninstalls)
-  ; During updates, the old version is uninstalled silently first
+  ; Custom uninstall actions - clean up registry entries
   DeleteRegKey SHCTX "Software\Midlight"
 !macroend
