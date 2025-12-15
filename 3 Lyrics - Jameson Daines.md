@@ -1,77 +1,77 @@
-<!-- @mid:p-c8wbe4 -->
+<!-- @mid:p-g6vaxa -->
 You and I know that it's
 
-<!-- @mid:p-u1qapm -->
+<!-- @mid:p-lnlqxm -->
 (oh kid, why are you like this?)
 
-<!-- @mid:p-9efe8m -->
+<!-- @mid:p-1x7uk4 -->
 You and I know that I'd still come
 
-<!-- @mid:p-m4yrye -->
+<!-- @mid:p-he4n0n -->
 (I'm trying to tell you something. Listen to me)
 
-<!-- @mid:p-d102ut -->
+<!-- @mid:p-k8hcu6 -->
 oh jame are your hands still sweaty
 
-<!-- @mid:p-g2n5cx -->
+<!-- @mid:p-xdjecc -->
 how can you be so damn petty
 
-<!-- @mid:p-c2x1tt -->
+<!-- @mid:p-zohcac -->
 people don't change people don't change
 
-<!-- @mid:p-72djug -->
+<!-- @mid:p-a0h8sh -->
 i just realized i'm in the wrong lane
 
-<!-- @mid:p-yuaxka -->
+<!-- @mid:p-kjr45e -->
 Ohh ohh ohh
 
-<!-- @mid:p-3a93m8 -->
+<!-- @mid:p-zc88ot -->
 Ohh ohh ohh
 
-<!-- @mid:p-knlyuf -->
+<!-- @mid:p-0msjeh -->
 (Chorus)
 
-<!-- @mid:p-mrywln -->
+<!-- @mid:p-7b6tvd -->
 you and i know that it's not that likely
 
-<!-- @mid:p-6yo50i -->
+<!-- @mid:p-1ezers -->
 you and i know that i'd still come back
 
-<!-- @mid:p-g3hhfd -->
+<!-- @mid:p-a4h39e -->
 give me something give me something stronger
 
-<!-- @mid:p-1bm3uu -->
+<!-- @mid:p-etns3f -->
 standing up straight really hurts my back
 
-<!-- @mid:p-3vwdyy -->
+<!-- @mid:p-40vqm7 -->
 oh jame are your hands still sweaty
 
-<!-- @mid:p-875vha -->
+<!-- @mid:p-247kw8 -->
 how can you be so damn petty
 
-<!-- @mid:p-1gguxf -->
+<!-- @mid:p-zrgxx1 -->
 people don't change people don't change
 
-<!-- @mid:p-fjhvpf -->
+<!-- @mid:p-f7fo4h -->
 i just realized i'm in the wrong lane
 
-<!-- @mid:p-vv4yb3 -->
+<!-- @mid:p-epoknb -->
 Ohh ohh ohh
 
-<!-- @mid:p-9z18kh -->
+<!-- @mid:p-dvi5ma -->
 Ohh ohh ohh
 
-<!-- @mid:p-s0rvfj -->
+<!-- @mid:p-j8lspb -->
 (Chorus)
 
-<!-- @mid:p-64s6gg -->
+<!-- @mid:p-nkkdfm -->
 you and i know that it's not that likely
 
-<!-- @mid:p-w1s3xc -->
+<!-- @mid:p-ban53m -->
 you and i know that i'd still come back
 
-<!-- @mid:p-m5u1hf -->
+<!-- @mid:p-o2ctg7 -->
 give me something give me something stronger
 
-<!-- @mid:p-ybytct -->
+<!-- @mid:p-l1zjnp -->
 standing up straight really hurts my back
