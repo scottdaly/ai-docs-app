@@ -36,7 +36,6 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, displayName?: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
-  loginWithGithub: () => Promise<void>;
   logout: () => Promise<void>;
   fetchUser: () => Promise<void>;
   fetchSubscription: () => Promise<void>;
@@ -121,27 +120,6 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      loginWithGithub: async () => {
-        set({ isLoading: true, error: null });
-        try {
-          const result = await window.electronAPI.auth.loginWithGithub();
-          set({
-            user: result.user,
-            isAuthenticated: true,
-            isLoading: false,
-          });
-          // Fetch additional data
-          get().fetchSubscription();
-          get().fetchQuota();
-        } catch (error: any) {
-          set({
-            isLoading: false,
-            error: error.message || 'GitHub login failed',
-          });
-          throw error;
-        }
-      },
-
       logout: async () => {
         set({ isLoading: true });
         try {
@@ -198,13 +176,36 @@ export const useAuthStore = create<AuthState>()(
 
       checkAuth: async () => {
         try {
-          const isAuth = await window.electronAPI.auth.isAuthenticated();
-          if (isAuth) {
+          const state = await window.electronAPI.auth.getState();
+
+          if (state === 'initializing') {
+            // Wait for auth to be ready (background refresh in progress)
+            return new Promise<boolean>((resolve) => {
+              const unsubscribe = window.electronAPI.auth.onAuthStateChange((newState) => {
+                unsubscribe();
+                if (newState === 'authenticated') {
+                  get().fetchUser();
+                  get().fetchSubscription();
+                  get().fetchQuota();
+                  set({ isAuthenticated: true });
+                  resolve(true);
+                } else {
+                  set({ isAuthenticated: false, user: null });
+                  resolve(false);
+                }
+              });
+            });
+          }
+
+          if (state === 'authenticated') {
             await get().fetchUser();
             await get().fetchSubscription();
             await get().fetchQuota();
+            set({ isAuthenticated: true });
             return true;
           }
+
+          set({ isAuthenticated: false });
           return false;
         } catch (error) {
           console.error('Check auth error:', error);

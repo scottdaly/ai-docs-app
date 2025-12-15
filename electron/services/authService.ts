@@ -3,12 +3,12 @@
  *
  * Handles user authentication with the Midlight backend.
  * - Email/password login and signup
- * - OAuth flow (Google, GitHub)
- * - Token management (access + refresh tokens)
+ * - OAuth flow (Google)
+ * - Token management (access token in memory, refresh token in HTTP-only cookie)
  * - Automatic token refresh
  */
 
-import { app, net, shell, safeStorage } from 'electron';
+import { app, net, shell } from 'electron';
 import http from 'http';
 import { URL } from 'url';
 // @ts-ignore - electron-store has no type declarations
@@ -17,19 +17,11 @@ import Store from 'electron-store';
 // API endpoint
 const API_BASE = process.env.MIDLIGHT_API_URL || 'https://midlight.ai';
 
-// Token storage - stores encrypted tokens as base64
+// Token storage - only non-sensitive data persisted
 const store = new Store<{
-  encryptedAccessToken?: string;
-  encryptedRefreshToken?: string;
-  tokenExpiry?: number;
-  user?: User;
-  // Legacy fields for migration
-  refreshToken?: string;
-  accessToken?: string;
+  tokenExpiry?: number;  // For checking if user was previously logged in
+  user?: User;           // Cached user info for display while refreshing
 }>();
-
-// Track if encryption is available (checked at init time)
-let encryptionAvailable = false;
 
 // Types
 export interface User {
@@ -58,9 +50,22 @@ export interface QuotaInfo {
   remaining: number | null;
 }
 
-// In-memory access token (short-lived)
+// Auth state types
+export type AuthState = 'initializing' | 'authenticated' | 'unauthenticated';
+
+// Auth event types (for session expiration, etc.)
+export type AuthEvent = 'sessionExpired';
+
+// In-memory access token (short-lived, never persisted to disk)
 let accessToken: string | null = null;
 let tokenExpiry: number | null = null;
+
+// Auth state tracking
+let authState: AuthState = 'initializing';
+let authStateListeners: ((state: AuthState) => void)[] = [];
+
+// Auth event listeners (for session expiration notifications)
+let authEventListeners: ((event: AuthEvent) => void)[] = [];
 
 // Pending OAuth promise handlers (for system browser flow)
 let pendingOAuthResolve: ((result: AuthResult) => void) | null = null;
@@ -70,60 +75,71 @@ let pendingOAuthReject: ((error: Error) => void) | null = null;
 let devCallbackServer: http.Server | null = null;
 
 /**
- * Initialize auth service - restore tokens from storage
+ * Get current auth state
+ */
+export function getAuthState(): AuthState {
+  return authState;
+}
+
+/**
+ * Subscribe to auth state changes
+ */
+export function onAuthStateChange(callback: (state: AuthState) => void): () => void {
+  authStateListeners.push(callback);
+  return () => {
+    authStateListeners = authStateListeners.filter(cb => cb !== callback);
+  };
+}
+
+/**
+ * Set auth state and notify listeners
+ */
+function setAuthState(state: AuthState): void {
+  authState = state;
+  authStateListeners.forEach(cb => cb(state));
+}
+
+/**
+ * Subscribe to auth events (e.g., session expiration)
+ */
+export function onAuthEvent(callback: (event: AuthEvent) => void): () => void {
+  authEventListeners.push(callback);
+  return () => {
+    authEventListeners = authEventListeners.filter(cb => cb !== callback);
+  };
+}
+
+/**
+ * Emit an auth event to all listeners
+ */
+export function emitAuthEvent(event: AuthEvent): void {
+  console.log(`[Auth] Emitting auth event: ${event}`);
+  authEventListeners.forEach(cb => cb(event));
+}
+
+/**
+ * Initialize auth service - attempt to restore session via refresh token cookie
  */
 export function initAuth(): void {
-  // Check if encryption is available on this platform
-  encryptionAvailable = safeStorage.isEncryptionAvailable();
-  console.log(`[Auth] Encryption available: ${encryptionAvailable}`);
+  const storedUser = store.get('user');
 
-  const storedExpiry = store.get('tokenExpiry');
-  const hasStoredAuth = store.get('encryptedAccessToken') || store.get('accessToken') || store.get('user');
-
-  if (!storedExpiry || storedExpiry <= Date.now()) {
-    // Only try refresh if user has logged in before (has stored auth data)
-    if (hasStoredAuth) {
-      console.log('[Auth] Access token expired, scheduling background refresh');
-      // Delay refresh to allow app to fully initialize
-      setTimeout(() => {
-        refreshAccessToken().then((success) => {
-          console.log(`[Auth] Background token refresh: ${success ? 'succeeded' : 'failed'}`);
-        });
-      }, 500);
-    } else {
-      console.log('[Auth] No stored auth data, skipping background refresh');
-    }
-    return;
-  }
-
-  // Try to restore encrypted token first
-  const encryptedToken = store.get('encryptedAccessToken');
-  if (encryptedToken && encryptionAvailable) {
-    try {
-      const decrypted = safeStorage.decryptString(Buffer.from(encryptedToken, 'base64'));
-      accessToken = decrypted;
-      tokenExpiry = storedExpiry;
-      console.log('[Auth] Restored access token from encrypted storage');
-      return;
-    } catch (error) {
-      console.error('[Auth] Failed to decrypt token:', error);
-    }
-  }
-
-  // Fall back to legacy unencrypted token (for migration)
-  const legacyToken = store.get('accessToken');
-  if (legacyToken) {
-    accessToken = legacyToken;
-    tokenExpiry = storedExpiry;
-    console.log('[Auth] Restored access token from legacy storage');
-
-    // Migrate to encrypted storage if possible
-    if (encryptionAvailable) {
-      setTokens(legacyToken, Math.floor((storedExpiry - Date.now()) / 1000));
-      store.delete('accessToken');
-      store.delete('refreshToken');
-      console.log('[Auth] Migrated tokens to encrypted storage');
-    }
+  if (storedUser) {
+    console.log('[Auth] Previous session detected, attempting background refresh');
+    // Try to restore session using refresh token cookie
+    // Don't emit sessionExpired during init - user hasn't interacted yet
+    refreshAccessToken(false).then((success) => {
+      if (success) {
+        console.log('[Auth] Background refresh succeeded');
+        setAuthState('authenticated');
+      } else {
+        console.log('[Auth] Background refresh failed, user must re-login');
+        clearAuth();
+        setAuthState('unauthenticated');
+      }
+    });
+  } else {
+    console.log('[Auth] No previous session');
+    setAuthState('unauthenticated');
   }
 }
 
@@ -174,6 +190,7 @@ export async function signup(
   const data = await response.json();
   setTokens(data.accessToken, data.expiresIn);
   store.set('user', data.user);
+  setAuthState('authenticated');
 
   return data;
 }
@@ -195,21 +212,27 @@ export async function login(email: string, password: string): Promise<AuthResult
   const data = await response.json();
   setTokens(data.accessToken, data.expiresIn);
   store.set('user', data.user);
+  setAuthState('authenticated');
 
   return data;
 }
 
 /**
  * Refresh access token using refresh token cookie
+ * @param emitExpiredEvent - Whether to emit sessionExpired event on failure (default: true)
+ *                           Set to false during init to avoid showing login modal before user has interacted
  */
-export async function refreshAccessToken(): Promise<boolean> {
+export async function refreshAccessToken(emitExpiredEvent: boolean = true): Promise<boolean> {
   try {
     const response = await makeRequest('/api/auth/refresh', {
       method: 'POST',
     });
 
     if (!response.ok) {
-      clearAuth();
+      console.log('[Auth] Token refresh failed with status:', response.status);
+      if (emitExpiredEvent && authState === 'authenticated') {
+        emitAuthEvent('sessionExpired');
+      }
       return false;
     }
 
@@ -218,7 +241,9 @@ export async function refreshAccessToken(): Promise<boolean> {
     return true;
   } catch (error) {
     console.error('[Auth] Token refresh failed:', error);
-    clearAuth();
+    if (emitExpiredEvent && authState === 'authenticated') {
+      emitAuthEvent('sessionExpired');
+    }
     return false;
   }
 }
@@ -243,7 +268,7 @@ export async function logout(): Promise<void> {
  * In dev mode, uses a local HTTP server callback to avoid protocol handler conflicts
  * In production, uses the midlight:// protocol handler
  */
-export function startOAuth(provider: 'google' | 'github'): Promise<AuthResult> {
+export function startOAuth(provider: 'google'): Promise<AuthResult> {
   return new Promise(async (resolve, reject) => {
     // Cancel any pending OAuth and cleanup
     if (pendingOAuthReject) {
@@ -481,10 +506,10 @@ async function handleOAuthCallback(url: string): Promise<AuthResult> {
   }
 
   // Exchange the code for tokens
-  const { accessToken, expiresIn } = await exchangeCode(code);
+  const { accessToken: token, expiresIn } = await exchangeCode(code);
 
-  // Store tokens
-  setTokens(accessToken, expiresIn);
+  // Store tokens in memory
+  setTokens(token, expiresIn);
 
   // Fetch user profile
   const user = await getUser();
@@ -493,10 +518,11 @@ async function handleOAuthCallback(url: string): Promise<AuthResult> {
   }
 
   store.set('user', user);
+  setAuthState('authenticated');
 
   return {
     user,
-    accessToken,
+    accessToken: token,
     expiresIn,
   };
 }
@@ -574,39 +600,25 @@ export async function getUsage(): Promise<QuotaInfo | null> {
 
 // Helper functions
 
+/**
+ * Store tokens in memory only (never persisted to disk)
+ */
 function setTokens(token: string, expiresIn: number): void {
   accessToken = token;
   tokenExpiry = Date.now() + expiresIn * 1000;
-
-  // Persist to storage with encryption if available
-  if (encryptionAvailable) {
-    try {
-      const encrypted = safeStorage.encryptString(token);
-      store.set('encryptedAccessToken', encrypted.toString('base64'));
-    } catch (error) {
-      console.error('[Auth] Failed to encrypt token:', error);
-      // Fall back to unencrypted (better than losing auth)
-      store.set('accessToken', token);
-    }
-  } else {
-    // Encryption unavailable - tokens stay in memory only
-    // Don't persist unencrypted tokens on platforms without safeStorage
-    console.warn('[Auth] Encryption unavailable, tokens will not persist');
-  }
+  // Store expiry for "was logged in" check on next app launch
   store.set('tokenExpiry', tokenExpiry);
 }
 
-function clearAuth(): void {
+/**
+ * Clear all auth state
+ */
+export function clearAuth(): void {
   accessToken = null;
   tokenExpiry = null;
-
-  // Clear all token fields (both encrypted and legacy)
-  store.delete('encryptedAccessToken');
-  store.delete('encryptedRefreshToken');
-  store.delete('accessToken');
-  store.delete('refreshToken');
   store.delete('tokenExpiry');
   store.delete('user');
+  setAuthState('unauthenticated');
 }
 
 /**

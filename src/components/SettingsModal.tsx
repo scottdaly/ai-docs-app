@@ -1,9 +1,10 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, Palette, Settings as SettingsIcon, Bot, Check, Type, History } from 'lucide-react';
+import { X, Palette, Settings as SettingsIcon, Bot, Check, Type, History, User, LogOut, Mail, Loader2 } from 'lucide-react';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useTheme, Theme } from '../store/useTheme';
 import { useFileSystem } from '../store/useFileSystem';
 import { usePreferences } from '../store/usePreferences';
+import { useAuthStore } from '../store/useAuthStore';
 import { useEffect } from 'react';
 import {
   useWorkspaceConfig,
@@ -23,6 +24,7 @@ const TABS = [
   { id: 'versioning', label: 'Versioning', icon: History },
   { id: 'appearance', label: 'Appearance', icon: Palette },
   { id: 'ai', label: 'AI Models', icon: Bot },
+  { id: 'account', label: 'Account', icon: User },
 ] as const;
 
 const THEMES: { 
@@ -203,6 +205,7 @@ export function SettingsModal() {
   const { rootDir } = useFileSystem();
   const { config, loadConfig, updateDefaults, updateEditor, updateVersioning } = useWorkspaceConfig();
   const { showUnsupportedFiles, setShowUnsupportedFiles, errorReportingEnabled, setErrorReportingEnabled, pageMode, setPageMode, showPageNumbers, setShowPageNumbers } = usePreferences();
+  const { user, subscription, logout, isLoading } = useAuthStore();
 
   // Load config when modal opens and workspace exists
   useEffect(() => {
@@ -511,6 +514,85 @@ export function SettingsModal() {
                     <div className="flex flex-col items-center justify-center h-64 text-center space-y-4 text-muted-foreground border-2 border-dashed rounded-xl">
                         <Bot size={48} className="opacity-20" />
                         <p>AI Model configuration coming in Phase 2.</p>
+                    </div>
+                )}
+
+                {activeTab === 'account' && (
+                    <div className="space-y-8">
+                      {user ? (
+                        <>
+                          <SettingSection title="Profile">
+                            <div className="flex items-center gap-4 py-4">
+                              {user.avatarUrl ? (
+                                <img
+                                  src={user.avatarUrl}
+                                  alt={user.displayName || user.email}
+                                  className="w-16 h-16 rounded-full"
+                                />
+                              ) : (
+                                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                                  <User size={32} className="text-primary" />
+                                </div>
+                              )}
+                              <div className="space-y-1">
+                                <p className="font-medium text-lg">
+                                  {user.displayName || 'Midlight User'}
+                                </p>
+                                <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                                  <Mail size={14} />
+                                  {user.email}
+                                </p>
+                              </div>
+                            </div>
+                          </SettingSection>
+
+                          <SettingSection title="Subscription">
+                            <SettingRow
+                              label="Current Plan"
+                              description={subscription?.status === 'active' ? 'Your subscription is active' : undefined}
+                            >
+                              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                subscription?.tier === 'premium'
+                                  ? 'bg-primary/10 text-primary'
+                                  : 'bg-muted text-muted-foreground'
+                              }`}>
+                                {subscription?.tier === 'premium' ? 'Premium' : 'Free'}
+                              </span>
+                            </SettingRow>
+                          </SettingSection>
+
+                          <SettingSection title="Session">
+                            <div className="py-4">
+                              <button
+                                onClick={() => {
+                                  logout();
+                                  setIsOpen(false);
+                                }}
+                                disabled={isLoading}
+                                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-lg transition-colors disabled:opacity-50"
+                              >
+                                {isLoading ? (
+                                  <Loader2 size={16} className="animate-spin" />
+                                ) : (
+                                  <LogOut size={16} />
+                                )}
+                                Sign Out
+                              </button>
+                              <p className="text-xs text-muted-foreground mt-2">
+                                You will need to sign in again to use AI features.
+                              </p>
+                            </div>
+                          </SettingSection>
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-64 text-center space-y-4 text-muted-foreground border-2 border-dashed rounded-xl">
+                          <User size={48} className="opacity-20" />
+                          <div>
+                            <p className="font-medium">Not signed in</p>
+                            <p className="text-sm">Sign in to access AI features and sync your settings.</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                 )}
              </div>

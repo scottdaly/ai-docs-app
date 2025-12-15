@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-type SettingsTab = 'general' | 'editor' | 'versioning' | 'appearance' | 'ai';
+type SettingsTab = 'general' | 'editor' | 'versioning' | 'appearance' | 'ai' | 'account';
 
 interface SettingsState {
   isOpen: boolean;

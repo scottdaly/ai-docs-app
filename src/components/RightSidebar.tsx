@@ -5,6 +5,7 @@ import { useVersionStore, Version } from '../store/useVersionStore';
 import { useFileSystem } from '../store/useFileSystem';
 import { useAIStore, Message } from '../store/useAIStore';
 import { useAuthStore } from '../store/useAuthStore';
+import { useNetworkStore } from '../store/useNetworkStore';
 import { toast } from '../store/useToastStore';
 import { CompareModal } from './CompareModal';
 import {
@@ -68,6 +69,7 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
 
   const { editorContent, activeFilePath } = useFileSystem();
   const { isAuthenticated, checkAuth } = useAuthStore();
+  const { isOnline } = useNetworkStore();
   const {
     chatHistory,
     isStreaming,
@@ -124,13 +126,17 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
   }, [editorContent, activeFilePath]);
 
   const handleSubmit = useCallback(async (message: string) => {
+    if (!isOnline) {
+      toast.error('Cannot send messages while offline');
+      return;
+    }
     try {
       const documentContext = getDocumentContext();
       await sendChatMessage(message, documentContext);
     } catch (error: any) {
       toast.error(error.message || 'Failed to send message');
     }
-  }, [getDocumentContext, sendChatMessage]);
+  }, [isOnline, getDocumentContext, sendChatMessage]);
 
   const handleClearHistory = () => {
     if (chatHistory.length > 0) {

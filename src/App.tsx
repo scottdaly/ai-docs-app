@@ -20,6 +20,7 @@ import { useRecentWorkspaces } from './store/useRecentWorkspaces'
 import { useTheme, Theme } from './store/useTheme'
 import { useSettingsStore } from './store/useSettingsStore'
 import { useExportStore } from './store/useExportStore'
+import { useNetworkStore } from './store/useNetworkStore'
 import { useEffect, useState, useRef, useCallback, Component, ErrorInfo, ReactNode } from 'react'
 import { htmlToTiptapJson } from './utils/htmlToTiptap'
 import { Editor as TiptapEditor } from '@tiptap/react'
@@ -94,6 +95,7 @@ function App() {
   const { openSettings } = useSettingsStore();
   const { isExporting, setIsExporting } = useExportStore();
   const { addRecentWorkspace } = useRecentWorkspaces();
+  const { setOnline } = useNetworkStore();
 
   // Import wizard state
   const [importWizardOpen, setImportWizardOpen] = useState(false);
@@ -242,6 +244,35 @@ function App() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [editorContent, isDirty, saveFile]);
+
+  // Handle session expiration - show auth modal when session expires
+  useEffect(() => {
+    const unsubscribe = window.electronAPI.auth.onSessionExpired(() => {
+      toast.warning('Your session has expired. Please sign in again.');
+      setAuthModalOpen(true);
+    });
+    return unsubscribe;
+  }, []);
+
+  // Handle network status changes - show toasts and update store
+  useEffect(() => {
+    const handleOnline = () => {
+      setOnline(true);
+      toast.success('Back online');
+    };
+    const handleOffline = () => {
+      setOnline(false);
+      toast.warning('You are offline. Some features may be unavailable.');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [setOnline]);
 
   // Import from menu (obsidian/notion)
   const handleImportFromMenu = (type: 'obsidian' | 'notion') => {

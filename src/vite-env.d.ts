@@ -506,12 +506,13 @@ interface IElectronAPI {
     login: (email: string, password: string) => Promise<AuthResult>;
     logout: () => Promise<void>;
     loginWithGoogle: () => Promise<AuthResult>;
-    loginWithGithub: () => Promise<AuthResult>;
     getUser: () => Promise<AuthUser | null>;
     getSubscription: () => Promise<AuthSubscription | null>;
     getUsage: () => Promise<QuotaInfo | null>;
     isAuthenticated: () => Promise<boolean>;
-    onAuthStateChange: (callback: (user: AuthUser | null) => void) => () => void;
+    getState: () => Promise<'initializing' | 'authenticated' | 'unauthenticated'>;
+    onAuthStateChange: (callback: (state: 'initializing' | 'authenticated' | 'unauthenticated') => void) => () => void;
+    onSessionExpired: (callback: () => void) => () => void;
   };
 
   // --- LLM APIs ---

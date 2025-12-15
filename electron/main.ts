@@ -37,6 +37,9 @@ import {
   getSubscription,
   getUsage,
   isAuthenticated,
+  getAuthState,
+  onAuthStateChange,
+  onAuthEvent,
 } from './services/authService'
 import {
   chat as llmChat,
@@ -1596,15 +1599,6 @@ ipcMain.handle('auth:loginWithGoogle', async () => {
   }
 });
 
-ipcMain.handle('auth:loginWithGithub', async () => {
-  try {
-    return await startOAuth('github');
-  } catch (error) {
-    console.error('GitHub OAuth failed:', error);
-    throw error;
-  }
-});
-
 ipcMain.handle('auth:getUser', async () => {
   try {
     return await getUser();
@@ -1634,6 +1628,10 @@ ipcMain.handle('auth:getUsage', async () => {
 
 ipcMain.handle('auth:isAuthenticated', () => {
   return isAuthenticated();
+});
+
+ipcMain.handle('auth:getState', () => {
+  return getAuthState();
 });
 
 // --- LLM IPC Handlers ---
@@ -1785,6 +1783,18 @@ app.whenReady().then(() => {
 
   // Initialize authentication service
   initAuth();
+
+  // Listen for auth state changes and notify renderer
+  onAuthStateChange((state) => {
+    win?.webContents.send('auth:stateChanged', state);
+  });
+
+  // Listen for auth events (e.g., session expiration) and notify renderer
+  onAuthEvent((event) => {
+    if (event === 'sessionExpired') {
+      win?.webContents.send('auth:sessionExpired');
+    }
+  });
 
   // Initialize error reporting handlers (in both dev and prod)
   initErrorReportingHandlers();

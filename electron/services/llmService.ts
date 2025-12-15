@@ -8,7 +8,7 @@
  */
 
 import { net, BrowserWindow } from 'electron';
-import { getAccessToken } from './authService';
+import { getAccessToken, clearAuth, emitAuthEvent } from './authService';
 
 // API endpoint
 const API_BASE = process.env.MIDLIGHT_API_URL || 'https://midlight.ai';
@@ -89,6 +89,11 @@ export async function chat(options: ChatOptions): Promise<ChatResponse> {
 
   if (!response.ok) {
     const error = await response.json();
+    if (response.status === 401) {
+      clearAuth();
+      emitAuthEvent('sessionExpired');
+      throw new Error('Session expired. Please sign in again.');
+    }
     if (response.status === 429) {
       const err = new Error(error.error || 'Quota exceeded');
       (err as any).code = 'QUOTA_EXCEEDED';
@@ -137,6 +142,17 @@ export async function chatStream(
           errorData += chunk.toString();
         });
         response.on('end', () => {
+          // Handle 401 - session expired
+          if (response.statusCode === 401) {
+            clearAuth();
+            emitAuthEvent('sessionExpired');
+            window.webContents.send(`llm:stream:${channelId}:error`, {
+              error: 'Session expired. Please sign in again.',
+              code: 'SESSION_EXPIRED',
+            });
+            resolve();
+            return;
+          }
           try {
             const error = JSON.parse(errorData);
             window.webContents.send(`llm:stream:${channelId}:error`, error);
@@ -243,6 +259,11 @@ export async function chatWithTools(
 
   if (!response.ok) {
     const error = await response.json();
+    if (response.status === 401) {
+      clearAuth();
+      emitAuthEvent('sessionExpired');
+      throw new Error('Session expired. Please sign in again.');
+    }
     if (response.status === 429) {
       const err = new Error(error.error || 'Quota exceeded');
       (err as any).code = 'QUOTA_EXCEEDED';

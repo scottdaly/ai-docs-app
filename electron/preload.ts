@@ -251,9 +251,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     loginWithGoogle: () =>
       ipcRenderer.invoke('auth:loginWithGoogle'),
 
-    loginWithGithub: () =>
-      ipcRenderer.invoke('auth:loginWithGithub'),
-
     // User info
     getUser: () =>
       ipcRenderer.invoke('auth:getUser'),
@@ -267,11 +264,22 @@ contextBridge.exposeInMainWorld('electronAPI', {
     isAuthenticated: () =>
       ipcRenderer.invoke('auth:isAuthenticated'),
 
-    // Listen for auth state changes
-    onAuthStateChange: (callback: (user: any) => void) => {
-      const subscription = (_: any, user: any) => callback(user);
-      ipcRenderer.on('auth:stateChange', subscription);
-      return () => ipcRenderer.off('auth:stateChange', subscription);
+    // Get current auth state
+    getState: () =>
+      ipcRenderer.invoke('auth:getState'),
+
+    // Listen for auth state changes (initializing, authenticated, unauthenticated)
+    onAuthStateChange: (callback: (state: string) => void) => {
+      const subscription = (_: any, state: string) => callback(state);
+      ipcRenderer.on('auth:stateChanged', subscription);
+      return () => ipcRenderer.off('auth:stateChanged', subscription);
+    },
+
+    // Listen for session expiration events (for re-auth UX)
+    onSessionExpired: (callback: () => void) => {
+      const subscription = () => callback();
+      ipcRenderer.on('auth:sessionExpired', subscription);
+      return () => ipcRenderer.off('auth:sessionExpired', subscription);
     },
   },
 
