@@ -18,7 +18,12 @@ import {
   ImportProgress,
   NotionImportOptions,
   validatePath,
+  AgentExecutor,
+  AGENT_TOOLS,
+  isDestructiveTool,
+  isReadOnlyTool,
 } from './services'
+import type { ToolCall } from './services'
 import {
   validateAndParseJSON,
   validateImportAnalysis,
@@ -1737,6 +1742,35 @@ ipcMain.handle('llm:getStatus', async () => {
     console.error('Get status failed:', error);
     return { status: 'error', providers: {} };
   }
+});
+
+// --- Agent IPC Handlers ---
+
+// Get available tools for the agent
+ipcMain.handle('agent:getTools', () => {
+  return AGENT_TOOLS;
+});
+
+// Execute tool calls from the agent
+ipcMain.handle('agent:executeTools', async (_, workspaceRoot: string, toolCalls: ToolCall[]) => {
+  try {
+    const executor = new AgentExecutor(workspaceRoot);
+    const results = await executor.executeToolCalls(toolCalls);
+    return { success: true, results };
+  } catch (error) {
+    console.error('Agent tool execution failed:', error);
+    return { success: false, error: String(error) };
+  }
+});
+
+// Check if a tool is destructive (requires confirmation)
+ipcMain.handle('agent:isDestructive', (_, toolName: string) => {
+  return isDestructiveTool(toolName);
+});
+
+// Check if a tool is read-only (safe to execute without confirmation)
+ipcMain.handle('agent:isReadOnly', (_, toolName: string) => {
+  return isReadOnlyTool(toolName);
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

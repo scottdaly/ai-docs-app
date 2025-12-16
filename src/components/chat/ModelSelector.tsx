@@ -33,7 +33,7 @@ export function ModelSelector() {
     if (!availableModels) return;
 
     // Find which provider this model belongs to
-    for (const provider of ['openai', 'anthropic'] as const) {
+    for (const provider of ['openai', 'anthropic', 'gemini'] as const) {
       const models = availableModels[provider];
       if (models?.some((m) => m.id === modelId)) {
         if (provider !== selectedProvider) {
@@ -108,12 +108,37 @@ export function ModelSelector() {
               ))}
             </>
           )}
+
+          {/* Separator before Gemini */}
+          {((availableModels?.anthropic && availableModels.anthropic.length > 0) ||
+            (availableModels?.openai && availableModels.openai.length > 0)) &&
+            availableModels?.gemini &&
+            availableModels.gemini.length > 0 && <DropdownMenuSeparator />}
+
+          {/* Gemini Models */}
+          {availableModels?.gemini && availableModels.gemini.length > 0 && (
+            <>
+              <DropdownMenuLabel className="text-xs text-muted-foreground">
+                Google
+              </DropdownMenuLabel>
+              {availableModels.gemini.map((model) => (
+                <DropdownMenuRadioItem
+                  key={model.id}
+                  value={`gemini:${model.id}`}
+                  className="text-sm"
+                >
+                  {model.name}
+                </DropdownMenuRadioItem>
+              ))}
+            </>
+          )}
         </DropdownMenuRadioGroup>
 
         {/* Show message if no models available */}
         {(!availableModels ||
           (availableModels.anthropic?.length === 0 &&
-            availableModels.openai?.length === 0)) && (
+            availableModels.openai?.length === 0 &&
+            availableModels.gemini?.length === 0)) && (
           <div className="px-2 py-3 text-xs text-muted-foreground text-center">
             No models available
           </div>

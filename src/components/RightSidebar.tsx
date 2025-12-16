@@ -9,6 +9,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useNetworkStore } from '../store/useNetworkStore';
 import { toast } from '../store/useToastStore';
 import { CompareModal } from './CompareModal';
+import { useAgentRunner } from '../hooks/useAgentRunner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -79,6 +80,9 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
     getActiveConversation,
   } = useAIStore();
 
+  // Agent runner for document operations
+  const { runAgent, isRunning: isAgentRunning } = useAgentRunner();
+
   // Get messages from active conversation
   const activeConversation = getActiveConversation();
   const chatHistory = activeConversation?.messages || [];
@@ -141,6 +145,27 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
       toast.error(error.message || 'Failed to send message');
     }
   }, [isOnline, getDocumentContext, sendChatMessage]);
+
+  // Handle agent mode submissions
+  const handleAgentSubmit = useCallback(async (message: string) => {
+    if (!isOnline) {
+      toast.error('Cannot run agent while offline');
+      return;
+    }
+    try {
+      const documentContext = getDocumentContext();
+      const result = await runAgent(message, documentContext);
+
+      if (result.success && result.response) {
+        // Add the agent's response to the chat
+        await sendChatMessage(`[Agent completed] ${message}`, undefined);
+      } else if (!result.success) {
+        toast.error(result.error || 'Agent failed');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Agent failed');
+    }
+  }, [isOnline, getDocumentContext, runAgent, sendChatMessage]);
 
   // Show loading state while checking auth
   if (isInitializing) {
@@ -224,7 +249,9 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
 
       <ChatInput
         onSubmit={handleSubmit}
+        onAgentSubmit={handleAgentSubmit}
         isStreaming={isStreaming}
+        isAgentRunning={isAgentRunning}
         placeholder={activeFilePath ? "Ask about your document..." : "Ask anything..."}
       />
     </>

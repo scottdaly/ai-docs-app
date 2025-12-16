@@ -1,22 +1,27 @@
 import { useState, useRef, useEffect } from 'react';
-import { RiSendPlaneLine, RiLoader4Line, RiAtLine } from '@remixicon/react';
+import { RiSendPlaneLine, RiLoader4Line, RiAtLine, RiRobot2Line } from '@remixicon/react';
 import { ModelSelector } from './ModelSelector';
 import { ContextPicker } from './ContextPicker';
 import { useAIStore } from '../../store/useAIStore';
 
 interface ChatInputProps {
   onSubmit: (message: string) => void;
+  onAgentSubmit?: (message: string) => void;
   isStreaming: boolean;
+  isAgentRunning?: boolean;
   placeholder?: string;
 }
 
-export function ChatInput({ onSubmit, isStreaming, placeholder }: ChatInputProps) {
+export function ChatInput({ onSubmit, onAgentSubmit, isStreaming, isAgentRunning, placeholder }: ChatInputProps) {
   const [input, setInput] = useState('');
   const [showContextPicker, setShowContextPicker] = useState(false);
   const [contextSearch, setContextSearch] = useState('');
   const [atPosition, setAtPosition] = useState<number | null>(null);
+  const [agentMode, setAgentMode] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { contextItems, removeContextItem, addContextItem } = useAIStore();
+
+  const isLoading = isStreaming || isAgentRunning;
 
   // Focus input on mount
   useEffect(() => {
@@ -25,9 +30,13 @@ export function ChatInput({ onSubmit, isStreaming, placeholder }: ChatInputProps
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isStreaming) return;
+    if (!input.trim() || isLoading) return;
 
-    onSubmit(input.trim());
+    if (agentMode && onAgentSubmit) {
+      onAgentSubmit(input.trim());
+    } else {
+      onSubmit(input.trim());
+    }
     setInput('');
 
     // Reset textarea height
@@ -161,9 +170,9 @@ export function ChatInput({ onSubmit, isStreaming, placeholder }: ChatInputProps
             value={input}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder={placeholder || 'Type @ to add file context...'}
+            placeholder={agentMode ? 'Ask the agent to manage your documents...' : (placeholder || 'Type @ to add file context...')}
             rows={1}
-            disabled={isStreaming}
+            disabled={isLoading}
             className="w-full resize-none px-3 py-2 text-sm bg-transparent
                        placeholder:text-muted-foreground focus:outline-none
                        min-h-[40px] max-h-[120px] disabled:opacity-50"
@@ -184,6 +193,22 @@ export function ChatInput({ onSubmit, isStreaming, placeholder }: ChatInputProps
 
             {/* Right side - Actions */}
             <div className="flex items-center gap-1">
+              {/* Agent Mode Toggle */}
+              {onAgentSubmit && (
+                <button
+                  type="button"
+                  onClick={() => setAgentMode(!agentMode)}
+                  className={`p-1.5 rounded transition-colors ${
+                    agentMode
+                      ? 'text-primary bg-primary/10'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                  }`}
+                  title={agentMode ? 'Agent mode (can edit documents)' : 'Enable agent mode'}
+                >
+                  <RiRobot2Line size={16} />
+                </button>
+              )}
+
               {/* @ Context Button */}
               <button
                 type="button"
@@ -201,11 +226,11 @@ export function ChatInput({ onSubmit, isStreaming, placeholder }: ChatInputProps
               {/* Send Button */}
               <button
                 type="submit"
-                disabled={!input.trim() || isStreaming}
+                disabled={!input.trim() || isLoading}
                 className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted
                            disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {isStreaming ? (
+                {isLoading ? (
                   <RiLoader4Line size={16} className="animate-spin" />
                 ) : (
                   <RiSendPlaneLine size={16} />

@@ -20,6 +20,7 @@ export interface Conversation {
 export interface AvailableModels {
   openai: Array<{ id: string; name: string; tier: string }>;
   anthropic: Array<{ id: string; name: string; tier: string }>;
+  gemini: Array<{ id: string; name: string; tier: string }>;
 }
 
 export interface ContextItem {
@@ -52,7 +53,7 @@ interface AIState {
   inlineLoading: boolean;
 
   // Settings
-  selectedProvider: 'openai' | 'anthropic';
+  selectedProvider: 'openai' | 'anthropic' | 'gemini';
   selectedModel: string;
   temperature: number;
 
@@ -84,7 +85,7 @@ interface AIState {
   cancelInlineEdit: () => void;
 
   // Settings actions
-  setProvider: (provider: 'openai' | 'anthropic') => void;
+  setProvider: (provider: 'openai' | 'anthropic' | 'gemini') => void;
   setModel: (model: string) => void;
   setTemperature: (temp: number) => void;
   fetchAvailableModels: () => Promise<void>;
@@ -181,7 +182,7 @@ export const useAIStore = create<AIState>()(
 
       // Settings
       selectedProvider: 'openai',
-      selectedModel: 'gpt-4o-mini',
+      selectedModel: 'gpt-5-mini',
       temperature: 0.7,
 
       availableModels: null,
@@ -636,7 +637,7 @@ Respond ONLY with the modified text. Do not include the XML tags in your respons
             console.log(`[AI Store] Fetched models (attempt ${attempt}):`, models);
 
             // If we got models, set them and return
-            if (models.openai?.length > 0 || models.anthropic?.length > 0) {
+            if (models.openai?.length > 0 || models.anthropic?.length > 0 || models.gemini?.length > 0) {
               set({ availableModels: models });
 
               // Auto-select first model if none selected

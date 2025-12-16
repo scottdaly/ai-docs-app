@@ -15,6 +15,8 @@ import { ImagePreview } from './components/ImagePreview'
 import { ToastContainer } from './components/ToastContainer'
 import { AuthModal } from './components/AuthModal'
 import { EditorHandle } from './components/Editor'
+import { AgentChangeBanner } from './components/AgentChangeBanner'
+import { AgentProgress } from './components/AgentProgress'
 import { useFileSystem } from './store/useFileSystem'
 import { toast } from './store/useToastStore'
 import { useRecentWorkspaces } from './store/useRecentWorkspaces'
@@ -22,6 +24,7 @@ import { useTheme, Theme } from './store/useTheme'
 import { useSettingsStore } from './store/useSettingsStore'
 import { useExportStore } from './store/useExportStore'
 import { useNetworkStore } from './store/useNetworkStore'
+import { useAgentStore } from './store/useAgentStore'
 import { useEffect, useState, useRef, useCallback, Component, ErrorInfo, ReactNode } from 'react'
 import { htmlToTiptapJson } from './utils/htmlToTiptap'
 import { Editor as TiptapEditor } from '@tiptap/react'
@@ -97,6 +100,7 @@ function App() {
   const { isExporting, setIsExporting } = useExportStore();
   const { addRecentWorkspace } = useRecentWorkspaces();
   const { setOnline } = useNetworkStore();
+  const { setWorkspace: setAgentWorkspace } = useAgentStore();
 
   // Import wizard state
   const [importWizardOpen, setImportWizardOpen] = useState(false);
@@ -283,6 +287,13 @@ function App() {
     };
   }, [setOnline]);
 
+  // Update agent store with current workspace
+  useEffect(() => {
+    if (rootDir) {
+      setAgentWorkspace(rootDir);
+    }
+  }, [rootDir, setAgentWorkspace]);
+
   // Import from menu (obsidian/notion)
   const handleImportFromMenu = (type: 'obsidian' | 'notion') => {
     setImportSourceType(type);
@@ -430,6 +441,8 @@ function App() {
         />
         <UpdateNotification />
         <ToastContainer />
+        <AgentProgress />
+        <AgentChangeBanner />
       </div>
     </DropZone>
   )

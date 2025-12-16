@@ -20,7 +20,7 @@ export interface Message {
 }
 
 export interface ChatOptions {
-  provider: 'openai' | 'anthropic';
+  provider: 'openai' | 'anthropic' | 'gemini';
   model: string;
   messages: Message[];
   temperature?: number;
@@ -61,6 +61,7 @@ export interface ChatWithToolsResponse extends ChatResponse {
 export interface AvailableModels {
   openai: Array<{ id: string; name: string; tier: string }>;
   anthropic: Array<{ id: string; name: string; tier: string }>;
+  gemini: Array<{ id: string; name: string; tier: string }>;
 }
 
 export interface QuotaInfo {
@@ -286,7 +287,7 @@ export async function getModels(): Promise<AvailableModels> {
   if (!token) {
     // Return empty models if not authenticated (don't throw)
     console.log('[LLM] getModels - returning empty models (no token)');
-    return { openai: [], anthropic: [] };
+    return { openai: [], anthropic: [], gemini: [] };
   }
 
   try {
@@ -295,7 +296,7 @@ export async function getModels(): Promise<AvailableModels> {
 
     if (!response.ok) {
       console.error('[LLM] Failed to get models:', response.status);
-      return { openai: [], anthropic: [] };
+      return { openai: [], anthropic: [], gemini: [] };
     }
 
     const data = await response.json();
@@ -303,7 +304,7 @@ export async function getModels(): Promise<AvailableModels> {
     return data.models;
   } catch (error) {
     console.error('[LLM] Error fetching models:', error);
-    return { openai: [], anthropic: [] };
+    return { openai: [], anthropic: [], gemini: [] };
   }
 }
 

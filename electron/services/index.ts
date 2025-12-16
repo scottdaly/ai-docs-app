@@ -94,3 +94,15 @@ export type {
   NotionAnalysis,
   NotionImportOptions,
 } from './importService';
+
+// Agent executor
+export {
+  AgentExecutor,
+  AGENT_TOOLS,
+  DESTRUCTIVE_TOOLS,
+  READ_ONLY_TOOLS,
+  isDestructiveTool,
+  isReadOnlyTool,
+} from './agentExecutor';
+
+export type { ToolCall, ToolResult, DocumentChange } from './agentExecutor';

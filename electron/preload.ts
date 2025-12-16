@@ -371,6 +371,26 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getStatus: () =>
       ipcRenderer.invoke('llm:getStatus'),
   },
+
+  // --- Agent APIs ---
+
+  agent: {
+    // Get available tools for the agent
+    getTools: () =>
+      ipcRenderer.invoke('agent:getTools'),
+
+    // Execute tool calls from the agent
+    executeTools: (workspaceRoot: string, toolCalls: Array<{ id: string; name: string; arguments: Record<string, unknown> }>) =>
+      ipcRenderer.invoke('agent:executeTools', workspaceRoot, toolCalls),
+
+    // Check if a tool is destructive (requires confirmation)
+    isDestructive: (toolName: string) =>
+      ipcRenderer.invoke('agent:isDestructive', toolName),
+
+    // Check if a tool is read-only (safe to execute without confirmation)
+    isReadOnly: (toolName: string) =>
+      ipcRenderer.invoke('agent:isReadOnly', toolName),
+  },
 })
 
 contextBridge.exposeInMainWorld('ipcRenderer', {

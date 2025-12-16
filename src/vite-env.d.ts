@@ -290,7 +290,7 @@ interface LLMMessage {
 }
 
 interface LLMChatOptions {
-  provider: 'openai' | 'anthropic';
+  provider: 'openai' | 'anthropic' | 'gemini';
   model: string;
   messages: LLMMessage[];
   temperature?: number;
@@ -337,12 +337,55 @@ interface ModelInfo {
 interface AvailableModels {
   openai: ModelInfo[];
   anthropic: ModelInfo[];
+  gemini: ModelInfo[];
 }
 
 interface LLMStatus {
   available: boolean;
   authenticated: boolean;
   quota?: QuotaInfo;
+}
+
+// --- Agent Types ---
+
+interface AgentTool {
+  name: string;
+  description: string;
+  parameters: {
+    type: 'object';
+    properties: Record<string, any>;
+    required: string[];
+  };
+}
+
+interface AgentToolCall {
+  id: string;
+  name: string;
+  arguments: Record<string, unknown>;
+}
+
+interface AgentToolResult {
+  toolCallId: string;
+  success: boolean;
+  result?: unknown;
+  error?: string;
+  change?: AgentDocumentChange;
+}
+
+interface AgentDocumentChange {
+  type: 'create' | 'edit' | 'move' | 'delete' | 'create_folder';
+  path: string;
+  newPath?: string;
+  contentBefore?: string;
+  contentAfter?: string;
+  /** Checkpoint ID created before the change, used for undo */
+  preChangeCheckpointId?: string;
+}
+
+interface AgentExecuteResult {
+  success: boolean;
+  results?: AgentToolResult[];
+  error?: string;
 }
 
 interface IElectronAPI {
@@ -529,6 +572,14 @@ interface IElectronAPI {
     getModels: () => Promise<AvailableModels>;
     getQuota: () => Promise<QuotaInfo>;
     getStatus: () => Promise<LLMStatus>;
+  };
+
+  // --- Agent APIs ---
+  agent: {
+    getTools: () => Promise<AgentTool[]>;
+    executeTools: (workspaceRoot: string, toolCalls: AgentToolCall[]) => Promise<AgentExecuteResult>;
+    isDestructive: (toolName: string) => Promise<boolean>;
+    isReadOnly: (toolName: string) => Promise<boolean>;
   };
 }
 
