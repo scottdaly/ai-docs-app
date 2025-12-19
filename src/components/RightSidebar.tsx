@@ -1,14 +1,15 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { RiArrowRightSLine, RiChat3Line, RiHistoryLine, RiSave3Line, RiLoader4Line, RiMoreLine, RiRefreshLine, RiGitBranchLine, RiPencilLine, RiLoginBoxLine, RiCloseLine } from '@remixicon/react';
+import { RiArrowRightSLine, RiChat3Line, RiHistoryLine, RiSave3Line, RiLoader4Line, RiMoreLine, RiRefreshLine, RiGitBranchLine, RiPencilLine, RiLoginBoxLine, RiCloseLine, RiFileAddLine, RiFileEditLine, RiDeleteBinLine, RiFolderAddLine, RiFileSearchLine, RiFileList2Line, RiDragMoveLine } from '@remixicon/react';
 import { ChatInput } from './chat/ChatInput';
 import { ConversationTabs } from './chat/ConversationTabs';
 import { useVersionStore, Version } from '../store/useVersionStore';
 import { useFileSystem } from '../store/useFileSystem';
-import { useAIStore, Message } from '../store/useAIStore';
+import { useAIStore, Message, ToolAction } from '../store/useAIStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { useNetworkStore } from '../store/useNetworkStore';
 import { toast } from '../store/useToastStore';
 import { CompareModal } from './CompareModal';
+import { createInlineDiffJson } from '../utils/inlineDiff';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -135,9 +136,6 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
       return;
     }
     try {
-      // Capture original content before agent makes changes (for diff display)
-      const originalContent = editorContent ? extractTextFromTiptapJson(editorContent) : '';
-
       const documentContext = getDocumentContext();
       const result = await sendChatMessage(message, documentContext, rootDir || undefined);
 
@@ -145,54 +143,75 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
       if (result?.madeChanges && rootDir) {
         await loadDir(rootDir);
 
-        // Check if current document was edited
-        if (activeFilePath && result.changedPaths?.length > 0) {
-          // Normalize paths for comparison (remove leading slashes, handle .md extension)
-          const normalizedActive = activeFilePath.replace(/^\/+/, '');
-          const currentFileChange = result.changes?.find(change => {
-            if (change.type !== 'edit') return false;
-            const normalizedChanged = change.path.replace(/^\/+/, '');
-            // Check if paths match (with or without .md extension)
-            return normalizedActive === normalizedChanged ||
-                   normalizedActive === normalizedChanged + '.md' ||
-                   normalizedActive + '.md' === normalizedChanged;
-          });
+        // Get relative path from absolute activeFilePath by removing rootDir prefix
+        let activeRelativePath = activeFilePath || '';
+        if (activeFilePath && activeFilePath.startsWith(rootDir)) {
+          activeRelativePath = activeFilePath.slice(rootDir.length).replace(/^[/\\]+/, '');
+        }
 
-          if (currentFileChange) {
-            // Show diff bar instead of immediately reloading
-            // Use content from the change object if available, otherwise use captured original
-            const beforeContent = currentFileChange.contentBefore || originalContent;
-            const afterContent = currentFileChange.contentAfter || '';
+        console.log('[RightSidebar] Processing changes:', {
+          activeFilePath,
+          rootDir,
+          activeRelativePath,
+          changedPaths: result.changedPaths,
+          changes: result.changes?.map(c => ({ type: c.type, path: c.path, hasContentBefore: !!c.contentBefore, hasContentAfter: !!c.contentAfter })),
+        });
 
-            if (beforeContent && afterContent) {
-              // Load the new content into the editor
-              const loadResult = await window.electronAPI.workspaceLoadDocument(rootDir, activeFilePath);
-              if (loadResult.success && loadResult.json) {
-                setEditorContent(loadResult.json);
-              }
+        // Process ALL edit changes and set pending diffs for each
+        const editChanges = result.changes?.filter(c => c.type === 'edit') || [];
 
-              // Set up pending diff for approval
-              setPendingDiff({
+        for (const change of editChanges) {
+          const beforeContent = change.contentBefore || '';
+          const afterContent = change.contentAfter || '';
+
+          if (beforeContent && afterContent) {
+            // Build the absolute path for this file
+            const absolutePath = rootDir + '/' + change.path.replace(/^[/\\]+/, '');
+
+            // For files other than the current one, we need to load their original JSON
+            // For now, we'll just store the text content - they'll get the diff shown when switched to
+            const isCurrentFile = activeFilePath &&
+              (activeRelativePath === change.path.replace(/^[/\\]+/, '') ||
+               activeRelativePath === change.path.replace(/^[/\\]+/, '') + '.md' ||
+               activeRelativePath + '.md' === change.path.replace(/^[/\\]+/, ''));
+
+            if (isCurrentFile && activeFilePath) {
+              // For current file, also update the editor to show inline diff
+              const originalJson = editorContent;
+              const inlineDiffJson = createInlineDiffJson(beforeContent, afterContent);
+              setEditorContent(inlineDiffJson as any);
+
+              setPendingDiff(activeFilePath, {
                 originalContent: beforeContent,
                 modifiedContent: afterContent,
-                checkpointId: currentFileChange.preChangeCheckpointId,
+                checkpointId: change.preChangeCheckpointId,
+                originalJson: originalJson || undefined,
               });
+              console.log('[RightSidebar] Set pending diff for current file:', activeFilePath);
             } else {
-              // Fallback: just reload if we don't have diff content
-              await reloadFromDisk();
+              // For other files, just store the diff info - they'll get inline diff when switched to
+              setPendingDiff(absolutePath, {
+                originalContent: beforeContent,
+                modifiedContent: afterContent,
+                checkpointId: change.preChangeCheckpointId,
+              });
+              console.log('[RightSidebar] Set pending diff for other file:', absolutePath);
             }
-          } else {
-            // Check if it was a different change type (create, move, etc.) to current file
-            const wasCurrentFileChanged = result.changedPaths.some(changedPath => {
-              const normalizedChanged = changedPath.replace(/^\/+/, '');
-              return normalizedActive === normalizedChanged ||
-                     normalizedActive === normalizedChanged + '.md' ||
-                     normalizedActive + '.md' === normalizedChanged;
-            });
+          }
+        }
 
-            if (wasCurrentFileChanged) {
-              await reloadFromDisk();
-            }
+        // Handle non-edit changes to current file (create, move, etc.)
+        if (activeFilePath && editChanges.length === 0) {
+          const wasCurrentFileChanged = result.changedPaths?.some(changedPath => {
+            const normalizedChanged = changedPath.replace(/^[/\\]+/, '');
+            return activeRelativePath === normalizedChanged ||
+                   activeRelativePath === normalizedChanged + '.md' ||
+                   activeRelativePath + '.md' === normalizedChanged;
+          });
+
+          if (wasCurrentFileChanged) {
+            console.log('[RightSidebar] Non-edit change to current file, reloading');
+            await reloadFromDisk();
           }
         }
       }
@@ -290,10 +309,91 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
   );
 }
 
+// Tool Action Card Component
+function ToolActionCard({ action }: { action: ToolAction }) {
+  const getIcon = () => {
+    switch (action.type) {
+      case 'create': return <RiFileAddLine size={18} />;
+      case 'edit': return <RiFileEditLine size={18} />;
+      case 'delete': return <RiDeleteBinLine size={18} />;
+      case 'move': return <RiDragMoveLine size={18} />;
+      case 'create_folder': return <RiFolderAddLine size={18} />;
+      case 'search': return <RiFileSearchLine size={18} />;
+      case 'list': return <RiFileList2Line size={18} />;
+      case 'read': return <RiFileList2Line size={18} />;
+      default: return <RiFileEditLine size={18} />;
+    }
+  };
+
+  const getColors = () => {
+    switch (action.type) {
+      case 'create': return {
+        bg: 'bg-green-500/10 border-green-500/20',
+        icon: 'text-green-600 dark:text-green-400',
+        text: 'text-green-700 dark:text-green-300',
+      };
+      case 'edit': return {
+        bg: 'bg-blue-500/10 border-blue-500/20',
+        icon: 'text-blue-600 dark:text-blue-400',
+        text: 'text-blue-700 dark:text-blue-300',
+      };
+      case 'delete': return {
+        bg: 'bg-red-500/10 border-red-500/20',
+        icon: 'text-red-600 dark:text-red-400',
+        text: 'text-red-700 dark:text-red-300',
+      };
+      case 'move': return {
+        bg: 'bg-orange-500/10 border-orange-500/20',
+        icon: 'text-orange-600 dark:text-orange-400',
+        text: 'text-orange-700 dark:text-orange-300',
+      };
+      case 'create_folder': return {
+        bg: 'bg-purple-500/10 border-purple-500/20',
+        icon: 'text-purple-600 dark:text-purple-400',
+        text: 'text-purple-700 dark:text-purple-300',
+      };
+      default: return {
+        bg: 'bg-muted border-border',
+        icon: 'text-muted-foreground',
+        text: 'text-foreground',
+      };
+    }
+  };
+
+  const colors = getColors();
+
+  // Build the stats line
+  const stats: string[] = [];
+  if (action.wordsAdded && action.wordsAdded > 0) {
+    stats.push(`+${action.wordsAdded} words`);
+  }
+  if (action.wordsRemoved && action.wordsRemoved > 0) {
+    stats.push(`-${action.wordsRemoved} words`);
+  }
+
+  return (
+    <div className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border ${colors.bg}`}>
+      <div className={colors.icon}>
+        {getIcon()}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className={`text-sm font-medium ${colors.text}`}>
+          {action.label}
+        </div>
+        {stats.length > 0 && (
+          <div className="text-xs text-muted-foreground mt-0.5">
+            {stats.join(' · ')}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Message Bubble Component
 function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === 'user';
-  const isStreaming = message.isStreaming && !message.content;
+  const isStreaming = message.isStreaming;
 
   if (isUser) {
     return (
@@ -305,17 +405,55 @@ function MessageBubble({ message }: { message: Message }) {
     );
   }
 
+  // Check for status messages (thinking, using tools)
+  const content = message.content || '';
+  const isThinking = isStreaming && (content === '' || content.includes('_Thinking..._'));
+  const toolMatch = content.match(/_Using tools: ([^_]+)\.\.\._/);
+  const isUsingTools = isStreaming && toolMatch;
+
+  // Extract any real content (before the status message)
+  const realContent = content
+    .replace(/_Thinking\.\.\._/g, '')
+    .replace(/_Using tools: [^_]+\.\.\._/g, '')
+    .trim();
+
+  // Get tool actions
+  const toolActions = message.toolActions || [];
+
   // Assistant message - no background, sits directly on page
   return (
-    <div className="text-sm">
-      {isStreaming ? (
-        <div className="flex gap-1">
-          <span className="w-2 h-2 bg-muted-foreground opacity-50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-          <span className="w-2 h-2 bg-muted-foreground opacity-50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-          <span className="w-2 h-2 bg-muted-foreground opacity-50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+    <div className="text-sm space-y-2">
+      {/* Show tool action cards first */}
+      {toolActions.length > 0 && (
+        <div className="flex flex-col gap-2">
+          {toolActions.map((action, idx) => (
+            <ToolActionCard key={idx} action={action} />
+          ))}
         </div>
-      ) : (
-        <div className="whitespace-pre-wrap">{message.content}</div>
+      )}
+
+      {/* Show any real content */}
+      {realContent && (
+        <div className="whitespace-pre-wrap">{realContent}</div>
+      )}
+
+      {/* Show status indicator */}
+      {isThinking && !isUsingTools && (
+        <span className="text-muted-foreground italic animate-pulse">Thinking...</span>
+      )}
+
+      {isUsingTools && (
+        <span className="text-muted-foreground italic animate-pulse">Using {toolMatch[1]}...</span>
+      )}
+
+      {/* Show thinking if streaming with no content at all */}
+      {isStreaming && !content && !isThinking && !toolActions.length && (
+        <span className="text-muted-foreground italic animate-pulse">Thinking...</span>
+      )}
+
+      {/* Show final content when done */}
+      {!isStreaming && !realContent && content && (
+        <div className="whitespace-pre-wrap">{content}</div>
       )}
     </div>
   );

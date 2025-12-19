@@ -1,12 +1,22 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+export interface ToolAction {
+  type: 'create' | 'edit' | 'move' | 'delete' | 'create_folder' | 'read' | 'list' | 'search';
+  path: string;
+  newPath?: string;
+  label: string; // Human-readable label like "Edited Birds.md"
+  wordsAdded?: number;
+  wordsRemoved?: number;
+}
+
 export interface Message {
   id: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: number;
   isStreaming?: boolean;
+  toolActions?: ToolAction[];
 }
 
 export interface Conversation {
@@ -465,7 +475,7 @@ ${documentContext ? `\n\nCurrent document context:\n<document_context>\n${docume
         };
 
         // Helper to finalize the message
-        const finalizeMessage = (finalContent: string) => {
+        const finalizeMessage = (finalContent: string, toolActions?: ToolAction[]) => {
           set((state) => ({
             conversations: state.conversations.map((c) =>
               c.id === activeConversationId
@@ -473,7 +483,7 @@ ${documentContext ? `\n\nCurrent document context:\n<document_context>\n${docume
                     ...c,
                     messages: c.messages.map((msg) =>
                       msg.id === assistantMessage.id
-                        ? { ...msg, content: finalContent, isStreaming: false }
+                        ? { ...msg, content: finalContent, isStreaming: false, toolActions }
                         : msg
                     ),
                     updatedAt: Date.now(),
@@ -483,6 +493,47 @@ ${documentContext ? `\n\nCurrent document context:\n<document_context>\n${docume
             isStreaming: false,
             currentStreamText: '',
           }));
+        };
+
+        // Helper to create a human-readable label for a tool action
+        const createToolActionLabel = (toolName: string, args: Record<string, any>, result: any): string => {
+          const getFileName = (p: string) => p.split('/').pop() || p;
+
+          switch (toolName) {
+            case 'create_document':
+              return `Created ${getFileName(result?.path || args.name || 'document')}`;
+            case 'edit_document':
+              return `Edited ${getFileName(args.path || 'document')}`;
+            case 'move_document':
+              return `Moved ${getFileName(args.from_path)} → ${getFileName(args.to_path)}`;
+            case 'delete_document':
+              return `Deleted ${getFileName(args.path || 'document')}`;
+            case 'create_folder':
+              return `Created folder ${getFileName(args.path || 'folder')}`;
+            case 'read_document':
+              return `Read ${getFileName(args.path || 'document')}`;
+            case 'list_documents':
+              return `Listed ${args.folder || 'documents'}`;
+            case 'search_documents':
+              return `Searched for "${args.query}"`;
+            default:
+              return `Used ${toolName}`;
+          }
+        };
+
+        // Map tool name to action type
+        const getToolActionType = (toolName: string): ToolAction['type'] => {
+          switch (toolName) {
+            case 'create_document': return 'create';
+            case 'edit_document': return 'edit';
+            case 'move_document': return 'move';
+            case 'delete_document': return 'delete';
+            case 'create_folder': return 'create_folder';
+            case 'read_document': return 'read';
+            case 'list_documents': return 'list';
+            case 'search_documents': return 'search';
+            default: return 'read';
+          }
         };
 
         // Helper to truncate tool results to save tokens
@@ -505,6 +556,7 @@ ${documentContext ? `\n\nCurrent document context:\n<document_context>\n${docume
           let madeChanges = false;
           const changedPaths: string[] = [];
           const changes: DocumentChange[] = [];
+          const toolActions: ToolAction[] = [];
 
           // Agent loop - continues until LLM doesn't return tool calls
           while (iterations < MAX_ITERATIONS) {
@@ -587,6 +639,44 @@ ${documentContext ? `\n\nCurrent document context:\n<document_context>\n${docume
                   toolCallId: toolCall.id,
                 });
 
+                // Track tool action for display in chat
+                if (toolResult.success) {
+                  const resultData = toolResult.result as Record<string, any> | undefined;
+
+                  // Calculate word counts for edits
+                  let wordsAdded: number | undefined;
+                  let wordsRemoved: number | undefined;
+
+                  if (toolCall.name === 'edit_document' && resultData) {
+                    const beforeContent = resultData.beforeContent || '';
+                    const afterContent = resultData.afterContent || '';
+                    const beforeWords = beforeContent.split(/\s+/).filter((w: string) => w).length;
+                    const afterWords = afterContent.split(/\s+/).filter((w: string) => w).length;
+                    wordsAdded = Math.max(0, afterWords - beforeWords);
+                    wordsRemoved = Math.max(0, beforeWords - afterWords);
+                    // If both are 0, it means words were replaced - estimate from diff
+                    if (wordsAdded === 0 && wordsRemoved === 0 && beforeContent !== afterContent) {
+                      // Content changed but word count is same - show as edit
+                      wordsAdded = undefined;
+                      wordsRemoved = undefined;
+                    }
+                  } else if (toolCall.name === 'create_document') {
+                    const content = toolCall.arguments.content || '';
+                    wordsAdded = content.split(/\s+/).filter((w: string) => w).length;
+                  } else if (toolCall.name === 'delete_document' && resultData?.contentBefore) {
+                    wordsRemoved = resultData.contentBefore.split(/\s+/).filter((w: string) => w).length;
+                  }
+
+                  toolActions.push({
+                    type: getToolActionType(toolCall.name),
+                    path: resultData?.path || toolCall.arguments.path || '',
+                    newPath: resultData?.to || toolCall.arguments.to_path,
+                    label: createToolActionLabel(toolCall.name, toolCall.arguments, toolResult.result),
+                    wordsAdded,
+                    wordsRemoved,
+                  });
+                }
+
                 // Track if any write operations were made
                 if (toolResult.change) {
                   madeChanges = true;
@@ -615,8 +705,8 @@ ${documentContext ? `\n\nCurrent document context:\n<document_context>\n${docume
             finalResponse = '_Agent stopped: reached maximum iterations_';
           }
 
-          // Finalize the assistant message
-          finalizeMessage(finalResponse);
+          // Finalize the assistant message with tool actions
+          finalizeMessage(finalResponse, toolActions.length > 0 ? toolActions : undefined);
 
           // Return whether changes were made (for file tree refresh)
           return { madeChanges, changedPaths, changes };

@@ -38,12 +38,13 @@ interface FileSystemState {
   // Pending rename state (for new file creation flow)
   pendingRenamePath: string | null;
 
-  // Pending diff state (for AI agent edits)
-  pendingDiff: {
+  // Pending diffs state (for AI agent edits) - keyed by file path
+  pendingDiffs: Record<string, {
     originalContent: string;
     modifiedContent: string;
     checkpointId?: string;
-  } | null;
+    originalJson?: TiptapDocument; // Original editor JSON for restore
+  }>;
 
   // Actions
   setRootDir: (path: string) => void;
@@ -79,9 +80,13 @@ interface FileSystemState {
   clearPendingRenamePath: () => void;
 
   // Pending diff actions (for AI agent edits)
-  setPendingDiff: (diff: { originalContent: string; modifiedContent: string; checkpointId?: string } | null) => void;
-  acceptPendingDiff: () => void;
-  rejectPendingDiff: () => Promise<void>;
+  setPendingDiff: (path: string, diff: { originalContent: string; modifiedContent: string; checkpointId?: string; originalJson?: TiptapDocument }) => void;
+  clearPendingDiff: (path: string) => void;
+  clearAllPendingDiffs: () => void;
+  acceptPendingDiff: () => Promise<void>;  // Accepts diff for current file
+  rejectPendingDiff: () => Promise<void>;  // Rejects diff for current file
+  acceptAllPendingDiffs: () => Promise<void>;
+  rejectAllPendingDiffs: () => Promise<void>;
 
   restoreSession: () => Promise<void>;
 }
@@ -151,7 +156,7 @@ export const useFileSystem = create<FileSystemState>()(
       externalChange: null,
       saveError: null,
       pendingRenamePath: null,
-      pendingDiff: null,
+      pendingDiffs: {},
 
       setRootDir: (path) => set({ rootDir: path }),
       setFiles: (files) => set({ files }),
@@ -656,19 +661,84 @@ export const useFileSystem = create<FileSystemState>()(
       clearPendingRenamePath: () => set({ pendingRenamePath: null }),
 
       // Pending diff actions (for AI agent edits)
-      setPendingDiff: (diff) => set({ pendingDiff: diff }),
+      setPendingDiff: (path, diff) => set((state) => ({
+        pendingDiffs: { ...state.pendingDiffs, [path]: diff }
+      })),
 
-      acceptPendingDiff: () => {
-        // Just clear the pending diff - changes are already saved
-        set({ pendingDiff: null });
+      clearPendingDiff: (path) => set((state) => {
+        const { [path]: _, ...rest } = state.pendingDiffs;
+        return { pendingDiffs: rest };
+      }),
+
+      clearAllPendingDiffs: () => set({ pendingDiffs: {} }),
+
+      acceptPendingDiff: async () => {
+        const { rootDir, activeFilePath, pendingDiffs } = get();
+
+        if (!activeFilePath) return;
+
+        // Load the actual new content from disk (without diff marks)
+        if (rootDir) {
+          try {
+            const loadResult = await window.electronAPI.workspaceLoadDocument(rootDir, activeFilePath);
+            if (loadResult.success && loadResult.json) {
+              // Remove this file's pending diff
+              const { [activeFilePath]: _, ...restDiffs } = pendingDiffs;
+              set({
+                editorContent: loadResult.json,
+                pendingDiffs: restDiffs,
+                isDirty: false,
+              });
+              return;
+            }
+          } catch (error) {
+            console.error('Failed to load accepted content:', error);
+          }
+        }
+
+        // Fallback: just clear this file's pending diff
+        const { [activeFilePath]: _, ...restDiffs } = pendingDiffs;
+        set({ pendingDiffs: restDiffs });
       },
 
       rejectPendingDiff: async () => {
-        const { pendingDiff, rootDir, activeFilePath } = get();
+        const { pendingDiffs, rootDir, activeFilePath } = get();
 
-        if (!pendingDiff?.checkpointId || !rootDir || !activeFilePath) {
-          // No checkpoint to restore, just clear
-          set({ pendingDiff: null });
+        if (!activeFilePath) return;
+
+        const pendingDiff = pendingDiffs[activeFilePath];
+        if (!pendingDiff) return;
+
+        // First, try to restore the original JSON if we have it
+        if (pendingDiff.originalJson) {
+          const { [activeFilePath]: _, ...restDiffs } = pendingDiffs;
+          set({
+            editorContent: pendingDiff.originalJson,
+            pendingDiffs: restDiffs,
+            isDirty: false,
+          });
+
+          // Also save the original content back to disk
+          if (rootDir) {
+            try {
+              await window.electronAPI.workspaceSaveDocument(
+                rootDir,
+                activeFilePath,
+                pendingDiff.originalJson,
+                'auto'
+              );
+            } catch (error) {
+              console.error('Failed to save restored content:', error);
+            }
+          }
+          return;
+        }
+
+        // Fallback to checkpoint restore if we have it
+        if (!pendingDiff.checkpointId || !rootDir) {
+          // No checkpoint to restore, just clear this diff
+          const { [activeFilePath]: _, ...restDiffs } = pendingDiffs;
+          set({ pendingDiffs: restDiffs });
           return;
         }
 
@@ -684,9 +754,10 @@ export const useFileSystem = create<FileSystemState>()(
             // Reload the document from disk
             const loadResult = await window.electronAPI.workspaceLoadDocument(rootDir, activeFilePath);
             if (loadResult.success && loadResult.json) {
+              const { [activeFilePath]: _, ...restDiffs } = pendingDiffs;
               set({
                 editorContent: loadResult.json,
-                pendingDiff: null,
+                pendingDiffs: restDiffs,
                 isDirty: false,
               });
             }
@@ -697,7 +768,62 @@ export const useFileSystem = create<FileSystemState>()(
           console.error('Failed to reject pending diff:', error);
         }
 
-        set({ pendingDiff: null });
+        const { [activeFilePath]: _, ...restDiffs } = pendingDiffs;
+        set({ pendingDiffs: restDiffs });
+      },
+
+      acceptAllPendingDiffs: async () => {
+        const { rootDir, activeFilePath } = get();
+
+        // Clear all pending diffs
+        set({ pendingDiffs: {} });
+
+        // Reload the current file if there is one
+        if (rootDir && activeFilePath) {
+          try {
+            const loadResult = await window.electronAPI.workspaceLoadDocument(rootDir, activeFilePath);
+            if (loadResult.success && loadResult.json) {
+              set({ editorContent: loadResult.json, isDirty: false });
+            }
+          } catch (error) {
+            console.error('Failed to reload after accepting all:', error);
+          }
+        }
+      },
+
+      rejectAllPendingDiffs: async () => {
+        const { pendingDiffs, rootDir, activeFilePath } = get();
+
+        // Restore all files that have original content
+        for (const [path, diff] of Object.entries(pendingDiffs)) {
+          if (diff.originalJson && rootDir) {
+            try {
+              await window.electronAPI.workspaceSaveDocument(
+                rootDir,
+                path,
+                diff.originalJson,
+                'auto'
+              );
+            } catch (error) {
+              console.error(`Failed to restore ${path}:`, error);
+            }
+          }
+        }
+
+        // Clear all pending diffs
+        set({ pendingDiffs: {} });
+
+        // Reload the current file
+        if (rootDir && activeFilePath) {
+          try {
+            const loadResult = await window.electronAPI.workspaceLoadDocument(rootDir, activeFilePath);
+            if (loadResult.success && loadResult.json) {
+              set({ editorContent: loadResult.json, isDirty: false });
+            }
+          } catch (error) {
+            console.error('Failed to reload after rejecting all:', error);
+          }
+        }
       },
 
       restoreSession: async () => {

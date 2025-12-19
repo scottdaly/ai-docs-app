@@ -12,6 +12,7 @@ import { Underline } from './extensions/Underline';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
 import { ClickableHorizontalRule } from './extensions/ClickableHorizontalRule';
+import { DiffAdded, DiffRemoved } from './extensions/DiffMark';
 import { useEffect, useRef, useImperativeHandle, forwardRef, useState, useCallback } from 'react';
 import { useFileSystem } from '../store/useFileSystem';
 import { usePreferences } from '../store/usePreferences';
@@ -22,11 +23,12 @@ import { RecoveryPrompt } from './RecoveryPrompt';
 import { ExternalChangeDialog } from './ExternalChangeDialog';
 import { InlineEditPrompt } from './InlineEditPrompt';
 import { InlineDiffView } from './InlineDiffView';
-import { DocumentDiffBar } from './DocumentDiffBar';
 import { useVersionStore } from '../store/useVersionStore';
+// DocumentDiffBar removed - using inline diff instead
 import { PaginatedEditorView } from './PaginatedEditorView';
 import { PAGE_HEIGHT, PAGE_GAP, PAGE_BREAKS_UPDATED_EVENT, PageBreak } from './extensions/PageSplitting';
 import { toast } from '../store/useToastStore';
+import { createInlineDiffJson } from '../utils/inlineDiff';
 
 interface EditorProps {
   onEditorReady?: (editor: TiptapEditor | null) => void;
@@ -56,10 +58,16 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
     reloadFromDisk,
     keepCurrentVersion,
     closeFile,
-    pendingDiff,
+    pendingDiffs,
     acceptPendingDiff,
     rejectPendingDiff,
+    acceptAllPendingDiffs,
+    rejectAllPendingDiffs,
   } = useFileSystem();
+
+  // Get pending diff for current file
+  const pendingDiff = activeFilePath ? pendingDiffs[activeFilePath] : undefined;
+  const totalPendingDiffs = Object.keys(pendingDiffs).length;
   const { loadVersions } = useVersionStore();
   const { pageMode } = usePreferences();
   const { isAuthenticated } = useAuthStore();
@@ -181,6 +189,8 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
       Underline,
       Subscript,
       Superscript,
+      DiffAdded,
+      DiffRemoved,
       // PageSplitting, // TEMPORARILY DISABLED FOR PERFORMANCE TESTING
     ],
 
@@ -234,8 +244,16 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
     },
 
     onUpdate: ({ editor }) => {
+      // Don't save while a diff is pending for this file (content contains diff marks)
+      const state = useFileSystem.getState();
+      const currentFilePath = state.activeFilePath;
+      const hasPendingDiff = currentFilePath && state.pendingDiffs[currentFilePath];
+      if (hasPendingDiff) {
+        return;
+      }
+
       // Only update isDirty if it's not already true (avoid unnecessary re-renders)
-      const currentIsDirty = useFileSystem.getState().isDirty;
+      const currentIsDirty = state.isDirty;
       if (!currentIsDirty) {
         setIsDirty(true);
       }
@@ -245,6 +263,13 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
       }
 
       saveTimeoutRef.current = setTimeout(() => {
+        // Double-check no pending diff before saving
+        const currentState = useFileSystem.getState();
+        const filePath = currentState.activeFilePath;
+        if (filePath && currentState.pendingDiffs[filePath]) {
+          return;
+        }
+
         // Save Tiptap JSON directly
         const json = editor.getJSON();
         const jsonString = JSON.stringify(json);
@@ -257,6 +282,33 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
       }, 1000);
     },
   });
+
+  // Make editor read-only while diff is pending
+  useEffect(() => {
+    if (editor) {
+      editor.setEditable(!pendingDiff);
+    }
+  }, [editor, pendingDiff]);
+
+  // Keyboard handler for pending diff (Enter to accept, Escape to reject)
+  useEffect(() => {
+    if (!pendingDiff) return;
+
+    const handleDiffKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        acceptPendingDiff();
+        toast.success('Changes accepted');
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        rejectPendingDiff();
+        toast.info('Changes rejected');
+      }
+    };
+
+    document.addEventListener('keydown', handleDiffKeyDown);
+    return () => document.removeEventListener('keydown', handleDiffKeyDown);
+  }, [pendingDiff, acceptPendingDiff, rejectPendingDiff]);
 
   // Cmd+K keyboard handler for inline AI editing
   useEffect(() => {
@@ -375,6 +427,22 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
       }
     }
   }, [activeFilePath, editorContent, editor]);
+
+  // Show inline diff when switching to a file with a pending diff
+  useEffect(() => {
+    if (!editor || !activeFilePath || !pendingDiff) return;
+
+    // If this file has a pending diff, show the inline diff view
+    const inlineDiffJson = createInlineDiffJson(
+      pendingDiff.originalContent,
+      pendingDiff.modifiedContent
+    );
+
+    // Apply the diff view to the editor
+    queueMicrotask(() => {
+      editor.commands.setContent(inlineDiffJson);
+    });
+  }, [editor, activeFilePath, pendingDiff]);
 
   // Listen for external insert events (e.g. Import DOCX)
   useEffect(() => {
@@ -498,15 +566,6 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
         />
       )}
 
-      {/* AI agent edit diff bar */}
-      {pendingDiff && (
-        <DocumentDiffBar
-          originalContent={pendingDiff.originalContent}
-          modifiedContent={pendingDiff.modifiedContent}
-          onAccept={acceptPendingDiff}
-          onReject={rejectPendingDiff}
-        />
-      )}
 
       {/* Canvas area - mode depends on pageMode setting */}
       {pageMode === 'continuous' ? (
@@ -568,6 +627,77 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Floating diff accept/reject bar */}
+      {(pendingDiff || totalPendingDiffs > 0) && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50">
+          <div className="flex items-center gap-3 px-4 py-3 bg-background border border-border rounded-xl shadow-lg">
+            <span className="text-sm text-muted-foreground">
+              {totalPendingDiffs > 1
+                ? `AI made changes to ${totalPendingDiffs} files`
+                : 'AI made changes'}
+            </span>
+            <div className="w-px h-5 bg-border" />
+            {pendingDiff ? (
+              <>
+                <button
+                  onClick={() => {
+                    acceptPendingDiff();
+                    toast.success('Changes accepted');
+                  }}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                >
+                  Accept
+                </button>
+                <button
+                  onClick={() => {
+                    rejectPendingDiff();
+                    toast.info('Changes rejected');
+                  }}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80 transition-colors text-sm font-medium"
+                >
+                  Reject
+                </button>
+              </>
+            ) : (
+              <span className="text-xs text-muted-foreground italic">
+                Switch to an edited file to review
+              </span>
+            )}
+            {totalPendingDiffs > 1 && (
+              <>
+                <div className="w-px h-5 bg-border" />
+                <button
+                  onClick={() => {
+                    acceptAllPendingDiffs();
+                    toast.success(`Accepted changes to ${totalPendingDiffs} files`);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/30 rounded-lg transition-colors text-xs font-medium"
+                >
+                  Accept All
+                </button>
+                <button
+                  onClick={() => {
+                    rejectAllPendingDiffs();
+                    toast.info(`Rejected changes to ${totalPendingDiffs} files`);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors text-xs font-medium"
+                >
+                  Reject All
+                </button>
+              </>
+            )}
+            {pendingDiff && (
+              <>
+                <div className="w-px h-5 bg-border" />
+                <span className="text-xs text-muted-foreground">
+                  <kbd className="px-1.5 py-0.5 bg-muted rounded font-mono">Enter</kbd> / <kbd className="px-1.5 py-0.5 bg-muted rounded font-mono">Esc</kbd>
+                </span>
+              </>
+            )}
+          </div>
         </div>
       )}
 
