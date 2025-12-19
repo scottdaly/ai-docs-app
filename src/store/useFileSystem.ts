@@ -38,6 +38,13 @@ interface FileSystemState {
   // Pending rename state (for new file creation flow)
   pendingRenamePath: string | null;
 
+  // Pending diff state (for AI agent edits)
+  pendingDiff: {
+    originalContent: string;
+    modifiedContent: string;
+    checkpointId?: string;
+  } | null;
+
   // Actions
   setRootDir: (path: string) => void;
   setFiles: (files: FileNode[]) => void;
@@ -70,6 +77,11 @@ interface FileSystemState {
   // Pending rename actions
   setPendingRenamePath: (path: string | null) => void;
   clearPendingRenamePath: () => void;
+
+  // Pending diff actions (for AI agent edits)
+  setPendingDiff: (diff: { originalContent: string; modifiedContent: string; checkpointId?: string } | null) => void;
+  acceptPendingDiff: () => void;
+  rejectPendingDiff: () => Promise<void>;
 
   restoreSession: () => Promise<void>;
 }
@@ -139,6 +151,7 @@ export const useFileSystem = create<FileSystemState>()(
       externalChange: null,
       saveError: null,
       pendingRenamePath: null,
+      pendingDiff: null,
 
       setRootDir: (path) => set({ rootDir: path }),
       setFiles: (files) => set({ files }),
@@ -641,6 +654,51 @@ export const useFileSystem = create<FileSystemState>()(
 
       setPendingRenamePath: (path) => set({ pendingRenamePath: path }),
       clearPendingRenamePath: () => set({ pendingRenamePath: null }),
+
+      // Pending diff actions (for AI agent edits)
+      setPendingDiff: (diff) => set({ pendingDiff: diff }),
+
+      acceptPendingDiff: () => {
+        // Just clear the pending diff - changes are already saved
+        set({ pendingDiff: null });
+      },
+
+      rejectPendingDiff: async () => {
+        const { pendingDiff, rootDir, activeFilePath } = get();
+
+        if (!pendingDiff?.checkpointId || !rootDir || !activeFilePath) {
+          // No checkpoint to restore, just clear
+          set({ pendingDiff: null });
+          return;
+        }
+
+        try {
+          // Restore from checkpoint
+          const result = await window.electronAPI.workspaceRestoreCheckpoint(
+            rootDir,
+            activeFilePath,
+            pendingDiff.checkpointId
+          );
+
+          if (result.success) {
+            // Reload the document from disk
+            const loadResult = await window.electronAPI.workspaceLoadDocument(rootDir, activeFilePath);
+            if (loadResult.success && loadResult.json) {
+              set({
+                editorContent: loadResult.json,
+                pendingDiff: null,
+                isDirty: false,
+              });
+            }
+          } else {
+            console.error('Failed to restore checkpoint:', result.error);
+          }
+        } catch (error) {
+          console.error('Failed to reject pending diff:', error);
+        }
+
+        set({ pendingDiff: null });
+      },
 
       restoreSession: async () => {
         const { rootDir, activeFilePath, openFiles } = get();

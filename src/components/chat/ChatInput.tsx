@@ -1,27 +1,22 @@
 import { useState, useRef, useEffect } from 'react';
-import { RiSendPlaneLine, RiLoader4Line, RiAtLine, RiRobot2Line } from '@remixicon/react';
+import { RiSendPlaneLine, RiLoader4Line, RiAtLine } from '@remixicon/react';
 import { ModelSelector } from './ModelSelector';
 import { ContextPicker } from './ContextPicker';
 import { useAIStore } from '../../store/useAIStore';
 
 interface ChatInputProps {
   onSubmit: (message: string) => void;
-  onAgentSubmit?: (message: string) => void;
-  isStreaming: boolean;
-  isAgentRunning?: boolean;
+  isLoading: boolean;
   placeholder?: string;
 }
 
-export function ChatInput({ onSubmit, onAgentSubmit, isStreaming, isAgentRunning, placeholder }: ChatInputProps) {
+export function ChatInput({ onSubmit, isLoading, placeholder }: ChatInputProps) {
   const [input, setInput] = useState('');
   const [showContextPicker, setShowContextPicker] = useState(false);
   const [contextSearch, setContextSearch] = useState('');
   const [atPosition, setAtPosition] = useState<number | null>(null);
-  const [agentMode, setAgentMode] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { contextItems, removeContextItem, addContextItem } = useAIStore();
-
-  const isLoading = isStreaming || isAgentRunning;
 
   // Focus input on mount
   useEffect(() => {
@@ -32,11 +27,7 @@ export function ChatInput({ onSubmit, onAgentSubmit, isStreaming, isAgentRunning
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    if (agentMode && onAgentSubmit) {
-      onAgentSubmit(input.trim());
-    } else {
-      onSubmit(input.trim());
-    }
+    onSubmit(input.trim());
     setInput('');
 
     // Reset textarea height
@@ -170,7 +161,7 @@ export function ChatInput({ onSubmit, onAgentSubmit, isStreaming, isAgentRunning
             value={input}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder={agentMode ? 'Ask the agent to manage your documents...' : (placeholder || 'Type @ to add file context...')}
+            placeholder={placeholder || 'Ask anything or request document changes...'}
             rows={1}
             disabled={isLoading}
             className="w-full resize-none px-3 py-2 text-sm bg-transparent
@@ -193,22 +184,6 @@ export function ChatInput({ onSubmit, onAgentSubmit, isStreaming, isAgentRunning
 
             {/* Right side - Actions */}
             <div className="flex items-center gap-1">
-              {/* Agent Mode Toggle */}
-              {onAgentSubmit && (
-                <button
-                  type="button"
-                  onClick={() => setAgentMode(!agentMode)}
-                  className={`p-1.5 rounded transition-colors ${
-                    agentMode
-                      ? 'text-primary bg-primary/10'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                  }`}
-                  title={agentMode ? 'Agent mode (can edit documents)' : 'Enable agent mode'}
-                >
-                  <RiRobot2Line size={16} />
-                </button>
-              )}
-
               {/* @ Context Button */}
               <button
                 type="button"

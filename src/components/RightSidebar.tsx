@@ -9,7 +9,6 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useNetworkStore } from '../store/useNetworkStore';
 import { toast } from '../store/useToastStore';
 import { CompareModal } from './CompareModal';
-import { useAgentRunner } from '../hooks/useAgentRunner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -69,7 +68,7 @@ function extractTextFromTiptapJson(doc: any): string {
 function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?: () => void }) {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  const { editorContent, activeFilePath } = useFileSystem();
+  const { editorContent, activeFilePath, rootDir, loadDir, reloadFromDisk, setPendingDiff, setEditorContent } = useFileSystem();
   const { isAuthenticated, isInitializing, checkAuth } = useAuthStore();
   const { isOnline } = useNetworkStore();
   const {
@@ -79,9 +78,6 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
     fetchAvailableModels,
     getActiveConversation,
   } = useAIStore();
-
-  // Agent runner for document operations
-  const { runAgent, isRunning: isAgentRunning } = useAgentRunner();
 
   // Get messages from active conversation
   const activeConversation = getActiveConversation();
@@ -139,33 +135,71 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
       return;
     }
     try {
+      // Capture original content before agent makes changes (for diff display)
+      const originalContent = editorContent ? extractTextFromTiptapJson(editorContent) : '';
+
       const documentContext = getDocumentContext();
-      await sendChatMessage(message, documentContext);
+      const result = await sendChatMessage(message, documentContext, rootDir || undefined);
+
+      // Refresh file tree if documents were changed
+      if (result?.madeChanges && rootDir) {
+        await loadDir(rootDir);
+
+        // Check if current document was edited
+        if (activeFilePath && result.changedPaths?.length > 0) {
+          // Normalize paths for comparison (remove leading slashes, handle .md extension)
+          const normalizedActive = activeFilePath.replace(/^\/+/, '');
+          const currentFileChange = result.changes?.find(change => {
+            if (change.type !== 'edit') return false;
+            const normalizedChanged = change.path.replace(/^\/+/, '');
+            // Check if paths match (with or without .md extension)
+            return normalizedActive === normalizedChanged ||
+                   normalizedActive === normalizedChanged + '.md' ||
+                   normalizedActive + '.md' === normalizedChanged;
+          });
+
+          if (currentFileChange) {
+            // Show diff bar instead of immediately reloading
+            // Use content from the change object if available, otherwise use captured original
+            const beforeContent = currentFileChange.contentBefore || originalContent;
+            const afterContent = currentFileChange.contentAfter || '';
+
+            if (beforeContent && afterContent) {
+              // Load the new content into the editor
+              const loadResult = await window.electronAPI.workspaceLoadDocument(rootDir, activeFilePath);
+              if (loadResult.success && loadResult.json) {
+                setEditorContent(loadResult.json);
+              }
+
+              // Set up pending diff for approval
+              setPendingDiff({
+                originalContent: beforeContent,
+                modifiedContent: afterContent,
+                checkpointId: currentFileChange.preChangeCheckpointId,
+              });
+            } else {
+              // Fallback: just reload if we don't have diff content
+              await reloadFromDisk();
+            }
+          } else {
+            // Check if it was a different change type (create, move, etc.) to current file
+            const wasCurrentFileChanged = result.changedPaths.some(changedPath => {
+              const normalizedChanged = changedPath.replace(/^\/+/, '');
+              return normalizedActive === normalizedChanged ||
+                     normalizedActive === normalizedChanged + '.md' ||
+                     normalizedActive + '.md' === normalizedChanged;
+            });
+
+            if (wasCurrentFileChanged) {
+              await reloadFromDisk();
+            }
+          }
+        }
+      }
     } catch (error: any) {
       toast.error(error.message || 'Failed to send message');
     }
-  }, [isOnline, getDocumentContext, sendChatMessage]);
-
-  // Handle agent mode submissions
-  const handleAgentSubmit = useCallback(async (message: string) => {
-    if (!isOnline) {
-      toast.error('Cannot run agent while offline');
-      return;
-    }
-    try {
-      const documentContext = getDocumentContext();
-      const result = await runAgent(message, documentContext);
-
-      if (result.success && result.response) {
-        // Add the agent's response to the chat
-        await sendChatMessage(`[Agent completed] ${message}`, undefined);
-      } else if (!result.success) {
-        toast.error(result.error || 'Agent failed');
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Agent failed');
-    }
-  }, [isOnline, getDocumentContext, runAgent, sendChatMessage]);
+  }, [isOnline, editorContent, getDocumentContext, sendChatMessage, rootDir, loadDir, activeFilePath, reloadFromDisk, setPendingDiff, setEditorContent]);
 
   // Show loading state while checking auth
   if (isInitializing) {
@@ -249,9 +283,7 @@ function AIChatPanel({ onClose, onOpenAuth }: { onClose: () => void; onOpenAuth?
 
       <ChatInput
         onSubmit={handleSubmit}
-        onAgentSubmit={handleAgentSubmit}
-        isStreaming={isStreaming}
-        isAgentRunning={isAgentRunning}
+        isLoading={isStreaming}
         placeholder={activeFilePath ? "Ask about your document..." : "Ask anything..."}
       />
     </>

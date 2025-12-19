@@ -260,6 +260,7 @@ export async function chatWithTools(
 
   if (!response.ok) {
     const error = await response.json();
+    console.error('[LLM] chatWithTools error:', response.status, JSON.stringify(error));
     if (response.status === 401) {
       clearAuth();
       emitAuthEvent('sessionExpired');
@@ -271,7 +272,7 @@ export async function chatWithTools(
       (err as any).quota = error.quota;
       throw err;
     }
-    throw new Error(error.error || 'Chat with tools failed');
+    throw new Error(error.error || error.errors?.[0]?.msg || 'Chat with tools failed');
   }
 
   return response.json();

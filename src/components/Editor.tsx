@@ -22,6 +22,7 @@ import { RecoveryPrompt } from './RecoveryPrompt';
 import { ExternalChangeDialog } from './ExternalChangeDialog';
 import { InlineEditPrompt } from './InlineEditPrompt';
 import { InlineDiffView } from './InlineDiffView';
+import { DocumentDiffBar } from './DocumentDiffBar';
 import { useVersionStore } from '../store/useVersionStore';
 import { PaginatedEditorView } from './PaginatedEditorView';
 import { PAGE_HEIGHT, PAGE_GAP, PAGE_BREAKS_UPDATED_EVENT, PageBreak } from './extensions/PageSplitting';
@@ -55,6 +56,9 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
     reloadFromDisk,
     keepCurrentVersion,
     closeFile,
+    pendingDiff,
+    acceptPendingDiff,
+    rejectPendingDiff,
   } = useFileSystem();
   const { loadVersions } = useVersionStore();
   const { pageMode } = usePreferences();
@@ -491,6 +495,16 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
           recoveryTime={recoveryTime}
           onRecover={() => loadFromRecovery(activeFilePath)}
           onDiscard={() => discardRecovery(activeFilePath)}
+        />
+      )}
+
+      {/* AI agent edit diff bar */}
+      {pendingDiff && (
+        <DocumentDiffBar
+          originalContent={pendingDiff.originalContent}
+          modifiedContent={pendingDiff.modifiedContent}
+          onAccept={acceptPendingDiff}
+          onReject={rejectPendingDiff}
         />
       )}
 
