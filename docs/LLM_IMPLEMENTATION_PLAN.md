@@ -205,10 +205,10 @@ midlight-site/server/services/llm/
 
 ### 2.4 Model Tiers
 
-| Tier | OpenAI Model | Anthropic Model | Monthly Limit |
-|------|--------------|-----------------|---------------|
-| Free | gpt-4o-mini | claude-3-haiku-20240307 | 100 queries |
-| Premium | gpt-4o | claude-opus-4-5-20251101 | Unlimited |
+| Tier | OpenAI | Anthropic | Google | Monthly Limit |
+|------|--------|-----------|--------|---------------|
+| Free | gpt-5-mini | — | gemini-3-flash | 100 queries |
+| Premium | gpt-5.2 | claude-sonnet-4.5, claude-opus-4.5 | gemini-3-pro | Unlimited |
 
 ### 2.5 Unified LLM Interface
 

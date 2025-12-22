@@ -1,11 +1,13 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { RiCloseLine, RiPaletteLine, RiSettings3Line, RiRobot2Line, RiCheckLine, RiText, RiHistoryLine, RiUserLine, RiLogoutBoxLine, RiMailLine, RiLoader4Line } from '@remixicon/react';
+import { RiCloseLine, RiPaletteLine, RiSettings3Line, RiRobot2Line, RiCheckLine, RiText, RiHistoryLine, RiUserLine, RiLogoutBoxLine, RiMailLine, RiLoader4Line, RiExternalLinkLine, RiSparklingLine } from '@remixicon/react';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useTheme, Theme } from '../store/useTheme';
 import { useFileSystem } from '../store/useFileSystem';
 import { usePreferences } from '../store/usePreferences';
 import { useAuthStore } from '../store/useAuthStore';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { UsageStats } from './UsageStats';
+import { UpgradeModal } from './UpgradeModal';
 import {
   useWorkspaceConfig,
   FONT_OPTIONS,
@@ -206,6 +208,7 @@ export function SettingsModal() {
   const { config, loadConfig, updateDefaults, updateEditor, updateVersioning } = useWorkspaceConfig();
   const { showUnsupportedFiles, setShowUnsupportedFiles, errorReportingEnabled, setErrorReportingEnabled, pageMode, setPageMode, showPageNumbers, setShowPageNumbers } = usePreferences();
   const { user, subscription, logout, isLoading } = useAuthStore();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // Load config when modal opens and workspace exists
   useEffect(() => {
@@ -559,6 +562,44 @@ export function SettingsModal() {
                                 {subscription?.tier === 'premium' ? 'Premium' : 'Free'}
                               </span>
                             </SettingRow>
+
+                            {/* Subscription Actions */}
+                            <div className="py-4 space-y-3">
+                              {subscription?.tier === 'premium' ? (
+                                <button
+                                  onClick={async () => {
+                                    try {
+                                      const result = await window.electronAPI.subscription.createPortal(
+                                        'midlight://settings/account'
+                                      );
+                                      if (result.url) {
+                                        window.electronAPI.openExternal(result.url);
+                                      }
+                                    } catch (error) {
+                                      console.error('Failed to open billing portal:', error);
+                                    }
+                                  }}
+                                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-muted hover:bg-muted/80 rounded-lg transition-colors"
+                                >
+                                  <RiExternalLinkLine size={16} />
+                                  Manage Subscription
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => setShowUpgradeModal(true)}
+                                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-lg transition-all"
+                                >
+                                  <RiSparklingLine size={16} />
+                                  Upgrade to Premium
+                                </button>
+                              )}
+                            </div>
+                          </SettingSection>
+
+                          <SettingSection title="Usage">
+                            <div className="py-4">
+                              <UsageStats onUpgradeClick={() => setShowUpgradeModal(true)} />
+                            </div>
                           </SettingSection>
 
                           <SettingSection title="Session">
@@ -600,6 +641,12 @@ export function SettingsModal() {
 
         </Dialog.Content>
       </Dialog.Portal>
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+      />
     </Dialog.Root>
   );
 }

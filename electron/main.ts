@@ -55,6 +55,12 @@ import {
   getQuota as llmGetQuota,
   getStatus as llmGetStatus,
 } from './services/llmService'
+import {
+  getSubscriptionStatus,
+  createCheckoutSession,
+  createPortalSession,
+  getSubscriptionPrices,
+} from './services/subscriptionService'
 
 // Global error handlers - catch crashes and unhandled errors
 process.on('uncaughtException', (error) => {
@@ -1771,6 +1777,55 @@ ipcMain.handle('agent:isDestructive', (_, toolName: string) => {
 // Check if a tool is read-only (safe to execute without confirmation)
 ipcMain.handle('agent:isReadOnly', (_, toolName: string) => {
   return isReadOnlyTool(toolName);
+});
+
+// --- Subscription IPC Handlers ---
+
+ipcMain.handle('subscription:getStatus', async () => {
+  try {
+    return await getSubscriptionStatus();
+  } catch (error: any) {
+    console.error('Get subscription status failed:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('subscription:createCheckout', async (_, priceType: 'monthly' | 'yearly', successUrl: string, cancelUrl: string) => {
+  try {
+    return await createCheckoutSession(priceType, successUrl, cancelUrl);
+  } catch (error: any) {
+    console.error('Create checkout session failed:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('subscription:createPortal', async (_, returnUrl: string) => {
+  try {
+    return await createPortalSession(returnUrl);
+  } catch (error: any) {
+    console.error('Create portal session failed:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('subscription:getPrices', async () => {
+  try {
+    return await getSubscriptionPrices();
+  } catch (error: any) {
+    console.error('Get subscription prices failed:', error);
+    throw error;
+  }
+});
+
+// Open external URL in default browser
+ipcMain.handle('open-external', async (_, url: string) => {
+  try {
+    await shell.openExternal(url);
+    return { success: true };
+  } catch (error: any) {
+    console.error('Open external URL failed:', error);
+    throw error;
+  }
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

@@ -391,6 +391,30 @@ contextBridge.exposeInMainWorld('electronAPI', {
     isReadOnly: (toolName: string) =>
       ipcRenderer.invoke('agent:isReadOnly', toolName),
   },
+
+  // --- Subscription APIs ---
+
+  subscription: {
+    // Get subscription status
+    getStatus: () =>
+      ipcRenderer.invoke('subscription:getStatus'),
+
+    // Create checkout session for upgrading
+    createCheckout: (priceType: 'monthly' | 'yearly', successUrl: string, cancelUrl: string) =>
+      ipcRenderer.invoke('subscription:createCheckout', priceType, successUrl, cancelUrl),
+
+    // Create portal session for managing subscription
+    createPortal: (returnUrl: string) =>
+      ipcRenderer.invoke('subscription:createPortal', returnUrl),
+
+    // Get available prices
+    getPrices: () =>
+      ipcRenderer.invoke('subscription:getPrices'),
+  },
+
+  // Open external URL in default browser
+  openExternal: (url: string) =>
+    ipcRenderer.invoke('open-external', url),
 })
 
 contextBridge.exposeInMainWorld('ipcRenderer', {

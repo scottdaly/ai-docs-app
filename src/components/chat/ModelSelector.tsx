@@ -1,5 +1,9 @@
-import { RiArrowDownSLine } from '@remixicon/react';
+import { useState } from 'react';
+import { RiArrowDownSLine, RiLock2Line } from '@remixicon/react';
 import { useAIStore } from '../../store/useAIStore';
+import { useAuthStore } from '../../store/useAuthStore';
+import { isModelAvailable } from '../../utils/featureGates';
+import { UpgradeModal } from '../UpgradeModal';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +22,10 @@ export function ModelSelector() {
     setProvider,
     setModel,
   } = useAIStore();
+  const { subscription } = useAuthStore();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+  const tier = subscription?.tier ?? 'free';
 
   // Get display name for current model
   const getCurrentModelName = () => {
@@ -32,6 +40,12 @@ export function ModelSelector() {
   const handleModelSelect = (modelId: string) => {
     if (!availableModels) return;
 
+    // Check if model is available for user's tier
+    if (!isModelAvailable(modelId, tier)) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
     // Find which provider this model belongs to
     for (const provider of ['openai', 'anthropic', 'gemini'] as const) {
       const models = availableModels[provider];
@@ -44,6 +58,9 @@ export function ModelSelector() {
       }
     }
   };
+
+  // Check if a model is premium (locked for free users)
+  const isPremiumModel = (modelId: string) => !isModelAvailable(modelId, tier);
 
   // Build combined value for radio group (provider:model)
   const currentValue = `${selectedProvider}:${selectedModel}`;
@@ -77,9 +94,12 @@ export function ModelSelector() {
                 <DropdownMenuRadioItem
                   key={model.id}
                   value={`anthropic:${model.id}`}
-                  className="text-sm"
+                  className="text-sm flex items-center justify-between"
                 >
-                  {model.name}
+                  <span>{model.name}</span>
+                  {isPremiumModel(model.id) && (
+                    <RiLock2Line size={12} className="text-muted-foreground ml-2" />
+                  )}
                 </DropdownMenuRadioItem>
               ))}
             </>
@@ -101,9 +121,12 @@ export function ModelSelector() {
                 <DropdownMenuRadioItem
                   key={model.id}
                   value={`openai:${model.id}`}
-                  className="text-sm"
+                  className="text-sm flex items-center justify-between"
                 >
-                  {model.name}
+                  <span>{model.name}</span>
+                  {isPremiumModel(model.id) && (
+                    <RiLock2Line size={12} className="text-muted-foreground ml-2" />
+                  )}
                 </DropdownMenuRadioItem>
               ))}
             </>
@@ -125,9 +148,12 @@ export function ModelSelector() {
                 <DropdownMenuRadioItem
                   key={model.id}
                   value={`gemini:${model.id}`}
-                  className="text-sm"
+                  className="text-sm flex items-center justify-between"
                 >
-                  {model.name}
+                  <span>{model.name}</span>
+                  {isPremiumModel(model.id) && (
+                    <RiLock2Line size={12} className="text-muted-foreground ml-2" />
+                  )}
                 </DropdownMenuRadioItem>
               ))}
             </>
@@ -144,6 +170,12 @@ export function ModelSelector() {
           </div>
         )}
       </DropdownMenuContent>
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+      />
     </DropdownMenu>
   );
 }

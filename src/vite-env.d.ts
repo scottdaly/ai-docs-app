@@ -388,6 +388,40 @@ interface AgentExecuteResult {
   error?: string;
 }
 
+// --- Subscription Types ---
+
+interface SubscriptionStatus {
+  tier: 'free' | 'premium';
+  status: 'active' | 'cancelled' | 'expired' | 'past_due' | 'trialing';
+  billingInterval: 'monthly' | 'yearly' | null;
+  currentPeriodStart: string | null;
+  currentPeriodEnd: string | null;
+  hasStripeSubscription: boolean;
+}
+
+interface CheckoutResult {
+  url: string;
+  sessionId: string;
+}
+
+interface PortalResult {
+  url: string;
+}
+
+interface SubscriptionPrices {
+  monthly: {
+    amount: number;
+    currency: string;
+    interval: string;
+  };
+  yearly: {
+    amount: number;
+    currency: string;
+    interval: string;
+    savings: string;
+  };
+}
+
 interface IElectronAPI {
   // Platform info
   platform: 'darwin' | 'win32' | 'linux';
@@ -581,6 +615,17 @@ interface IElectronAPI {
     isDestructive: (toolName: string) => Promise<boolean>;
     isReadOnly: (toolName: string) => Promise<boolean>;
   };
+
+  // --- Subscription APIs ---
+  subscription: {
+    getStatus: () => Promise<SubscriptionStatus>;
+    createCheckout: (priceType: 'monthly' | 'yearly', successUrl: string, cancelUrl: string) => Promise<CheckoutResult>;
+    createPortal: (returnUrl: string) => Promise<PortalResult>;
+    getPrices: () => Promise<SubscriptionPrices>;
+  };
+
+  // Open external URL in default browser
+  openExternal: (url: string) => Promise<{ success: boolean }>;
 }
 
 interface Window {

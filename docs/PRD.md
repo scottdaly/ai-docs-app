@@ -125,12 +125,12 @@ The system is intentionally simple:
     *   Full local-first storage.
 *   **LLM Limits:**
     *   A "starter" amount of LLM queries/edits per month (e.g., 50–100).
-    *   Uses a standard, good-quality model (e.g., GPT-4o, Gemini Pro).
+    *   Uses a standard, good-quality model (e.g., GPT-5-mini, Gemini 3 Flash).
     *   *Goal:* Allow users to experience the "magic" and build a dependency on the AI features.
 
 ### 5.2 Premium Tier (Subscription)
 *   **High-Volume LLM Usage:** Unlimited or significantly higher-limit LLM queries/edits.
-*   **Access to "Pro" Models:** Ability to select more powerful or specialized models (e.g., GPT-4-Turbo, Claude 3 Opus).
+*   **Access to "Pro" Models:** Ability to select more powerful or specialized models (e.g., GPT-5.2, Claude Opus 4.5, Gemini 3 Pro).
 *   **Secure Cloud Sync:** The end-to-end encrypted cloud storage and sync feature.
 *   **PDF/Web Page Ingestion:** Ability to "add" a PDF or URL to the context for the AI to read and analyze.
 
