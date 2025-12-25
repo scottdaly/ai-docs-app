@@ -400,7 +400,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.invoke('subscription:getStatus'),
 
     // Create checkout session for upgrading
-    createCheckout: (priceType: 'monthly' | 'yearly', successUrl: string, cancelUrl: string) =>
+    createCheckout: (priceType: 'pro_monthly' | 'pro_yearly' | 'premium_monthly' | 'premium_yearly', successUrl: string, cancelUrl: string) =>
       ipcRenderer.invoke('subscription:createCheckout', priceType, successUrl, cancelUrl),
 
     // Create portal session for managing subscription

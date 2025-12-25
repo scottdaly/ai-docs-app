@@ -9,9 +9,10 @@ export interface User {
 }
 
 export interface Subscription {
-  tier: 'free' | 'premium';
+  tier: 'free' | 'pro' | 'premium';
   status: 'active' | 'cancelled' | 'expired';
   currentPeriodEnd?: string;
+  billingInterval?: 'monthly' | 'yearly';
 }
 
 export interface QuotaInfo {

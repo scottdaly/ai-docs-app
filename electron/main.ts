@@ -1790,7 +1790,7 @@ ipcMain.handle('subscription:getStatus', async () => {
   }
 });
 
-ipcMain.handle('subscription:createCheckout', async (_, priceType: 'monthly' | 'yearly', successUrl: string, cancelUrl: string) => {
+ipcMain.handle('subscription:createCheckout', async (_, priceType: 'pro_monthly' | 'pro_yearly' | 'premium_monthly' | 'premium_yearly', successUrl: string, cancelUrl: string) => {
   try {
     return await createCheckoutSession(priceType, successUrl, cancelUrl);
   } catch (error: any) {

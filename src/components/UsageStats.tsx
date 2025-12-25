@@ -29,7 +29,7 @@ export function UsageStats({ onUpgradeClick }: UsageStatsProps) {
     );
   }
 
-  const isPremium = subscription?.tier === 'premium';
+  const isPaidUser = subscription?.tier === 'premium' || subscription?.tier === 'pro';
   const limit = quota.limit ?? 0;
   const used = quota.used ?? 0;
   const remaining = quota.remaining ?? 0;
@@ -37,7 +37,7 @@ export function UsageStats({ onUpgradeClick }: UsageStatsProps) {
 
   // Determine color based on usage
   const getProgressColor = () => {
-    if (isPremium) return 'bg-primary';
+    if (isPaidUser) return 'bg-primary';
     if (percentage >= 90) return 'bg-destructive';
     if (percentage >= 75) return 'bg-amber-500';
     return 'bg-primary';
@@ -69,7 +69,7 @@ export function UsageStats({ onUpgradeClick }: UsageStatsProps) {
           </button>
         </div>
 
-        {isPremium ? (
+        {isPaidUser ? (
           <div className="flex items-center gap-2">
             <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
               <div className="h-full bg-primary rounded-full w-1/4" />
@@ -97,21 +97,21 @@ export function UsageStats({ onUpgradeClick }: UsageStatsProps) {
       </div>
 
       {/* Reset Date (for free users) */}
-      {!isPremium && (
+      {!isPaidUser && (
         <p className="text-xs text-muted-foreground">
           Resets on {getResetDate()}
         </p>
       )}
 
       {/* Usage Warning */}
-      {!isPremium && percentage >= 75 && (
+      {!isPaidUser && percentage >= 75 && (
         <div className={`p-3 rounded-lg text-sm ${
           percentage >= 90
             ? 'bg-destructive/10 text-destructive'
             : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
         }`}>
           {percentage >= 90 ? (
-            <p>You're almost out of queries. Upgrade to Premium for unlimited access.</p>
+            <p>You're almost out of queries. Upgrade for unlimited access.</p>
           ) : (
             <p>You've used {Math.round(percentage)}% of your monthly quota.</p>
           )}
@@ -119,13 +119,13 @@ export function UsageStats({ onUpgradeClick }: UsageStatsProps) {
       )}
 
       {/* Upgrade CTA (for free users) */}
-      {!isPremium && onUpgradeClick && (
+      {!isPaidUser && onUpgradeClick && (
         <button
           onClick={onUpgradeClick}
           className="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-sm font-medium rounded-lg transition-all"
         >
           <RiSparklingLine size={16} />
-          Upgrade to Premium
+          Upgrade
         </button>
       )}
     </div>
@@ -141,18 +141,24 @@ export function UsageIndicator({ onClick }: { onClick?: () => void }) {
   if (!quota) return null;
 
   const isPremium = subscription?.tier === 'premium';
+  const isPro = subscription?.tier === 'pro';
+  const isPaidUser = isPremium || isPro;
   const limit = quota.limit ?? 0;
   const used = quota.used ?? 0;
   const percentage = limit > 0 ? Math.min((used / limit) * 100, 100) : 0;
 
-  if (isPremium) {
+  if (isPaidUser) {
     return (
       <button
         onClick={onClick}
-        className="flex items-center gap-1.5 px-2 py-1 text-xs bg-primary/10 text-primary rounded-md hover:bg-primary/20 transition-colors"
+        className={`flex items-center gap-1.5 px-2 py-1 text-xs rounded-md hover:opacity-80 transition-colors ${
+          isPremium
+            ? 'bg-amber-500/10 text-amber-500'
+            : 'bg-violet-500/10 text-violet-500'
+        }`}
       >
         <RiSparklingLine size={12} />
-        Premium
+        {isPremium ? 'Premium' : 'Pro'}
       </button>
     );
   }

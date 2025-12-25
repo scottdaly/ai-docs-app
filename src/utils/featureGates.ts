@@ -6,7 +6,7 @@
  * Shared features are available to all tiers (may count against quota for free users).
  */
 
-export type SubscriptionTier = 'free' | 'premium';
+export type SubscriptionTier = 'free' | 'pro' | 'premium';
 
 /**
  * Features that are only available to premium users
@@ -32,13 +32,20 @@ export type PremiumFeature = keyof typeof PREMIUM_FEATURES;
 export type SharedFeature = keyof typeof SHARED_FEATURES;
 
 /**
+ * Check if user is on a paid tier (Pro or Premium)
+ */
+export function isPaidTier(tier: SubscriptionTier): boolean {
+  return tier === 'pro' || tier === 'premium';
+}
+
+/**
  * Check if a user can access a premium feature
  */
 export function canAccessFeature(
   feature: PremiumFeature,
   tier: SubscriptionTier
 ): boolean {
-  if (tier === 'premium') return true;
+  if (isPaidTier(tier)) return true;
   return !PREMIUM_FEATURES[feature];
 }
 
@@ -77,7 +84,7 @@ export const FREE_MODELS = [
  * Check if a model is available for a given tier
  */
 export function isModelAvailable(modelId: string, tier: SubscriptionTier): boolean {
-  if (tier === 'premium') return true;
+  if (isPaidTier(tier)) return true;
 
   // Check if model is in the premium list
   const isPremiumModel = PREMIUM_MODELS.some(
@@ -118,8 +125,8 @@ export function hasRemainingQuota(
   limit: number | null,
   tier: SubscriptionTier
 ): boolean {
-  // Premium users have unlimited quota
-  if (tier === 'premium') return true;
+  // Paid users have unlimited quota
+  if (isPaidTier(tier)) return true;
 
   // Free users check against limit
   if (limit === null) return true;
@@ -140,7 +147,7 @@ export function getQuotaStatus(
   isCritical: boolean;
   isExhausted: boolean;
 } {
-  if (tier === 'premium' || limit === null) {
+  if (isPaidTier(tier) || limit === null) {
     return {
       hasQuota: true,
       percentage: 0,

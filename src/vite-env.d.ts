@@ -390,8 +390,10 @@ interface AgentExecuteResult {
 
 // --- Subscription Types ---
 
+type PriceType = 'pro_monthly' | 'pro_yearly' | 'premium_monthly' | 'premium_yearly';
+
 interface SubscriptionStatus {
-  tier: 'free' | 'premium';
+  tier: 'free' | 'pro' | 'premium';
   status: 'active' | 'cancelled' | 'expired' | 'past_due' | 'trialing';
   billingInterval: 'monthly' | 'yearly' | null;
   currentPeriodStart: string | null;
@@ -619,7 +621,7 @@ interface IElectronAPI {
   // --- Subscription APIs ---
   subscription: {
     getStatus: () => Promise<SubscriptionStatus>;
-    createCheckout: (priceType: 'monthly' | 'yearly', successUrl: string, cancelUrl: string) => Promise<CheckoutResult>;
+    createCheckout: (priceType: PriceType, successUrl: string, cancelUrl: string) => Promise<CheckoutResult>;
     createPortal: (returnUrl: string) => Promise<PortalResult>;
     getPrices: () => Promise<SubscriptionPrices>;
   };

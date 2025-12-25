@@ -552,20 +552,30 @@ export function SettingsModal() {
                           <SettingSection title="Subscription">
                             <SettingRow
                               label="Current Plan"
-                              description={subscription?.status === 'active' ? 'Your subscription is active' : undefined}
+                              description={
+                                subscription?.tier === 'free'
+                                  ? undefined
+                                  : subscription?.status === 'active'
+                                  ? 'Your subscription is active'
+                                  : subscription?.status === 'cancelled'
+                                  ? 'Your subscription has been cancelled'
+                                  : undefined
+                              }
                             >
                               <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                                 subscription?.tier === 'premium'
-                                  ? 'bg-primary/10 text-primary'
+                                  ? 'bg-amber-500/10 text-amber-500'
+                                  : subscription?.tier === 'pro'
+                                  ? 'bg-violet-500/10 text-violet-500'
                                   : 'bg-muted text-muted-foreground'
                               }`}>
-                                {subscription?.tier === 'premium' ? 'Premium' : 'Free'}
+                                {subscription?.tier === 'premium' ? 'Premium' : subscription?.tier === 'pro' ? 'Pro' : 'Free'}
                               </span>
                             </SettingRow>
 
                             {/* Subscription Actions */}
                             <div className="py-4 space-y-3">
-                              {subscription?.tier === 'premium' ? (
+                              {subscription?.tier === 'premium' || subscription?.tier === 'pro' ? (
                                 <button
                                   onClick={async () => {
                                     try {
@@ -590,7 +600,7 @@ export function SettingsModal() {
                                   className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-lg transition-all"
                                 >
                                   <RiSparklingLine size={16} />
-                                  Upgrade to Premium
+                                  Upgrade
                                 </button>
                               )}
                             </div>

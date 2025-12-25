@@ -14,8 +14,10 @@ import { getAccessToken } from './authService';
 const API_BASE = process.env.MIDLIGHT_API_URL || 'https://midlight.ai';
 
 // Types
+export type PriceType = 'pro_monthly' | 'pro_yearly' | 'premium_monthly' | 'premium_yearly';
+
 export interface SubscriptionStatus {
-  tier: 'free' | 'premium';
+  tier: 'free' | 'pro' | 'premium';
   status: 'active' | 'cancelled' | 'expired' | 'past_due' | 'trialing';
   billingInterval: 'monthly' | 'yearly' | null;
   currentPeriodStart: string | null;
@@ -119,7 +121,7 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
  * Create Stripe checkout session for upgrading
  */
 export async function createCheckoutSession(
-  priceType: 'monthly' | 'yearly',
+  priceType: PriceType,
   successUrl: string,
   cancelUrl: string
 ): Promise<CheckoutResult> {
