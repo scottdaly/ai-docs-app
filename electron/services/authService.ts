@@ -560,7 +560,9 @@ export async function getSubscription(): Promise<Subscription | null> {
       return { tier: 'free', status: 'active' };
     }
 
-    return response.json();
+    const data = await response.json();
+    // API returns { subscription: {...} }, extract the subscription object
+    return data.subscription || { tier: 'free', status: 'active' };
   } catch (error) {
     console.error('[Auth] Get subscription failed:', error);
     return { tier: 'free', status: 'active' };

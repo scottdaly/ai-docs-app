@@ -5,7 +5,7 @@ import { useTheme, Theme } from '../store/useTheme';
 import { useFileSystem } from '../store/useFileSystem';
 import { usePreferences } from '../store/usePreferences';
 import { useAuthStore } from '../store/useAuthStore';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { UsageStats } from './UsageStats';
 import { UpgradeModal } from './UpgradeModal';
 import {
@@ -207,8 +207,23 @@ export function SettingsModal() {
   const { rootDir } = useFileSystem();
   const { config, loadConfig, updateDefaults, updateEditor, updateVersioning } = useWorkspaceConfig();
   const { showUnsupportedFiles, setShowUnsupportedFiles, errorReportingEnabled, setErrorReportingEnabled, pageMode, setPageMode, showPageNumbers, setShowPageNumbers } = usePreferences();
-  const { user, subscription, logout, isLoading } = useAuthStore();
+  const { user, subscription, logout, isLoading, fetchSubscription, fetchQuota } = useAuthStore();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const portalInitiated = useRef(false);
+
+  // Refresh subscription when window regains focus after portal visit
+  useEffect(() => {
+    const handleFocus = () => {
+      if (portalInitiated.current) {
+        fetchSubscription();
+        fetchQuota();
+        portalInitiated.current = false;
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [fetchSubscription, fetchQuota]);
 
   // Load config when modal opens and workspace exists
   useEffect(() => {
@@ -580,9 +595,10 @@ export function SettingsModal() {
                                   onClick={async () => {
                                     try {
                                       const result = await window.electronAPI.subscription.createPortal(
-                                        'midlight://settings/account'
+                                        'https://midlight.ai/account'
                                       );
                                       if (result.url) {
+                                        portalInitiated.current = true;
                                         window.electronAPI.openExternal(result.url);
                                       }
                                     } catch (error) {
