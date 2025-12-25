@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import {
   RiCloseLine,
@@ -32,8 +32,31 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
   const [billingInterval, setBillingInterval] = useState<'monthly' | 'yearly'>('monthly');
   const [isLoading, setIsLoading] = useState<PlanType | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const checkoutInitiated = useRef(false);
 
-  const { subscription } = useAuthStore();
+  const { subscription, fetchSubscription, fetchQuota } = useAuthStore();
+
+  // Refresh subscription when window regains focus after checkout
+  useEffect(() => {
+    const handleFocus = () => {
+      if (checkoutInitiated.current) {
+        // User returned from checkout - refresh subscription status
+        fetchSubscription();
+        fetchQuota();
+        checkoutInitiated.current = false;
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [fetchSubscription, fetchQuota]);
+
+  // Refresh subscription when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchSubscription();
+    }
+  }, [isOpen, fetchSubscription]);
 
   const handleUpgrade = async (plan: PlanType) => {
     setIsLoading(plan);
@@ -44,11 +67,12 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
     try {
       const result = await window.electronAPI.subscription.createCheckout(
         priceType,
-        `${window.location.origin}/upgrade/success`,
-        `${window.location.origin}/upgrade/cancel`
+        'https://midlight.ai/checkout/success',
+        'https://midlight.ai/checkout/cancel'
       );
 
       if (result.url) {
+        checkoutInitiated.current = true;
         window.electronAPI.openExternal(result.url);
         onClose();
       }

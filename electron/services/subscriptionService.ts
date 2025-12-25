@@ -56,7 +56,7 @@ async function makeRequest<T>(
   path: string,
   body?: object
 ): Promise<T> {
-  const accessToken = getAccessToken();
+  const accessToken = await getAccessToken();
 
   if (!accessToken) {
     throw new Error('Not authenticated');
